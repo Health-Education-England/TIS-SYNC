@@ -8,11 +8,11 @@
 		<version>2.1.4.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>uk.nhs.hee.tis.tcselasticsearch</groupId>
-	<artifactId>TIS-TCS-ES</artifactId>
+	<groupId>uk.nhs.hee.tis</groupId>
+	<artifactId>TIS-SYNC</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>TIS-TCS-ES</name>
-	<description>Separate Microservice for TCS Elastic Search</description>
+	<name>TIS-SYNC</name>
+	<description>Separate Microservice for synchronisation</description>
 
 	<properties>
 		<java.version>1.8</java.version>
