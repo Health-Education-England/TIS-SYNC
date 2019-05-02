@@ -8,7 +8,7 @@
 		<version>2.1.4.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>uk.nhs.hee.tis.sync</groupId>
+	<groupId>uk.nhs.hee.tis</groupId>
 	<artifactId>TIS-SYNC</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>TIS-SYNC</name>
