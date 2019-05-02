@@ -1,4 +1,4 @@
-package uk.nhs.hee.tis.tcselasticsearch;
+package uk.nhs.hee.tis.sync;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

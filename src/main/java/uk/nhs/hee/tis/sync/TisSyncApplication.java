@@ -1,4 +1,4 @@
-package uk.nhs.hee.tis.tcselasticsearch;
+package uk.nhs.hee.tis.sync;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -19,10 +19,10 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
         //"classpath:/config/tcsclientapplication.properties"
     }
 )
-public class TisTcsEsApplication {
+public class TisSyncApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(TisTcsEsApplication.class, args);
+		SpringApplication.run(TisSyncApplication.class, args);
 	}
 
 }
