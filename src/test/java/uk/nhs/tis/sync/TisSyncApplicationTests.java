@@ -1,4 +1,4 @@
-package uk.nhs.hee.tis.sync;
+package uk.nhs.tis.sync;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
