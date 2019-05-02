@@ -7,7 +7,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class TisTcsEsApplicationTests {
+public class TisSyncApplicationTests {
 
 	@Test
 	public void contextLoads() {
