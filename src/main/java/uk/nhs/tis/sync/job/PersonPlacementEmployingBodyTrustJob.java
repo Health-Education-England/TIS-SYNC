@@ -18,6 +18,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.transformuk.hee.tis.tcs.service.model.Person;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 
 @Component
 @ManagedResource(objectName = "tcs.mbean:name=PersonPlacementEmployingBodyJob", description = "Service that clears the PersonTrust table and links Person with Placement EmployingBody(Trust)")
+@SuppressWarnings("unchecked")
 public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTemplate<PersonTrust> {
 
   private static final Logger LOG = LoggerFactory.getLogger(PersonPlacementEmployingBodyTrustJob.class);
