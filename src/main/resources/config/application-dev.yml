@@ -1,0 +1,25 @@
+spring:
+  devtools:
+    restart:
+      enabled: false
+  datasource:
+    url: jdbc:mysql://${DBHOST}:${DBPORT}/${DBNAME}?useUnicode=true&characterEncoding=utf8&useSSL=${USE_SSL}
+    username: ${DBUSER}
+    password: ${DBPASSWORD}
+  flyway:
+    password: ${DBPASSWORD}
+    schemas: ${DBNAME}
+  elasticsearch:
+    rest:
+      uris: ${ES_URLS}
+  data:
+    elasticsearch:
+      cluster-nodes: ${ES_CLUSTER_NODE_URLS}
+      cluster-name: ${ES_CLUSTER_NAME}
+
+logging:
+  file: ${LOG_DIR:${HOME}}/tcs.log
+
+application:
+
+enable.es.search: ${ENABLE_ES_SEARCH}

@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
-@EnableJpaRepositories("com.transformuk.hee.tis.tcs.service.repository")
+@EnableJpaRepositories("uk.nhs.hee.tis")
 @EnableTransactionManagement
 public class DatabaseConfiguration {
 

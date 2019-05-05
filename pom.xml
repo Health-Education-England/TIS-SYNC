@@ -18,6 +18,8 @@
     <java.version>1.8</java.version>
     <spring-boot-admin.version>2.1.4</spring-boot-admin.version>
     <!-- <tis.client.version>4.3.0</tis.client.version> -->
+    <java.version>1.8</java.version>
+    <jhipster.server.version>1.2.0</jhipster.server.version>
   </properties>
 
   <dependencies>
@@ -25,6 +27,16 @@
       <groupId>uk.nhs.tis</groupId>
       <artifactId>tcs-persistence</artifactId>
       <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <!--<dependency>
+      <groupId>com.transformuk.hee</groupId>
+      <artifactId>tcs-service</artifactId>
+      <version>4.4.0</version>
+    </dependency>-->
+    <dependency>
+      <groupId>com.transformuk.hee</groupId>
+      <artifactId>reference-client</artifactId>
+      <version>4.3.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -103,6 +115,11 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <groupId>io.github.jhipster</groupId>
+      <artifactId>jhipster</artifactId>
+      <version>${jhipster.server.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
@@ -111,13 +128,13 @@
 
   <dependencyManagement>
     <dependencies>
-      <dependency>
+      <!--<dependency>
         <groupId>de.codecentric</groupId>
         <artifactId>spring-boot-admin-dependencies</artifactId>
         <version>${spring-boot-admin.version}</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>
+      </dependency>-->
     </dependencies>
   </dependencyManagement>
 
