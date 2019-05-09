@@ -1,5 +1,6 @@
 package uk.nhs.tis.sync.job;
 
+import com.transformuk.hee.tis.tcs.service.repository.PersonElasticSearchRepository;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Assert;
@@ -10,13 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.nhs.tis.sync.repository.PersonElasticSearchRepository;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class PersonElasticSearchSyncJobIntegrationTest {
-  
+
   @Autowired
   PersonElasticSearchSyncJob job;
 
@@ -39,7 +39,7 @@ public class PersonElasticSearchSyncJobIntegrationTest {
   }
 
   @Test
-  public void testJobRun() throws Exception{
+  public void testJobRun() throws Exception {
     job.personElasticSearchSync();
     int timeout = 120;
     // every minute within timeout's time, check if the job has been done

@@ -25,7 +25,7 @@ import java.net.UnknownHostException;
     "com.transformuk.hee.tis.tcs.service.service.impl",
     "uk.nhs.tis.sync", "uk.nhs.hee.tis.sync.service",
     "uk.nhs.hee.tis.sync",
-    "com.transformuk.hee.tis.reference.client"} )
+    "com.transformuk.hee.tis.reference.client"})
 @EnableJpaRepositories("com.transformuk.hee.tis.tcs.service.repository")
 @EnableElasticsearchRepositories("uk.nhs.hee.tis.sync.repository")
 @EnableWebMvc

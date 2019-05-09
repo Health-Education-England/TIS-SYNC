@@ -14,29 +14,29 @@ import java.util.stream.Collectors;
 
 @Component
 public class PersonBasicDetailsRepositoryAccessor {
-    private PersonBasicDetailsRepository personBasicDetailsRepository;
+  private PersonBasicDetailsRepository personBasicDetailsRepository;
 
-    @Autowired
-    public PersonBasicDetailsRepositoryAccessor(PersonBasicDetailsRepository personBasicDetailsRepository) {
-        this.personBasicDetailsRepository = personBasicDetailsRepository;
-    }
+  @Autowired
+  public PersonBasicDetailsRepositoryAccessor(PersonBasicDetailsRepository personBasicDetailsRepository) {
+    this.personBasicDetailsRepository = personBasicDetailsRepository;
+  }
 
-    public void doWithPersonBasicDetails(Long personId, Consumer<PersonBasicDetails> consumer) {
-        if (personId != null && personId != 0) {
-          PersonBasicDetails bdt = personBasicDetailsRepository.findById(personId).orElse(null);
-            if (bdt != null) {
-                consumer.accept(bdt);
-            }
-        }
+  public void doWithPersonBasicDetails(Long personId, Consumer<PersonBasicDetails> consumer) {
+    if (personId != null && personId != 0) {
+      PersonBasicDetails bdt = personBasicDetailsRepository.findById(personId).orElse(null);
+      if (bdt != null) {
+        consumer.accept(bdt);
+      }
     }
+  }
 
-    public void doWithPersonBasicDetailsSet(Set<Long> personIds, Consumer<Map<Long, PersonBasicDetails>> consumer) {
-        if (CollectionUtils.isNotEmpty(personIds)) {
-          List<PersonBasicDetails> details = personBasicDetailsRepository.findAllById(personIds);
-            if (CollectionUtils.isNotEmpty(details)) {
-                Map<Long, PersonBasicDetails> detailsMap = details.stream().collect(Collectors.toMap(PersonBasicDetails::getId, d -> d));
-                consumer.accept(detailsMap);
-            }
-        }
+  public void doWithPersonBasicDetailsSet(Set<Long> personIds, Consumer<Map<Long, PersonBasicDetails>> consumer) {
+    if (CollectionUtils.isNotEmpty(personIds)) {
+      List<PersonBasicDetails> details = personBasicDetailsRepository.findAllById(personIds);
+      if (CollectionUtils.isNotEmpty(details)) {
+        Map<Long, PersonBasicDetails> detailsMap = details.stream().collect(Collectors.toMap(PersonBasicDetails::getId, d -> d));
+        consumer.accept(detailsMap);
+      }
     }
+  }
 }

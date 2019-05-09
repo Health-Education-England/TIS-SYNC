@@ -80,9 +80,9 @@ public class PostEmployingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTru
     LOG.info("Querying with lastPostId: [{}] and lastEmployingBodyId: [{}]", lastId, lastEmployingBodyId);
     String postEmployingBodyQuery = sqlQuerySupplier.getQuery(SqlQuerySupplier.POST_EMPLOYINGBODY);
 
-    Query query = entityManager.createNativeQuery(postEmployingBodyQuery).setParameter("lastId", lastId )
-                                                                         .setParameter("lastEmployingBodyId", lastEmployingBodyId)
-                                                                         .setParameter("pageSize", pageSize);
+    Query query = entityManager.createNativeQuery(postEmployingBodyQuery).setParameter("lastId", lastId)
+        .setParameter("lastEmployingBodyId", lastEmployingBodyId)
+        .setParameter("pageSize", pageSize);
 
     List<Object[]> resultList = query.getResultList();
     List<EntityData> result = resultList.stream().filter(Objects::nonNull).map(objArr -> {

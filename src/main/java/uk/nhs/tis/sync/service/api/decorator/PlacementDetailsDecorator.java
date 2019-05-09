@@ -37,8 +37,8 @@ public class PlacementDetailsDecorator {
     if (placementDetailsDTO == null) return null;
 
     CompletableFuture<Void> futures = CompletableFuture.allOf(
-            decorateSiteName(placementDetailsDTO),
-            decorateGradeName(placementDetailsDTO));
+        decorateSiteName(placementDetailsDTO),
+        decorateGradeName(placementDetailsDTO));
 
     decorateTraineeName(placementDetailsDTO);
     decorateOwner(placementDetailsDTO);
@@ -58,7 +58,7 @@ public class PlacementDetailsDecorator {
           }
         });
   }
-  
+
   protected void decorateOwner(PlacementDetailsDTO placementDetailsDTO) {
     Long postId = placementDetailsDTO.getPostId();
     if (postId != null && postId != 0) {
@@ -72,20 +72,20 @@ public class PlacementDetailsDecorator {
 
   protected CompletableFuture<Void> decorateSiteName(PlacementDetailsDTO placementDetailsDTO) {
     return referenceService.doWithSitesAsync(
-            () -> !StringUtils.isEmpty(placementDetailsDTO.getSiteId()),
-            Collections.singleton(placementDetailsDTO.getSiteId()),
-            sites -> {
-              placementDetailsDTO.setSiteName(sites.values().iterator().next().getSiteName());
-              placementDetailsDTO.setSiteCode(sites.values().iterator().next().getSiteCode());
-            });
+        () -> !StringUtils.isEmpty(placementDetailsDTO.getSiteId()),
+        Collections.singleton(placementDetailsDTO.getSiteId()),
+        sites -> {
+          placementDetailsDTO.setSiteName(sites.values().iterator().next().getSiteName());
+          placementDetailsDTO.setSiteCode(sites.values().iterator().next().getSiteCode());
+        });
   }
 
   protected CompletableFuture<Void> decorateGradeName(PlacementDetailsDTO placementDetailsDTO) {
     return referenceService.doWithGradesAsync(
-            () -> !StringUtils.isEmpty(placementDetailsDTO.getGradeId()),
-            Collections.singleton(placementDetailsDTO.getGradeId()), grades -> {
-              placementDetailsDTO.setGradeAbbreviation(grades.values().iterator().next().getAbbreviation());
-              placementDetailsDTO.setGradeName(grades.values().iterator().next().getName());
-            });
+        () -> !StringUtils.isEmpty(placementDetailsDTO.getGradeId()),
+        Collections.singleton(placementDetailsDTO.getGradeId()), grades -> {
+          placementDetailsDTO.setGradeAbbreviation(grades.values().iterator().next().getAbbreviation());
+          placementDetailsDTO.setGradeName(grades.values().iterator().next().getName());
+        });
   }
 }

@@ -1,6 +1,5 @@
 package uk.nhs.tis.sync.job;
 
-import com.transformuk.hee.tis.tcs.service.repository.PersonRepository;
 import com.transformuk.hee.tis.tcs.service.repository.PersonTrustRepository;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
@@ -15,7 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class PersonPlacementTrainingBodyTrustJobIntegrationTest {
-  
+
   @Autowired
   PersonPlacementTrainingBodyTrustJob job;
 
@@ -33,7 +32,7 @@ public class PersonPlacementTrainingBodyTrustJobIntegrationTest {
   }
 
   @Test
-  public void testJobRun() throws Exception{
+  public void testJobRun() throws Exception {
     job.PersonPlacementTrainingBodyFullSync();
     int timeout = 120;
     // every minute within timeout's time, check if the job has been done

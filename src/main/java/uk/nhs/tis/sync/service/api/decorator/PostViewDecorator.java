@@ -44,9 +44,9 @@ public class PostViewDecorator {
     });
 
     CompletableFuture.allOf(
-            decorateGradesOnPost(gradeIds, postViews),
-            decorateSitesOnPost(siteIds, postViews))
-            .join();
+        decorateGradesOnPost(gradeIds, postViews),
+        decorateSitesOnPost(siteIds, postViews))
+        .join();
   }
 
   protected CompletableFuture<Void> decorateGradesOnPost(Set<Long> ids, List<PostViewDTO> postViewDTOS) {

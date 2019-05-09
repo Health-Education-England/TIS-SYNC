@@ -44,14 +44,14 @@ public class PersonViewDecorator {
       }
       // fix the roles
       if (StringUtils.isNotBlank(personView.getRole())) {
-        personView.setRole(personView.getRole().replaceAll(",",", "));
+        personView.setRole(personView.getRole().replaceAll(",", ", "));
       }
     });
 
     CompletableFuture.allOf(
-            decorateGradesOnPerson(gradeIds, personViews),
-            decorateSitesOnPerson(siteIds, personViews))
-            .join();
+        decorateGradesOnPerson(gradeIds, personViews),
+        decorateSitesOnPerson(siteIds, personViews))
+        .join();
 
     return personViews;
   }

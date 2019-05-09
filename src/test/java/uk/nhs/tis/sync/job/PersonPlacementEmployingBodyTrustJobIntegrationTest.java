@@ -11,7 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class PersonPlacementEmployingBodyTrustJobIntegrationTest {
-  
+
   @Autowired
   PersonPlacementEmployingBodyTrustJob job;
 
@@ -29,7 +29,7 @@ public class PersonPlacementEmployingBodyTrustJobIntegrationTest {
   }
 
   @Test
-  public void testJobRun() throws Exception{
+  public void testJobRun() throws Exception {
     job.doPersonPlacementEmployingBodyFullSync();
     int timeout = 120;
     // every minute within timeout's time, check if the job has been done

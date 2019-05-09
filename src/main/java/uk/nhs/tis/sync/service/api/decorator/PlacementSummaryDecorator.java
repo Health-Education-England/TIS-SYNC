@@ -39,8 +39,8 @@ public class PlacementSummaryDecorator {
     });
 
     CompletableFuture<Void> futures = CompletableFuture.allOf(
-            decorateGradesOnPlacement(gradeIds, placementSummaryDTOS),
-            decorateSitesOnPlacement(siteIds, placementSummaryDTOS));
+        decorateGradesOnPlacement(gradeIds, placementSummaryDTOS),
+        decorateSitesOnPlacement(siteIds, placementSummaryDTOS));
 
     futures.join();
 

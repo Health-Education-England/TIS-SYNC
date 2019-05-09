@@ -52,8 +52,8 @@ public class PlacementViewDecorator {
     });
 
     CompletableFuture<Void> futures = CompletableFuture.allOf(
-            decorateGradesOnPlacement(gradeIds, placementViews),
-            decorateSitesOnPlacement(siteIds, placementViews));
+        decorateGradesOnPlacement(gradeIds, placementViews),
+        decorateSitesOnPlacement(siteIds, placementViews));
 
     decorateTraineeName(traineeIds, placementViews);
 
