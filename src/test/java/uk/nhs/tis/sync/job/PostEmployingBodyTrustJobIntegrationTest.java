@@ -1,8 +1,11 @@
 package uk.nhs.tis.sync.job;
 
-import com.transformuk.hee.tis.tcs.service.repository.PersonTrustRepository;
+import com.transformuk.hee.tis.tcs.service.repository.PostTrustRepository;
 import org.hamcrest.CoreMatchers;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,17 +13,17 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class PersonPlacementEmployingBodyTrustJobIntegrationTest {
+public class PostEmployingBodyTrustJobIntegrationTest {
   
   @Autowired
-  PersonPlacementEmployingBodyTrustJob job;
+  PostEmployingBodyTrustJob job;
 
   @Autowired
-  PersonTrustRepository repo;
+  private PostTrustRepository repo;
 
   @Before
   public void setUp() throws Exception {
-    repo.deleteAllInBatch();
+    job.deleteData();
     Assert.assertThat("should have prepared the empty synchronized database table", repo.findAll().size(), CoreMatchers.is(0));
   }
 
@@ -30,7 +33,7 @@ public class PersonPlacementEmployingBodyTrustJobIntegrationTest {
 
   @Test
   public void testJobRun() throws Exception{
-    job.doPersonPlacementEmployingBodyFullSync();
+    job.PostEmployingBodyTrustFullSync();
     int timeout = 120;
     // every minute within timeout's time, check if the job has been done
     for (int i = 0; i < timeout; i++) {
