@@ -1,8 +1,12 @@
 package uk.nhs.tis.sync.job;
 
+import com.transformuk.hee.tis.tcs.service.repository.PersonRepository;
 import com.transformuk.hee.tis.tcs.service.repository.PersonTrustRepository;
 import org.hamcrest.CoreMatchers;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,13 +14,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class PersonPlacementEmployingBodyTrustJobIntegrationTest {
+public class PersonPlacementTrainingBodyTrustJobIntegrationTest {
   
   @Autowired
-  PersonPlacementEmployingBodyTrustJob job;
+  PersonPlacementTrainingBodyTrustJob job;
 
   @Autowired
-  PersonTrustRepository repo;
+  private PersonTrustRepository repo;
 
   @Before
   public void setUp() throws Exception {
@@ -30,7 +34,7 @@ public class PersonPlacementEmployingBodyTrustJobIntegrationTest {
 
   @Test
   public void testJobRun() throws Exception{
-    job.doPersonPlacementEmployingBodyFullSync();
+    job.PersonPlacementTrainingBodyFullSync();
     // every minute within 15 mins, check if the job has been done
     for (int i = 0; i < 15; i++) {
       Thread.sleep(1 * 60 * 1000L);
@@ -42,5 +46,4 @@ public class PersonPlacementEmployingBodyTrustJobIntegrationTest {
     int size = repo.findAll().size();
     Assert.assertThat("should have data in the synchronized database table", size, CoreMatchers.not(0));
   }
-
 }
