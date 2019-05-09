@@ -31,8 +31,9 @@ public class PersonPlacementEmployingBodyTrustJobIntegrationTest {
   @Test
   public void testJobRun() throws Exception{
     job.doPersonPlacementEmployingBodyFullSync();
-    // every minute within 15 mins, check if the job has been done
-    for (int i = 0; i < 15; i++) {
+    int timeout = 120;
+    // every minute within timeout's time, check if the job has been done
+    for (int i = 0; i < timeout; i++) {
       Thread.sleep(1 * 60 * 1000L);
       if (!job.isCurrentlyRunning()) {
         break;

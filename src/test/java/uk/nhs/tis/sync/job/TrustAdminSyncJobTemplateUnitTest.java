@@ -44,8 +44,8 @@ public class TrustAdminSyncJobTemplateUnitTest {
     testObj.run();
 
     verify(entityManagerMock, times(100)).persist(any());
-    verify(entityManagerMock, times(1)).flush();
-    verify(entityTransactionMock, times(1)).commit();
+    verify(entityManagerMock, times(2)).flush();
+    verify(entityTransactionMock, times(2)).commit();
   }
 
   class TrustAdminSyncJobTemplateStub extends TrustAdminSyncJobTemplate<Object> {
