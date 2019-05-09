@@ -2,9 +2,9 @@ package uk.nhs.tis.sync.job.person;
 
 import com.google.common.base.Stopwatch;
 import com.transformuk.hee.tis.tcs.service.job.person.PersonView;
-import uk.nhs.hee.tis.sync.service.PersonElasticSearchService;
+import uk.nhs.tis.sync.service.PersonElasticSearchService;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
-import uk.nhs.hee.tis.sync.service.impl.PersonViewRowMapper;
+import uk.nhs.tis.sync.service.impl.PersonViewRowMapper;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.collections4.CollectionUtils;
 import org.elasticsearch.index.IndexNotFoundException;
@@ -64,7 +64,8 @@ public class PersonElasticSearchSyncJob {
     CompletableFuture.runAsync(this::run);
   }
 
-  @Scheduled(cron = "0 30 1 * * *")
+  //@Scheduled(cron = "0 30 1 * * *")
+  @Scheduled(cron = "0 42 9 * * *")
   @SchedulerLock(name = "personsElasticSearchScheduledTask", lockAtLeastFor = FIFTEEN_MIN, lockAtMostFor = FIFTEEN_MIN)
   @ManagedOperation(description = "Run sync of the persons es index")
   public void personElasticSearchSync() {

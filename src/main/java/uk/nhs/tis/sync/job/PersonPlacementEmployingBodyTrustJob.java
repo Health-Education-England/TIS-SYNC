@@ -6,7 +6,7 @@ import com.transformuk.hee.tis.tcs.service.repository.PersonRepository;
 import com.transformuk.hee.tis.tcs.service.repository.PersonTrustRepository;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
 import net.javacrumbs.shedlock.core.SchedulerLock;
-import uk.nhs.hee.tis.sync.model.EntityData;
+import uk.nhs.tis.sync.model.EntityData;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -17,8 +17,6 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.transformuk.hee.tis.tcs.service.model.Person;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;

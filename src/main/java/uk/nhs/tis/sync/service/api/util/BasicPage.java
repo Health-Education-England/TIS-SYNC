@@ -1,4 +1,4 @@
-package uk.nhs.hee.tis.sync.service.api.util;
+package uk.nhs.tis.sync.service.api.util;
 
 import org.springframework.data.domain.Pageable;
 

@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.nhs.hee.tis.sync.repository.PersonElasticSearchRepository;
+import uk.nhs.tis.sync.repository.PersonElasticSearchRepository;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
 
 @RunWith(SpringRunner.class)

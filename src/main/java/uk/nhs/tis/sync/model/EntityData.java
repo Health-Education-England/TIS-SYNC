@@ -1,4 +1,4 @@
-package uk.nhs.hee.tis.sync.model;
+package uk.nhs.tis.sync.model;
 
 public class EntityData {
   private Long entityId;

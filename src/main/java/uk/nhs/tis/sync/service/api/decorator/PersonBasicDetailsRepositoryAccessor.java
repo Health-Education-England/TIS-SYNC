@@ -1,4 +1,4 @@
-package uk.nhs.hee.tis.sync.service.api.decorator;
+package uk.nhs.tis.sync.service.api.decorator;
 
 import com.transformuk.hee.tis.tcs.service.model.PersonBasicDetails;
 import com.transformuk.hee.tis.tcs.service.repository.PersonBasicDetailsRepository;

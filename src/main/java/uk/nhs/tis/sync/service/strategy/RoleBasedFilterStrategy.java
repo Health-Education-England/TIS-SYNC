@@ -1,4 +1,4 @@
-package uk.nhs.hee.tis.sync.service.strategy;
+package uk.nhs.tis.sync.service.strategy;
 
 import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.index.query.BoolQueryBuilder;

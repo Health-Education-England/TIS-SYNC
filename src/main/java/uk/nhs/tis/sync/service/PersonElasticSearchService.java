@@ -1,20 +1,20 @@
-package uk.nhs.hee.tis.sync.service;
+package uk.nhs.tis.sync.service;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.transformuk.hee.tis.tcs.api.dto.PersonViewDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.PersonOwnerRule;
-import uk.nhs.hee.tis.sync.service.api.decorator.PersonViewDecorator;
-import uk.nhs.hee.tis.sync.service.api.util.BasicPage;
+import com.transformuk.hee.tis.tcs.service.repository.PersonElasticSearchRepository;
+import uk.nhs.tis.sync.service.api.decorator.PersonViewDecorator;
+import uk.nhs.tis.sync.service.api.util.BasicPage;
 import com.transformuk.hee.tis.tcs.service.job.person.PersonTrustDto;
 import com.transformuk.hee.tis.tcs.service.job.person.PersonView;
 import com.transformuk.hee.tis.tcs.service.model.ColumnFilter;
-import uk.nhs.hee.tis.sync.repository.PersonElasticSearchRepository;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
-import uk.nhs.hee.tis.sync.service.impl.PersonTrustRowMapper;
-import uk.nhs.hee.tis.sync.service.impl.PersonViewRowMapper;
-import uk.nhs.hee.tis.sync.service.strategy.RoleBasedFilterStrategy;
+import uk.nhs.tis.sync.service.impl.PersonTrustRowMapper;
+import uk.nhs.tis.sync.service.impl.PersonViewRowMapper;
+import uk.nhs.tis.sync.service.strategy.RoleBasedFilterStrategy;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;

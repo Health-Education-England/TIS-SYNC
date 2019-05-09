@@ -1,4 +1,4 @@
-package uk.nhs.hee.tis.sync.service.strategy;
+package uk.nhs.tis.sync.service.strategy;
 
 import com.transformuk.hee.tis.security.model.Trust;
 import com.transformuk.hee.tis.security.model.UserProfile;

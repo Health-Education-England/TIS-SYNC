@@ -1,4 +1,4 @@
-package uk.nhs.hee.tis.sync.service.impl;
+package uk.nhs.tis.sync.service.impl;
 
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import com.transformuk.hee.tis.tcs.service.job.person.PersonView;

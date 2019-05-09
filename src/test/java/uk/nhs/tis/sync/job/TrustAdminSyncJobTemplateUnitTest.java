@@ -1,11 +1,10 @@
 package uk.nhs.tis.sync.job;
 
 import org.assertj.core.util.Lists;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import uk.nhs.hee.tis.sync.model.EntityData;
+import uk.nhs.tis.sync.model.EntityData;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;

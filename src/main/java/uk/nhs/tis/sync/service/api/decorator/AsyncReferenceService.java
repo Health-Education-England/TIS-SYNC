@@ -1,4 +1,4 @@
-package uk.nhs.hee.tis.sync.service.api.decorator;
+package uk.nhs.tis.sync.service.api.decorator;
 
 import com.transformuk.hee.tis.reference.api.dto.GradeDTO;
 import com.transformuk.hee.tis.reference.api.dto.LocalOfficeDTO;

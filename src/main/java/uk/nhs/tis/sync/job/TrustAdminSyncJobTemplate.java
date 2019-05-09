@@ -3,7 +3,7 @@ package uk.nhs.tis.sync.job;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
 
-import uk.nhs.hee.tis.sync.model.EntityData;
+import uk.nhs.tis.sync.model.EntityData;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
