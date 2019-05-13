@@ -205,7 +205,7 @@ kc:
   timeout: ${KC_TIMEOUT}
 
 logging:
-  file: ${LOG_DIR:${HOME}}/tcs.log
+  file: ${LOG_DIR:${HOME}}/sync.log
     # level:
   # com.transformuk.hee.tis.tcs: DEBUG
 

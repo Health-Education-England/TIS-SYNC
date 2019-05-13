@@ -18,7 +18,7 @@ spring:
       cluster-name: docker-cluster
 
 logging:
-    file: ${LOG_DIR:${HOME}}/tcs.log
+    file: ${LOG_DIR:${HOME}}/sync.log
 
 application:
 
