@@ -1,0 +1,21 @@
+# ===================================================================
+# Spring Boot configuration.
+#
+# This configuration assumes that tests are run with the 'local' profile.
+#
+# More information on profiles: https://jhipster.github.io/profiles/
+# More information on configuration properties: https://jhipster.github.io/common-application-properties/
+# ===================================================================
+
+application:
+  cron:
+    personPlacementEmployingBodyJob: ${APP_CRON_PERSON_PLACEMENT_EMPLOYING_BODY:0 10 0 * * *}
+    personPlacementTrainingBodyTrustJob: ${APP_CRON_PERSON_PLACEMENT_TRAINING_BODY:0 30 0 * * *}
+    postEmployingBodyTrustJob: ${APP_CRON_POST_EMPLOYING_BODY_TRUST:0 10 1 * * *}
+    postTrainingBodyTrustJob: ${APP_CRON_POST_TRAINING_BODY:0 20 1 * * *}
+    personElasticSearchJob: ${APP_CRON_PERSON_ELASTIC_SEARCH:0 30 1 * * *}
+
+logging:
+  file: ${LOG_DIR:.}/sync.log
+  level:
+    com.transformuk.hee.tis.sync: DEBUG
