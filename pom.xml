@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>uk.nhs.tis</groupId>
-	<artifactId>TIS-SYNC</artifactId>
-	<version>0.0.2</version>
+	<artifactId>sync</artifactId>
+	<version>0.0.3</version>
   <packaging>jar</packaging>
-	<name>TIS-SYNC</name>
+	<name>sync</name>
 	<description>Separate Microservice for synchronisation</description>
 
 	<properties>
