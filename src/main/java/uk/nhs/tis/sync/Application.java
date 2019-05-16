@@ -27,7 +27,7 @@ import java.net.UnknownHostException;
     "uk.nhs.hee.tis.sync",
     "com.transformuk.hee.tis.reference.client"})
 @EnableJpaRepositories("com.transformuk.hee.tis.tcs.service.repository")
-@EnableElasticsearchRepositories("uk.nhs.hee.tis.sync.repository")
+@EnableElasticsearchRepositories("com.transformuk.hee.tis.tcs.service.repository")
 @EnableWebMvc
 @EnableSpringDataWebSupport
 @PropertySource({"classpath:/config/application.properties",
