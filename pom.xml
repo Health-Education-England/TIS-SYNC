@@ -10,8 +10,8 @@
 	</parent>
 	<groupId>uk.nhs.tis</groupId>
 	<artifactId>TIS-SYNC</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
-  <packaging>pom</packaging>
+	<version>0.0.2</version>
+  <packaging>jar</packaging>
 	<name>TIS-SYNC</name>
 	<description>Separate Microservice for synchronisation</description>
 
