@@ -66,7 +66,7 @@ node {
               env.IMAGE_NAME = imageName
           }
 
-          sh "ansible-playbook -i $env.DEVOPS_BASE/ansible/inventory/dev $env.DEVOPS_BASE/ansible/tasks/spring-boot-build.yml"
+          sh "ansible-playbook -i $env.DEVOPS_BASE/ansible/inventory/dev $env.DEVOPS_BASE/ansible/tasks/spring-boot-build.yml -vvvvv"
 
           println "[Jenkinsfile INFO] Stage Dockerize completed..."
         }
