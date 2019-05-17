@@ -22,9 +22,7 @@ import java.net.UnknownHostException;
 @SpringBootApplication
 @EntityScan(basePackages = {"com.transformuk.hee.tis.tcs.service.model"})
 @ComponentScan(basePackages = {"com.transformuk.hee.tis.tcs.service",
-    "com.transformuk.hee.tis.tcs.service.service.impl",
-    "uk.nhs.tis.sync",
-    "com.transformuk.hee.tis.reference.client"})
+    "uk.nhs.tis.sync", "com.transformuk.hee.tis.reference.client"})
 @EnableJpaRepositories("com.transformuk.hee.tis.tcs.service.repository")
 @EnableElasticsearchRepositories("com.transformuk.hee.tis.tcs.service.repository")
 @EnableWebMvc
