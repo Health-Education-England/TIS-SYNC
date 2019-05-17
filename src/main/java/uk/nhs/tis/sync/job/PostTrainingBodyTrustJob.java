@@ -42,7 +42,7 @@ public class PostTrainingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTrus
   private SqlQuerySupplier sqlQuerySupplier;
 
 
-  @Scheduled(cron = "0 20 1 * * *")
+  @Scheduled(cron = "${application.cron.postTrainingBodyTrustJob}")
   @SchedulerLock(name = "postTrustTrainingBodyScheduledTask", lockAtLeastFor = FIFTEEN_MIN, lockAtMostFor = FIFTEEN_MIN)
   @ManagedOperation(description = "Run sync of the PostTrust table with Post to Training Body Trust")
   public void PostTrainingBodyTrustFullSync() {

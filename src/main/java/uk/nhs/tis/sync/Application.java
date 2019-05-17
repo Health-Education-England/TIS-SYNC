@@ -23,20 +23,16 @@ import java.net.UnknownHostException;
 @EntityScan(basePackages = {"com.transformuk.hee.tis.tcs.service.model"})
 @ComponentScan(basePackages = {"com.transformuk.hee.tis.tcs.service",
     "com.transformuk.hee.tis.tcs.service.service.impl",
-    "uk.nhs.tis.sync", "uk.nhs.hee.tis.sync.service",
-    "uk.nhs.hee.tis.sync",
+    "uk.nhs.tis.sync",
     "com.transformuk.hee.tis.reference.client"})
 @EnableJpaRepositories("com.transformuk.hee.tis.tcs.service.repository")
-@EnableElasticsearchRepositories("uk.nhs.hee.tis.sync.repository")
+@EnableElasticsearchRepositories("com.transformuk.hee.tis.tcs.service.repository")
 @EnableWebMvc
 @EnableSpringDataWebSupport
 @PropertySource({"classpath:/config/application.properties",
-    //"classpath:/config/profileclientapplication.properties",
     "classpath:/config/referenceclientapplication.properties",
-    //"classpath:/config/tcsclientapplication.properties"
 })
 @EnableConfigurationProperties({ApplicationProperties.class})
-//@EnableAutoConfiguration
 @EnableAutoConfiguration()
 public class Application {
   private static final Logger log = LoggerFactory.getLogger(Application.class);

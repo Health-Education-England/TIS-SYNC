@@ -41,7 +41,7 @@ public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTempla
   @Autowired
   private SqlQuerySupplier sqlQuerySupplier;
 
-  @Scheduled(cron = "0 30 0 * * *")
+  @Scheduled(cron = "${application.cron.personPlacementTrainingBodyTrustJob}")
   @SchedulerLock(name = "personTrustTrainingBodyScheduledTask", lockAtLeastFor = FIFTEEN_MIN, lockAtMostFor = FIFTEEN_MIN)
   @ManagedOperation(description = "Run sync of the PersonTrust table with Person to Placement TrainingBody")
   public void PersonPlacementTrainingBodyFullSync() {
