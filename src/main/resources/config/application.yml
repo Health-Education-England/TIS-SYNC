@@ -133,7 +133,7 @@ server:
     session:
       cookie:
         http-only: true
-    context-path: /tcs
+    context-path: /sync
 info:
   project:
     version: #project.version#
@@ -169,7 +169,7 @@ jhipster:
         token-validity-in-seconds: 86400
         token-validity-in-seconds-for-remember-me: 2592000
   mail: # specific JHipster mail property, for standard properties see MailProperties
-    from: tcs@localhost
+    from: sync@localhost
     base-url: http://127.0.0.1:8093
   logging:
     logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
@@ -190,9 +190,9 @@ jhipster:
 
 application:
   cron:
-    personPlacementEmployingBodyJob: ${APP_CRON_PERSON_PLACEMENT_EMPLOYING_BODY:0 10 0 * * *}
+    personPlacementEmployingBodyTrustJob: ${APP_CRON_PERSON_PLACEMENT_EMPLOYING_BODY:0 10 0 * * *}
     personPlacementTrainingBodyTrustJob: ${APP_CRON_PERSON_PLACEMENT_TRAINING_BODY:0 30 0 * * *}
-    postEmployingBodyTrustJob: ${APP_CRON_POST_EMPLOYING_BODY_TRUST:0 10 1 * * *}
+    postEmployingBodyTrustJob: ${APP_CRON_POST_EMPLOYING_BODY:0 10 1 * * *}
     postTrainingBodyTrustJob: ${APP_CRON_POST_TRAINING_BODY:0 20 1 * * *}
     personElasticSearchJob: ${APP_CRON_PERSON_ELASTIC_SEARCH:0 30 1 * * *}
 

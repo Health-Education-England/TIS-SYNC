@@ -9,7 +9,7 @@
 
 application:
   cron:
-    personPlacementEmployingBodyJob: ${APP_CRON_PERSON_PLACEMENT_EMPLOYING_BODY:0 10 0 * * *}
+    personPlacementEmployingBodyTrustJob: ${APP_CRON_PERSON_PLACEMENT_EMPLOYING_BODY:0 10 0 * * *}
     personPlacementTrainingBodyTrustJob: ${APP_CRON_PERSON_PLACEMENT_TRAINING_BODY:0 30 0 * * *}
     postEmployingBodyTrustJob: ${APP_CRON_POST_EMPLOYING_BODY_TRUST:0 10 1 * * *}
     postTrainingBodyTrustJob: ${APP_CRON_POST_TRAINING_BODY:0 20 1 * * *}
