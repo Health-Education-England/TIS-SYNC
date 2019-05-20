@@ -19,7 +19,7 @@ management:
     enabled-by-default: true
     web:
       exposure:
-        include: ["health"]
+        include: ["health","metrics"]
     jmx:
       exposure:
         include: []
@@ -190,11 +190,11 @@ jhipster:
 
 application:
   cron:
-    personPlacementEmployingBodyTrustJob: ${APP_CRON_PERSON_PLACEMENT_EMPLOYING_BODY:0 10 0 * * *}
-    personPlacementTrainingBodyTrustJob: ${APP_CRON_PERSON_PLACEMENT_TRAINING_BODY:0 30 0 * * *}
-    postEmployingBodyTrustJob: ${APP_CRON_POST_EMPLOYING_BODY:0 10 1 * * *}
-    postTrainingBodyTrustJob: ${APP_CRON_POST_TRAINING_BODY:0 20 1 * * *}
-    personElasticSearchJob: ${APP_CRON_PERSON_ELASTIC_SEARCH:0 30 1 * * *}
+    personPlacementEmployingBodyTrustJob: ${APP_CRON_PERSON_PLACEMENT_EMPLOYING_BODY:0 09 0 * * *}
+    personPlacementTrainingBodyTrustJob: ${APP_CRON_PERSON_PLACEMENT_TRAINING_BODY:0 29 0 * * *}
+    postEmployingBodyTrustJob: ${APP_CRON_POST_EMPLOYING_BODY:0 09 1 * * *}
+    postTrainingBodyTrustJob: ${APP_CRON_POST_TRAINING_BODY:0 19 1 * * *}
+    personElasticSearchJob: ${APP_CRON_PERSON_ELASTIC_SEARCH:0 29 1 * * *}
 
 azure:
   accountName: ${CLOUD_BLOB_ACCOUNT_NAME}
