@@ -49,6 +49,8 @@ node {
           }
         }
 
+        if (env.BRANCH_NAME == "master") {
+
         milestone 2
 
         stage('Dockerise') {
@@ -64,12 +66,10 @@ node {
               env.IMAGE_NAME = imageName
           }
 
-          sh "ansible-playbook -i $env.DEVOPS_BASE/ansible/inventory/dev $env.DEVOPS_BASE/ansible/tasks/spring-boot-build.yml"
+          sh "ansible-playbook -i $env.DEVOPS_BASE/ansible/inventory/dev $env.DEVOPS_BASE/ansible/tasks/spring-boot-build.yml -vvvvv"
 
           println "[Jenkinsfile INFO] Stage Dockerize completed..."
         }
-
-        if (env.BRANCH_NAME == "master") {
 
           milestone 3
 
@@ -84,6 +84,14 @@ node {
 
           milestone 4
 
+          stage('Approval') {
+            timeout(time:5, unit:'HOURS') {
+              input message: 'Deploy to stage?', ok: 'Deploy!'
+            }
+          }
+
+          milestone 5
+
           stage('Staging') {
             node {
               println "[Jenkinsfile INFO] Stage Deploy starting..."
@@ -92,7 +100,7 @@ node {
             }
           }
 
-          milestone 5
+          milestone 6
 
           stage('Approval') {
             timeout(time:5, unit:'HOURS') {
@@ -100,7 +108,7 @@ node {
             }
           }
 
-          milestone 6
+          milestone 7
 
           stage('Production') {
             node {
