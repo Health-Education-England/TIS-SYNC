@@ -1,0 +1,54 @@
+# ===================================================================
+# Spring Boot configuration for the "prod" profile.
+#
+# This configuration overrides the application.yml file.
+#
+# More information on profiles: https://jhipster.github.io/profiles/
+# More information on configuration properties: https://jhipster.github.io/common-application-properties/
+# ===================================================================
+
+# ===================================================================
+# Standard Spring Boot properties.
+# Full reference is available at:
+# http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+# ===================================================================
+
+spring:
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
+  jpa:
+    show-sql: false
+  datasource:
+    url: jdbc:mysql://${DBHOST}:${DBPORT}/${DBNAME}?useUnicode=true&characterEncoding=utf8&useSSL=${USE_SSL}
+    username: ${DBUSER}
+    password: ${DBPASSWORD}
+    flyway:
+      password: ${DBPASSWORD}
+      schemas: ${DBNAME}
+  cache:
+    caffeine.spec: maximumSize=50,expireAfterAccess=5m
+  elasticsearch:
+    rest:
+      uris: ${ES_URLS}
+  data:
+    elasticsearch:
+      cluster-nodes: ${ES_CLUSTER_NODE_URLS}
+      cluster-name: ${ES_CLUSTER_NAME}
+
+jhipster:
+  http:
+    cache: # Used by the CachingHttpHeadersFilter
+      timeToLiveInDays: 1461
+  security:
+    authentication:
+      jwt:
+        secret: 20fb0c95203947e254dd09243256257d9abc1f9a
+  mail: # specific JHipster mail property, for standard properties see MailProperties
+    base-url: http://my-server-url-to-change # Modify according to your server's URL
+
+application:
+
+enable.es.search: ${ENABLE_ES_SEARCH}
