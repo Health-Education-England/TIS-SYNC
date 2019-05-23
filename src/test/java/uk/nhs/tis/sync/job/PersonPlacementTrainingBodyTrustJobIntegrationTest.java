@@ -34,15 +34,16 @@ public class PersonPlacementTrainingBodyTrustJobIntegrationTest {
   @Test
   public void testJobRun() throws Exception {
     job.PersonPlacementTrainingBodyFullSync();
-    int timeout = 120;
-    // every minute within timeout's time, check if the job has been done
-    for (int i = 0; i < timeout; i++) {
-      Thread.sleep(1 * 60 * 1000L);
-      if (!job.isCurrentlyRunning()) {
-        break;
-      }
+    int maxLoops = 1440, loops = 0;
+    //Loop while the job is running up to 2 hours
+    Thread.sleep(5 * 1000L);
+    while (job.isCurrentlyRunning() && loops <= maxLoops) {
+      System.out.println("Job running");
+      Thread.sleep(5 * 1000L);
+      loops++;
     }
     Assert.assertThat("should the sync job is not currently running", job.isCurrentlyRunning(), CoreMatchers.not(true));
+    Assert.assertThat("then the sync job should not have timed out", loops > maxLoops, CoreMatchers.not(true));
     int size = repo.findAll().size();
     Assert.assertThat("should have data in the synchronized database table", size, CoreMatchers.not(0));
   }

@@ -33,7 +33,7 @@ management:
 spring:
   main.allow-bean-definition-overriding: true
   application:
-    name: tissync
+    name: sync
   profiles:
     # The commented value for `active` can be replaced with valid Spring profiles to load.
     # Otherwise, it will be filled in by maven when building the WAR file
@@ -94,7 +94,7 @@ spring:
     sql-migration-prefix: V
     url: ${spring.datasource.url}
     user: ${spring.datasource.username}
-    enabled: true
+    enabled: false
   messages:
     basename: i18n/messages
     cache-duration: 1s

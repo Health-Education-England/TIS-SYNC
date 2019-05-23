@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * Its purpose is to clear down the PostTrust table then populate it with post ids and the linked employing body trust id
  */
 @Component
-@ManagedResource(objectName = "tcs.mbean:name=PostEmployingBodyTrustJob",
+@ManagedResource(objectName = "sync.mbean:name=PostEmployingBodyTrustJob",
     description = "Service that clears the PersonTrust table and links Post with Employing Body Trusts")
 public class PostEmployingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTrust> {
 

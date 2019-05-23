@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * Its purpose is to populate the PostTrust table with post ids and the linked training body trust id
  */
 @Component
-@ManagedResource(objectName = "tcs.mbean:name=PostTrainingBodyTrustJob",
+@ManagedResource(objectName = "sync.mbean:name=PostTrainingBodyTrustJob",
     description = "Service that links Post with Training Body Trusts")
 public class PostTrainingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTrust> {
 

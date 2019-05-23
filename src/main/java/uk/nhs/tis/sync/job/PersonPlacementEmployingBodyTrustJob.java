@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
-@ManagedResource(objectName = "tcs.mbean:name=PersonPlacementEmployingBodyJob", description = "Service that clears the PersonTrust table and links Person with Placement EmployingBody(Trust)")
+@ManagedResource(objectName = "sync.mbean:name=PersonPlacementEmployingBodyJob", description = "Service that clears the PersonTrust table and links Person with Placement EmployingBody(Trust)")
 @SuppressWarnings("unchecked")
 public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTemplate<PersonTrust> {
 

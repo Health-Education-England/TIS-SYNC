@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
-@ManagedResource(objectName = "tcs.mbean:name=PersonPlacementTrainingBodyTrustJob",
+@ManagedResource(objectName = "sync.mbean:name=PersonPlacementTrainingBodyTrustJob",
     description = "Service that clears the PersonTrust table and links Person with Placement TrainingBody (Trusts)")
 public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTemplate<PersonTrust> {
 

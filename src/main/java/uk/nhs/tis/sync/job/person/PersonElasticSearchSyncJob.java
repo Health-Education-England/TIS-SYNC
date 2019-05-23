@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Component
-@ManagedResource(objectName = "tcs.mbean:name=PersonElasticSearchJob",
+@ManagedResource(objectName = "sync.mbean:name=PersonElasticSearchJob",
     description = "Service that clears the persons index in ES and repopulates the data")
 public class PersonElasticSearchSyncJob {
 
