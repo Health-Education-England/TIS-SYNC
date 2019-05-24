@@ -190,11 +190,11 @@ jhipster:
 
 application:
   cron:
-    personPlacementEmployingBodyTrustJob: ${APP_CRON_PERSON_PLACEMENT_EMPLOYING_BODY:0 09 0 * * *}
-    personPlacementTrainingBodyTrustJob: ${APP_CRON_PERSON_PLACEMENT_TRAINING_BODY:0 29 0 * * *}
-    postEmployingBodyTrustJob: ${APP_CRON_POST_EMPLOYING_BODY:0 09 1 * * *}
-    postTrainingBodyTrustJob: ${APP_CRON_POST_TRAINING_BODY:0 19 1 * * *}
-    personElasticSearchJob: ${APP_CRON_PERSON_ELASTIC_SEARCH:0 29 1 * * *}
+    personPlacementEmployingBodyTrustJob: ${APPLICATION_CRON_PERSONPLACEMENTEMPLOYINGBODYTRUSTJOB:0 09 0 * * *}
+    personPlacementTrainingBodyTrustJob: ${APPLICATION_CRON_PERSONPLACEMENTTRAININGBODYTRUSTJOB:0 29 0 * * *}
+    postEmployingBodyTrustJob: ${APPLICATION_CRON_POSTEMPLOYINGBODYTRUSTJOB:0 09 1 * * *}
+    postTrainingBodyTrustJob: ${APPLICATION_CRON_POSTTRAININGBODYTRUSTJOB:0 19 1 * * *}
+    personElasticSearchJob: ${APPLICATION_CRON_PERSONELASTICSEARCHJOB:0 29 1 * * *}
 
 azure:
   accountName: ${CLOUD_BLOB_ACCOUNT_NAME}
