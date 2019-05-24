@@ -15,7 +15,7 @@ import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = Application.class, webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@SpringBootTest
 //@Sql(scripts = {"/scripts/posts.sql","/scripts/personRows.sql","/scripts/placements.sql"})
 //@Sql(scripts = {"/scripts/deletePlacements.sql","/scripts/deletePersonRows.sql","/scripts/deletePosts.sql"}, executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 public class PersonPlacementTrainingBodyTrustJobIntegrationTest {
