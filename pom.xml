@@ -79,7 +79,7 @@
     <dependency>
       <groupId>uk.nhs.tis</groupId>
       <artifactId>tcs-persistence</artifactId>
-      <version>0.0.1</version>
+      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>com.transformuk.hee</groupId>
@@ -103,16 +103,21 @@
       <version>3.21.0-GA</version>
     </dependency>
 
+    <dependency>
+      <groupId>net.javacrumbs.shedlock</groupId>
+      <artifactId>shedlock-spring</artifactId>
+      <version>2.2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>net.javacrumbs.shedlock</groupId>
+      <artifactId>shedlock-provider-jdbc-template</artifactId>
+      <version>2.5.0</version>
+    </dependency>
     <!-- Dependecies to try removing -->
     <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
       <version>2.6</version>
-    </dependency>
-    <dependency>
-      <groupId>net.javacrumbs.shedlock</groupId>
-      <artifactId>shedlock-spring</artifactId>
-      <version>2.2.0</version>
     </dependency>
     <!-- Spring Depenndencies -->
     <dependency>
