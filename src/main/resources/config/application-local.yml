@@ -16,11 +16,11 @@ spring:
     elasticsearch:
       cluster-nodes: localhost:9300
       cluster-name: docker-cluster
+  jpa:
+    show_sql: false
 
 logging:
   file: ${LOG_DIR:${HOME}}/sync.log
-  level:
-    org.hibernate.engine.internal: WARN
 
 application:
 
