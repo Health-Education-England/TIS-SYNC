@@ -5,23 +5,21 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.transformuk.hee.tis.tcs.api.dto.PersonViewDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.PersonOwnerRule;
+import com.transformuk.hee.tis.tcs.api.enumeration.ProgrammeMembershipStatus;
+import com.transformuk.hee.tis.tcs.service.job.person.ProgrammeMembershipDto;
 import com.transformuk.hee.tis.tcs.service.repository.PersonElasticSearchRepository;
+import org.elasticsearch.index.query.*;
 import uk.nhs.tis.sync.service.api.decorator.PersonViewDecorator;
-import uk.nhs.tis.sync.service.api.util.BasicPage;
 import com.transformuk.hee.tis.tcs.service.job.person.PersonTrustDto;
 import com.transformuk.hee.tis.tcs.service.job.person.PersonView;
-import com.transformuk.hee.tis.tcs.service.model.ColumnFilter;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
 import uk.nhs.tis.sync.service.impl.PersonTrustRowMapper;
 import uk.nhs.tis.sync.service.impl.PersonViewRowMapper;
+import uk.nhs.tis.sync.service.impl.ProgrammeMembershipRowMapper;
 import uk.nhs.tis.sync.service.strategy.RoleBasedFilterStrategy;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MatchQueryBuilder;
-import org.elasticsearch.index.query.TermQueryBuilder;
-import org.elasticsearch.index.query.WildcardQueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,12 +32,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -86,53 +79,11 @@ public class PersonElasticSearchService {
     }
 
     Page<PersonView> result = personElasticSearchRepository.search(query, pageable);
-    List<PersonViewDTO> personViewDTOS = convertPersonViewToDTO(result.getContent());
+    List<PersonViewDTO> personViewDTOS = convertPersonViewToDTO(result.getContent(), null);
     List<PersonViewDTO> decoratedPersonViews = personViewDecorator.decorate(personViewDTOS);
     return new PageImpl<>(decoratedPersonViews, pageable, result.getTotalElements());
   }
 
-  public BasicPage<PersonViewDTO> searchForPage(String searchQuery, List<ColumnFilter> columnFilters, Pageable pageable) {
-
-    try {
-      // iterate over the column filters, if they have multiple values per filter, place a should between then
-      // for each column filter set, place a must between them
-      BoolQueryBuilder mustBetweenDifferentColumnFilters = new BoolQueryBuilder();
-
-      Set<String> appliedFilters = applyRoleBasedFilters(mustBetweenDifferentColumnFilters);
-      if (CollectionUtils.isNotEmpty(columnFilters)) {
-        for (ColumnFilter columnFilter : columnFilters) {
-          BoolQueryBuilder shouldBetweenSameColumnFilter = new BoolQueryBuilder();
-          for (Object value : columnFilter.getValues()) {
-            if (appliedFilters.contains(columnFilter.getName())) { // skip if we've already applied this type of filter via role based filters
-              continue;
-            }
-            //because the role column is a comma separated list of roles, we need to do a wildcard 'like' search
-            if (StringUtils.equals(columnFilter.getName(), "role")) {
-              shouldBetweenSameColumnFilter.should(new WildcardQueryBuilder(columnFilter.getName(), "*" + value.toString() + "*"));
-            } else {
-              shouldBetweenSameColumnFilter.should(new MatchQueryBuilder(columnFilter.getName(), value.toString()));
-            }
-          }
-          mustBetweenDifferentColumnFilters.must(shouldBetweenSameColumnFilter);
-        }
-      }
-
-      //apply free text search on the searchable columns
-      BoolQueryBuilder shouldQuery = applyTextBasedSearchQuery(searchQuery);
-
-      // add the free text query with a must to the column filters query
-      BoolQueryBuilder fullQuery = mustBetweenDifferentColumnFilters.must(shouldQuery);
-
-//    LOG.info("Query {}", fullQuery.toString());
-      pageable = replaceSortByIdHack(pageable);
-
-      Page<PersonView> result = personElasticSearchRepository.search(fullQuery, pageable);
-      return new BasicPage<>(convertPersonViewToDTO(result.getContent()), pageable, result.hasNext());
-    } catch (RuntimeException re) {
-      LOG.error("An exception occurred while attempting to do an ES search", re);
-      throw re;
-    }
-  }
 
   private Pageable replaceSortByIdHack(Pageable pageable) {
     //hack as we dont sort by id but rather personId - this can be removed once we remove the duplicate trainees from the
@@ -241,6 +192,7 @@ public class PersonElasticSearchService {
     List<PersonView> queryResult = namedParameterJdbcTemplate.query(query, paramSource, new PersonViewRowMapper());
     if (CollectionUtils.isNotEmpty(queryResult)) {
       updateDocumentWithTrustData(queryResult);
+      updateDocumentWithProgrammeMembershipData(queryResult);
       deletePersonDocument(personId);
       saveDocuments(queryResult);
     } else {
@@ -256,12 +208,20 @@ public class PersonElasticSearchService {
   }
 
   public void updatePersonDocumentForProgramme(Long programmeId) {
-    String query = getQuery()
-        .replace("WHERECLAUSE", "WHERE prg.id=:id");
+    String programmeMembershipQuery = sqlQuerySupplier.getQuery(SqlQuerySupplier.PROGRAMME_MEMBERSHIP_VIEW)
+      .replace("WHERECLAUSE", "where programmeId=:programmeId");
 
-    List<PersonView> personViews = runQuery(query, programmeId);
-    updateDocumentWithTrustData(personViews);
-    saveDocuments(personViews);
+    MapSqlParameterSource paramSource = new MapSqlParameterSource();
+    paramSource.addValue("programmeId", programmeId);
+    List<ProgrammeMembershipDto> programmeMembershipDtos =
+      namedParameterJdbcTemplate.query(programmeMembershipQuery, paramSource, new ProgrammeMembershipRowMapper());
+    if (programmeMembershipDtos.size() == 0)
+      return;
+
+    Set<Long> personIds = programmeMembershipDtos.stream().map(ProgrammeMembershipDto::getPersonId).collect(Collectors.toSet());
+    for(Long personId: personIds) {
+      updatePersonDocument(personId);
+    }
   }
 
 
@@ -271,6 +231,7 @@ public class PersonElasticSearchService {
 
     List<PersonView> personViews = runQuery(query, specialtyId);
     updateDocumentWithTrustData(personViews);
+    updateDocumentWithProgrammeMembershipData(personViews);
     saveDocuments(personViews);
   }
 
@@ -282,6 +243,7 @@ public class PersonElasticSearchService {
   private String getQuery() {
     String query = sqlQuerySupplier.getQuery(SqlQuerySupplier.PERSON_VIEW);
     return query.replace("TRUST_JOIN", "")
+        .replace("PROGRAMME_MEMBERSHIP_JOIN", "")
         .replace("ORDERBYCLAUSE", "ORDER BY id DESC")
         .replace("LIMITCLAUSE", "");
   }
@@ -296,6 +258,38 @@ public class PersonElasticSearchService {
     if (CollectionUtils.isNotEmpty(queryResult)) {
       queryResult.stream().forEach(pv -> pv.setFullName(pv.getForenames() + " " + pv.getSurname()));
       personElasticSearchRepository.saveAll(queryResult);
+    }
+  }
+
+  public void updateDocumentWithProgrammeMembershipData(List<PersonView> queryResult) {
+    if (CollectionUtils.isNotEmpty(queryResult)) {
+      Set<Long> personIds = queryResult.stream().map(PersonView::getPersonId).collect(Collectors.toSet());
+
+      String programmeMembershipQuery = sqlQuerySupplier.getQuery(SqlQuerySupplier.PROGRAMME_MEMBERSHIP_VIEW)
+        .replace("WHERECLAUSE", "where personId IN (:personIds)");
+
+      List<ProgrammeMembershipDto> programmeMembershipDtos = namedParameterJdbcTemplate
+        .query(programmeMembershipQuery,
+          new MapSqlParameterSource("personIds", personIds),
+          new ProgrammeMembershipRowMapper());
+
+      Map<Long, Set<ProgrammeMembershipDto>> personIdToProgrammeMembershipDtos = new HashMap<>();
+
+      for (ProgrammeMembershipDto programmeMembershipDto : programmeMembershipDtos) {
+        Long personId = programmeMembershipDto.getPersonId();
+        if (!personIdToProgrammeMembershipDtos.containsKey(personId)) {
+          personIdToProgrammeMembershipDtos.put(personId, Sets.newHashSet());
+        }
+        personIdToProgrammeMembershipDtos.get(personId).add(programmeMembershipDto);
+      }
+
+      queryResult.stream().forEach(pv -> {
+        if (personIdToProgrammeMembershipDtos.containsKey(pv.getPersonId())) {
+          pv.setProgrammeMemberships(personIdToProgrammeMembershipDtos.get(pv.getPersonId()));
+        } else {
+          pv.setProgrammeMemberships(Sets.newHashSet());
+        }
+      });
     }
   }
 
@@ -327,7 +321,11 @@ public class PersonElasticSearchService {
     }
   }
 
-  private List<PersonViewDTO> convertPersonViewToDTO(List<PersonView> content) {
+  private List<PersonViewDTO> convertPersonViewToDTO(List<PersonView> content, ProgrammeMembershipStatus programmeMembershipStatus) {
+    if (programmeMembershipStatus == null) {
+      programmeMembershipStatus = ProgrammeMembershipStatus.CURRENT;
+    }
+    final ProgrammeMembershipStatus programmeMembershipStatusFilter = programmeMembershipStatus;
     return content.stream().map(pv -> {
       PersonViewDTO personViewDTO = new PersonViewDTO();
       personViewDTO.setId(pv.getPersonId());
@@ -337,10 +335,6 @@ public class PersonElasticSearchService {
       personViewDTO.setGmcNumber(pv.getGmcNumber());
       personViewDTO.setGdcNumber(pv.getGdcNumber());
       personViewDTO.setPublicHealthNumber(pv.getPublicHealthNumber());
-      personViewDTO.setProgrammeId(pv.getProgrammeId());
-      personViewDTO.setProgrammeName(pv.getProgrammeName());
-      personViewDTO.setProgrammeNumber(pv.getProgrammeNumber());
-      personViewDTO.setTrainingNumber(pv.getTrainingNumber());
       personViewDTO.setGradeId(pv.getGradeId());
       personViewDTO.setGradeAbbreviation(pv.getGradeAbbreviation());
       personViewDTO.setGradeName(pv.getGradeName());
@@ -356,6 +350,20 @@ public class PersonElasticSearchService {
         personViewDTO.setCurrentOwnerRule(PersonOwnerRule.valueOf(pv.getCurrentOwnerRule()));
       }
 
+      // filter programmeMembership status
+
+      Set<ProgrammeMembershipDto> programmeMembershipDtos = pv.getProgrammeMemberships();
+      if (!programmeMembershipDtos.isEmpty()) {
+        for (ProgrammeMembershipDto membershipDto: programmeMembershipDtos) {
+          if (Objects.equals(membershipDto.getProgrammeMembershipStatus(), programmeMembershipStatusFilter)) {
+            personViewDTO.setProgrammeId(membershipDto.getProgrammeId());
+            personViewDTO.setProgrammeName(membershipDto.getProgrammeName());
+            personViewDTO.setProgrammeNumber(membershipDto.getProgrammeNumber());
+            personViewDTO.setTrainingNumber(membershipDto.getTrainingNumber());
+            personViewDTO.setProgrammeMembershipStatus(programmeMembershipStatusFilter);
+          }
+        }
+      }
       return personViewDTO;
     }).collect(Collectors.toList());
   }
