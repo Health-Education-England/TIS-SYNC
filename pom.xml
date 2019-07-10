@@ -91,6 +91,11 @@
       <artifactId>commons-collections4</artifactId>
       <version>4.0</version>
     </dependency>
+    <dependency>
+      <groupId>com.transformuk.hee</groupId>
+      <artifactId>tis-security-jwt</artifactId>
+      <version>5.0.0</version>
+    </dependency>
 
     <!-- Hibernate -->
     <dependency>

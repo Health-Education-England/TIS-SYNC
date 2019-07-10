@@ -6,20 +6,24 @@ import com.google.common.collect.Sets;
 import com.transformuk.hee.tis.tcs.api.dto.PersonViewDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.PersonOwnerRule;
 import com.transformuk.hee.tis.tcs.api.enumeration.ProgrammeMembershipStatus;
-import com.transformuk.hee.tis.tcs.service.job.person.ProgrammeMembershipDto;
-import com.transformuk.hee.tis.tcs.service.repository.PersonElasticSearchRepository;
-import org.elasticsearch.index.query.*;
-import uk.nhs.tis.sync.service.api.decorator.PersonViewDecorator;
 import com.transformuk.hee.tis.tcs.service.job.person.PersonTrustDto;
 import com.transformuk.hee.tis.tcs.service.job.person.PersonView;
+import com.transformuk.hee.tis.tcs.service.job.person.ProgrammeMembershipDto;
+import com.transformuk.hee.tis.tcs.service.model.ColumnFilter;
+import com.transformuk.hee.tis.tcs.service.repository.PersonElasticSearchRepository;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
+import uk.nhs.tis.sync.service.api.decorator.PersonViewDecorator;
+import uk.nhs.tis.sync.service.api.util.BasicPage;
+import uk.nhs.tis.sync.service.impl.PermissionService;
 import uk.nhs.tis.sync.service.impl.PersonTrustRowMapper;
 import uk.nhs.tis.sync.service.impl.PersonViewRowMapper;
 import uk.nhs.tis.sync.service.impl.ProgrammeMembershipRowMapper;
 import uk.nhs.tis.sync.service.strategy.RoleBasedFilterStrategy;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.collect.Tuple;
+import org.elasticsearch.index.query.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +38,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.elasticsearch.index.query.QueryBuilders.nestedQuery;
 
 @Component
 public class PersonElasticSearchService {
@@ -52,6 +58,8 @@ public class PersonElasticSearchService {
   private Set<RoleBasedFilterStrategy> roleBasedFilterStrategies;
   @Autowired
   private PersonViewDecorator personViewDecorator;
+  @Autowired
+  private PermissionService permissionService;
 
   /**
    * Find a paginated set of people on a specified programme, if a search query is provided, do fuzzy search
@@ -65,7 +73,7 @@ public class PersonElasticSearchService {
   public Page<PersonViewDTO> findPeopleOnProgramme(Long programmeId, String searchQuery, Pageable pageable) {
     BoolQueryBuilder query = new BoolQueryBuilder();
 
-    query = query.must(new MatchQueryBuilder("programmeId", programmeId));
+    query = query.must(new NestedQueryBuilder("programmeMemberships", new MatchQueryBuilder("programmeMemberships.programmeId", programmeId), ScoreMode.None));
     query = query.must(new MatchQueryBuilder("status", CURRENT_STATUS));
 
     if (StringUtils.isNotEmpty(searchQuery)) {
@@ -84,6 +92,85 @@ public class PersonElasticSearchService {
     return new PageImpl<>(decoratedPersonViews, pageable, result.getTotalElements());
   }
 
+  public BasicPage<PersonViewDTO> searchForPage(String searchQuery, List<ColumnFilter> columnFilters, Pageable pageable) {
+
+    try {
+      // iterate over the column filters, if they have multiple values per filter, place a should between then
+      // for each column filter set, place a must between them
+      BoolQueryBuilder mustBetweenDifferentColumnFilters = new BoolQueryBuilder();
+
+      ProgrammeMembershipStatus programmeMembershipStatusFilter = ProgrammeMembershipStatus.CURRENT;
+      Set<String> appliedFilters = applyRoleBasedFilters(mustBetweenDifferentColumnFilters);
+      if (CollectionUtils.isNotEmpty(columnFilters)) {
+        for (ColumnFilter columnFilter : columnFilters) {
+          BoolQueryBuilder shouldBetweenSameColumnFilter = new BoolQueryBuilder();
+
+          if (StringUtils.equals(columnFilter.getName(), "programmeMembershipStatus")) {
+            if (permissionService.isProgrammeObserver()) {
+              Set<Long> programmeIds = permissionService.getUsersProgrammeIds();
+              for (Long programmeId : programmeIds) {
+                BoolQueryBuilder shouldQuery = new BoolQueryBuilder();
+                MatchQueryBuilder statusQueryBuilder = null;
+
+                ProgrammeMembershipStatus status = ProgrammeMembershipStatus.valueOf(columnFilter.getValues().get(0).toString());
+                programmeMembershipStatusFilter = status;
+                if (status.equals(ProgrammeMembershipStatus.CURRENT)) {
+                  statusQueryBuilder = QueryBuilders.matchQuery("programmeMemberships.programmeMembershipStatus", "CURRENT");
+                } else if (status.equals(ProgrammeMembershipStatus.PAST)) {
+                  statusQueryBuilder = QueryBuilders.matchQuery("programmeMemberships.programmeMembershipStatus", "PAST");
+                } else if (status.equals(ProgrammeMembershipStatus.FUTURE)) {
+                  statusQueryBuilder = QueryBuilders.matchQuery("programmeMemberships.programmeMembershipStatus", "FUTURE");
+                }
+
+                shouldQuery.should(new MatchQueryBuilder("programmeMemberships.programmeId", programmeId))
+                  .should(statusQueryBuilder).minimumShouldMatch(2);
+                shouldBetweenSameColumnFilter.should(nestedQuery("programmeMemberships", shouldQuery, ScoreMode.None)).minimumShouldMatch(1);
+              }
+              mustBetweenDifferentColumnFilters.must(shouldBetweenSameColumnFilter);
+            }
+          } else {
+
+            for (Object value : columnFilter.getValues()) {
+              if (appliedFilters.contains(columnFilter.getName())) { // skip if we've already applied this type of filter via role based filters
+                continue;
+              }
+              if (StringUtils.equals(columnFilter.getName(), "programmeName")) {
+                BoolQueryBuilder shouldQuery = new BoolQueryBuilder();
+                shouldQuery.should(new MatchQueryBuilder("programmeMemberships.programmeName", value.toString()).operator(Operator.AND))
+                  .should(new MatchQueryBuilder("programmeMemberships.programmeMembershipStatus", "CURRENT")).minimumShouldMatch(2);
+                NestedQueryBuilder nested = nestedQuery("programmeMemberships", shouldQuery, ScoreMode.None);
+                shouldBetweenSameColumnFilter.should(nested);
+                shouldBetweenSameColumnFilter.minimumShouldMatch(1);
+                continue;
+              }
+              //because the role column is a comma separated list of roles, we need to do a wildcard 'like' search
+              if (StringUtils.equals(columnFilter.getName(), "role")) {
+                shouldBetweenSameColumnFilter.should(new WildcardQueryBuilder(columnFilter.getName(), "*" + value.toString() + "*"));
+              } else {
+                shouldBetweenSameColumnFilter.should(new MatchQueryBuilder(columnFilter.getName(), value.toString()));
+              }
+            }
+            mustBetweenDifferentColumnFilters.must(shouldBetweenSameColumnFilter);
+          }
+        }
+      }
+
+      //apply free text search on the searchable columns
+      BoolQueryBuilder shouldQuery = applyTextBasedSearchQuery(searchQuery);
+
+      // add the free text query with a must to the column filters query
+      BoolQueryBuilder fullQuery = mustBetweenDifferentColumnFilters.must(shouldQuery);
+
+//    LOG.info("Query {}", fullQuery.toString());
+      pageable = replaceSortByIdHack(pageable);
+
+      Page<PersonView> result = personElasticSearchRepository.search(fullQuery, pageable);
+      return new BasicPage<>(convertPersonViewToDTO(result.getContent(), programmeMembershipStatusFilter), pageable, result.hasNext());
+    } catch (RuntimeException re) {
+      LOG.error("An exception occurred while attempting to do an ES search", re);
+      throw re;
+    }
+  }
 
   private Pageable replaceSortByIdHack(Pageable pageable) {
     //hack as we dont sort by id but rather personId - this can be removed once we remove the duplicate trainees from the
@@ -270,8 +357,8 @@ public class PersonElasticSearchService {
 
       List<ProgrammeMembershipDto> programmeMembershipDtos = namedParameterJdbcTemplate
         .query(programmeMembershipQuery,
-          new MapSqlParameterSource("personIds", personIds),
-          new ProgrammeMembershipRowMapper());
+              new MapSqlParameterSource("personIds", personIds),
+              new ProgrammeMembershipRowMapper());
 
       Map<Long, Set<ProgrammeMembershipDto>> personIdToProgrammeMembershipDtos = new HashMap<>();
 
