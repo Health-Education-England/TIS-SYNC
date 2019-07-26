@@ -19,7 +19,8 @@ spring:
 
 logging:
   file: ${LOG_DIR:${HOME}}/sync.log
-
+  level:
+    uk.nhs: debug
 application:
 
 enable.es.search: ${ENABLE_ES_SEARCH}

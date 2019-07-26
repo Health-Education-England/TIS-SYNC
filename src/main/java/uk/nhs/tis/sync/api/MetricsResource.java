@@ -1,15 +1,16 @@
 package uk.nhs.tis.sync.api;
 
-import java.util.Objects;
-import org.apache.commons.lang3.StringUtils;
+import java.util.List;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.Formatter;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import io.micrometer.core.instrument.Measurement;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Statistic;
+import io.micrometer.core.instrument.Tag;
 
 
 /**
@@ -51,20 +52,33 @@ public class MetricsResource {
    */
   private String format(Meter meter) {
     // Build Metric header
-    StringBuilder builder = new StringBuilder();
-    builder.append("# HELP " + meter.getId()
-        + (StringUtils.isNotEmpty(meter.getId().getDescription()) ? " a.k.a. '" + meter.getId().getDescription() + "'": "")
-        + (StringUtils.isNotEmpty(meter.getId().getBaseUnit()) ? " measured in " + meter.getId().getBaseUnit() : "") + PROMETHEUS_LINE_SEPARATOR);
-    builder.append("# TYPE " + meter.getId().getName() + PROMETHEUS_FIELD_SEPARATOR
-        + meter.getId().getType().toString().toLowerCase() + PROMETHEUS_LINE_SEPARATOR);
-    builder.append(meter.getId().getName() + /* TODO "{labelTagsGoHere" + PROMETHEUS_FIELD_SEPARATOR + "}" + */ PROMETHEUS_FIELD_SEPARATOR);
-    meter.measure().forEach(measure -> {
-      builder.append(measure.getValue() + PROMETHEUS_FIELD_SEPARATOR
-          + (measure.getStatistic() == Statistic.VALUE ? System.currentTimeMillis() : "")
-          + PROMETHEUS_LINE_SEPARATOR);
-    });
-    builder.append(PROMETHEUS_LINE_SEPARATOR);
-    return builder.toString();
+    StringBuilder nameBuilder = new StringBuilder();
+    nameBuilder.append(meter.getId().getName())// + (StringUtils.isNotEmpty(meter.getId().getTag(ID_TAG)) ? "." + meter.getId().getTag(ID_TAG) : ""))
+        ;
+    List<Tag> tags = meter.getId().getTags();
+    if (CollectionUtils.isNotEmpty(tags)) {
+      nameBuilder.append("{");
+      meter.getId().getTags().forEach(tag -> nameBuilder.append(tag.getKey() + "=\"" + tag.getValue() + "\","));
+      nameBuilder.append("}");
+    }
+    String meterName = nameBuilder.toString().replaceAll("\\.|\\s", "_");
+//  builder.append("# HELP " + meterName + PROMETHEUS_FIELD_SEPARATOR + meter.getId()
+//  + (StringUtils.isNotEmpty(meter.getId().getDescription()) ? " a.k.a. '" + meter.getId().getDescription() + "'": "")
+//  + (StringUtils.isNotEmpty(meter.getId().getBaseUnit()) ? " measured in " + meter.getId().getBaseUnit() : "") + PROMETHEUS_LINE_SEPARATOR);
+//  builder.append("# TYPE " + meterName + PROMETHEUS_FIELD_SEPARATOR
+//  + meter.getId().getType().toString().toLowerCase() + PROMETHEUS_LINE_SEPARATOR);
+    StringBuilder measureBuilder = new StringBuilder();
+    measureBuilder.append(meterName);
+    
+    measureBuilder.append(PROMETHEUS_FIELD_SEPARATOR);
+    
+    Measurement measure = meter.measure().iterator().next();
+//    forEach(measure -> {
+      measureBuilder.append(measure.getValue() + PROMETHEUS_FIELD_SEPARATOR);
+      measureBuilder.append(System.currentTimeMillis());
+//    });
+    measureBuilder.append(PROMETHEUS_LINE_SEPARATOR);
+    return measureBuilder.toString();
   }
 
 }
