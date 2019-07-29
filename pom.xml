@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.1.4.RELEASE</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
-	<groupId>uk.nhs.tis</groupId>
-	<artifactId>sync</artifactId>
-	<version>1.1.0</version>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.1.4.RELEASE</version>
+    <relativePath /> <!-- lookup parent from repository -->
+  </parent>
+  <groupId>uk.nhs.tis</groupId>
+  <artifactId>sync</artifactId>
+  <version>1.1.0</version>
   <packaging>jar</packaging>
-	<name>sync</name>
-	<description>Separate Microservice for synchronisation</description>
+  <name>sync</name>
+  <description>Separate Microservice for synchronisation</description>
 
   <properties>
     <java.version>1.8</java.version>
     <spring-boot-admin.version>2.1.4</spring-boot-admin.version>
-    
+
     <!-- Lazy TCS imports -->
     <mapstruct.version>1.1.0.Final</mapstruct.version>
     <maven-compiler-plugin.version>3.6.0</maven-compiler-plugin.version>
@@ -32,23 +33,29 @@
     <run.addResources>false</run.addResources>
     <sonar-maven-plugin.version>3.2</sonar-maven-plugin.version>
 
-    <sonar.exclusions>src/main/webapp/content/**/*.*, src/main/webapp/bower_components/**/*.*,
+    <sonar.exclusions>src/main/webapp/content/**/*.*,
+      src/main/webapp/bower_components/**/*.*,
       src/main/webapp/i18n/*.js
     </sonar.exclusions>
 
     <sonar.issue.ignore.multicriteria>S3437,UndocumentedApi,BoldAndItalicTagsCheck
     </sonar.issue.ignore.multicriteria>
 
-    <!-- Rule https://sonarqube.com/coding_rules#rule_key=Web%3ABoldAndItalicTagsCheck is ignored. Even if we agree that using the "i" tag is an awful practice, this is what is recommended by http://fontawesome.io/examples/ -->
+    <!-- Rule https://sonarqube.com/coding_rules#rule_key=Web%3ABoldAndItalicTagsCheck 
+      is ignored. Even if we agree that using the "i" tag is an awful practice, 
+      this is what is recommended by http://fontawesome.io/examples/ -->
     <sonar.issue.ignore.multicriteria.BoldAndItalicTagsCheck.resourceKey>src/main/webapp/app/**/*.*
     </sonar.issue.ignore.multicriteria.BoldAndItalicTagsCheck.resourceKey>
     <sonar.issue.ignore.multicriteria.BoldAndItalicTagsCheck.ruleKey>Web:BoldAndItalicTagsCheck
     </sonar.issue.ignore.multicriteria.BoldAndItalicTagsCheck.ruleKey>
-    <!-- Rule https://sonarqube.com/coding_rules#rule_key=squid%3AS3437 is ignored, as a JPA-managed field cannot be transient -->
+    <!-- Rule https://sonarqube.com/coding_rules#rule_key=squid%3AS3437 is 
+      ignored, as a JPA-managed field cannot be transient -->
     <sonar.issue.ignore.multicriteria.S3437.resourceKey>src/main/java/**/*
     </sonar.issue.ignore.multicriteria.S3437.resourceKey>
     <sonar.issue.ignore.multicriteria.S3437.ruleKey>squid:S3437</sonar.issue.ignore.multicriteria.S3437.ruleKey>
-    <!-- Rule http://sonarqube.com/coding_rules#rule_key=squid%3AUndocumentedApi is ignored, as we want to follow "clean code" guidelines and classes, methods and arguments names should be self-explanatory -->
+    <!-- Rule http://sonarqube.com/coding_rules#rule_key=squid%3AUndocumentedApi 
+      is ignored, as we want to follow "clean code" guidelines and classes, methods 
+      and arguments names should be self-explanatory -->
     <sonar.issue.ignore.multicriteria.UndocumentedApi.resourceKey>src/main/java/**/*
     </sonar.issue.ignore.multicriteria.UndocumentedApi.resourceKey>
     <sonar.issue.ignore.multicriteria.UndocumentedApi.ruleKey>squid:UndocumentedApi
@@ -72,7 +79,7 @@
     <tis.shared.modules.version>2.3.0</tis.shared.modules.version>
     <undertow.version>2.0.15.Final</undertow.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
-    
+
   </properties>
 
   <dependencies>
@@ -207,13 +214,15 @@
         <configuration>
           <rules>
             <requireMavenVersion>
-              <message>You are running an older version of Maven. JHipster requires at least Maven
+              <message>You are running an older version of Maven.
+                JHipster requires at least Maven
                 ${maven.version}
               </message>
               <version>[${maven.version},)</version>
             </requireMavenVersion>
             <requireJavaVersion>
-              <message>You are running an older version of Java. JHipster requires at least JDK
+              <message>You are running an older version of Java.
+                JHipster requires at least JDK
                 ${java.version}
               </message>
               <version>[${java.version}.0,)</version>
@@ -291,10 +300,8 @@
         <configuration>
           <executable>true</executable>
           <fork>true</fork>
-          <!--
-          Enable the line below to have remote debugging of your application on port 5005
-          <jvmArguments>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</jvmArguments>
-          -->
+          <!-- Enable the line below to have remote debugging of your application 
+            on port 5005 <jvmArguments>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</jvmArguments> -->
         </configuration>
       </plugin>
       <!-- jhipster-needle-maven-add-plugin -->
@@ -353,11 +360,8 @@
       </properties>
     </profile>
     <profile>
-      <!--
-        Profile for applying IDE-specific configuration.
-        At the moment it only configures MapStruct, which you need when working
-        with DTOs.
-      -->
+      <!-- Profile for applying IDE-specific configuration. At the moment 
+        it only configures MapStruct, which you need when working with DTOs. -->
       <id>IDE</id>
       <dependencies>
         <dependency>

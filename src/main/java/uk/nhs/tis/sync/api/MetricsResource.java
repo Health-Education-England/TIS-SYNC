@@ -3,7 +3,6 @@ package uk.nhs.tis.sync.api;
 import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.Formatter;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,7 +44,7 @@ public class MetricsResource {
   private static final String PROMETHEUS_FIELD_SEPARATOR = " ";
 
   /**
-   * Creates a string in a format that Prometheus understands. See {@link Formatter}.
+   * Creates a string in a format that Prometheus understands.
    * 
    * @param meter - The Meter to Format
    * @return A formatted {@link String}
@@ -53,30 +52,22 @@ public class MetricsResource {
   private String format(Meter meter) {
     // Build Metric header
     StringBuilder nameBuilder = new StringBuilder();
-    nameBuilder.append(meter.getId().getName())// + (StringUtils.isNotEmpty(meter.getId().getTag(ID_TAG)) ? "." + meter.getId().getTag(ID_TAG) : ""))
-        ;
+    nameBuilder.append(meter.getId().getName());
     List<Tag> tags = meter.getId().getTags();
     if (CollectionUtils.isNotEmpty(tags)) {
       nameBuilder.append("{");
-      meter.getId().getTags().forEach(tag -> nameBuilder.append(tag.getKey() + "=\"" + tag.getValue() + "\","));
+      meter.getId().getTags()
+          .forEach(tag -> nameBuilder.append(tag.getKey() + "=\"" + tag.getValue() + "\","));
       nameBuilder.append("}");
     }
     String meterName = nameBuilder.toString().replaceAll("\\.|\\s", "_");
-//  builder.append("# HELP " + meterName + PROMETHEUS_FIELD_SEPARATOR + meter.getId()
-//  + (StringUtils.isNotEmpty(meter.getId().getDescription()) ? " a.k.a. '" + meter.getId().getDescription() + "'": "")
-//  + (StringUtils.isNotEmpty(meter.getId().getBaseUnit()) ? " measured in " + meter.getId().getBaseUnit() : "") + PROMETHEUS_LINE_SEPARATOR);
-//  builder.append("# TYPE " + meterName + PROMETHEUS_FIELD_SEPARATOR
-//  + meter.getId().getType().toString().toLowerCase() + PROMETHEUS_LINE_SEPARATOR);
+
     StringBuilder measureBuilder = new StringBuilder();
     measureBuilder.append(meterName);
-    
     measureBuilder.append(PROMETHEUS_FIELD_SEPARATOR);
-    
     Measurement measure = meter.measure().iterator().next();
-//    forEach(measure -> {
-      measureBuilder.append(measure.getValue() + PROMETHEUS_FIELD_SEPARATOR);
-      measureBuilder.append(System.currentTimeMillis());
-//    });
+    measureBuilder.append(measure.getValue() + PROMETHEUS_FIELD_SEPARATOR);
+    measureBuilder.append(System.currentTimeMillis());
     measureBuilder.append(PROMETHEUS_LINE_SEPARATOR);
     return measureBuilder.toString();
   }
