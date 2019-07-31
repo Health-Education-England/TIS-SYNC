@@ -31,12 +31,9 @@ public class MetricsResource {
   @GetMapping(produces = "text/plain")
   public String getMetricsForScrape() {
     StringBuilder response = new StringBuilder();
-    response.append("# Hello Prometheus!");
+    response.append("# Hello Prometheus!" + PROMETHEUS_LINE_SEPARATOR);
     // TODO Add filtering by requested metrics
-    meterRegistry.forEachMeter(m -> {
-      String s = format(m);
-      response.append(s);
-    });
+    meterRegistry.forEachMeter(m -> response.append(format(m)));
     return response.toString();
   }
 
