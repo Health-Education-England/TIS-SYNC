@@ -55,7 +55,7 @@ public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTempla
 
   @Override
   protected int getPageSize() {
-    return 5000;
+    return DEFAULT_PAGE_SIZE;
   }
 
   @Override
