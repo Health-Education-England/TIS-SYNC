@@ -46,7 +46,7 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
   public void onApplicationEvent(ApplicationReadyEvent event) {
     LOG.debug("Received event for an {}", event.getClass().getSimpleName());
     LocalTime time = LocalTime.now();
-    if (!earliest.isAfter(time) && !latest.isBefore(time)) {
+    if (time.isAfter(earliest) && time.isBefore(latest)) {
       LOG.info("Attempting to run jobs as Application started between {} and {}", earliest, latest);
       runJobs();
     }
