@@ -104,6 +104,7 @@ logging:
 
 application:
   cron:
+    personOwnerRebuildJob: ${APPLICATION_CRON_PERSONOWNERREBUILDJOB:0 05 0 * * *}
     personPlacementEmployingBodyTrustJob: ${APP_CRON_PERSON_PLACEMENT_EMPLOYING_BODY:0 09 0 * * *}
     personPlacementTrainingBodyTrustJob: ${APP_CRON_PERSON_PLACEMENT_TRAINING_BODY:0 29 0 * * *}
     postEmployingBodyTrustJob: ${APP_CRON_POST_EMPLOYING_BODY:0 09 1 * * *}
