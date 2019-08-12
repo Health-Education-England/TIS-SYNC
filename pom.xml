@@ -178,6 +178,11 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>com.hubspot.slack</groupId>
+      <artifactId>slack-java-client</artifactId>
+      <version>1.2</version>
+      </dependency>
   </dependencies>
 
   <build>

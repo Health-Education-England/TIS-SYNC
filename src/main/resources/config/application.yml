@@ -220,5 +220,8 @@ logging:
     ROOT: ${LOG_LEVEL:INFO}
     org.hibernate.engine.internal: WARN
 
+slack:
+  api:
+    token: ${SLACK_API_TOKEN}
 
 auto.generate.npn: true
