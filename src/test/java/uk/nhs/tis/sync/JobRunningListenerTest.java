@@ -8,25 +8,32 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.nhs.tis.sync.job.PersonOwnerRebuildJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class JobRunningListenerTest {
 
+  
   /**
-   * Mock of the elastic search job, as there isn't a suitable elastic search test component
+   * Mock of the following jobs as there aren't suitable test fixtures
    */
   @MockBean
-  PersonElasticSearchSyncJob personElasticSearchSyncJob;
+  private PersonElasticSearchSyncJob personElasticSearchSyncJob;
+  @MockBean
+  private PersonOwnerRebuildJob personOwnerRebuildJob;
 
   @Autowired
   JobRunningListener testClass;
 
   @Test
   public void testRunJobs() {
+    when(personOwnerRebuildJob.isCurrentlyRunning()).thenReturn(false);
     when(personElasticSearchSyncJob.isCurrentlyRunning()).thenReturn(false);
     testClass.runJobs();
+    verify(personOwnerRebuildJob).personOwnerRebuildJob();
+    verify(personOwnerRebuildJob).isCurrentlyRunning();
     verify(personElasticSearchSyncJob).personElasticSearchSync();
     verify(personElasticSearchSyncJob).isCurrentlyRunning();
   }

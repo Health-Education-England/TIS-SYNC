@@ -59,7 +59,7 @@ public class PersonOwnerRebuildJob {
     return "PersonOwner job";
   }
 
-  @ManagedOperation(description = "Is the Person es sync just currently running")
+  @ManagedOperation(description = "Is the Person Owner Rebuild job currently running")
   public boolean isCurrentlyRunning() {
     return mainStopWatch != null;
   }

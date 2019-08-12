@@ -7,9 +7,11 @@ import java.time.LocalTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import uk.nhs.tis.sync.job.PersonOwnerRebuildJob;
 import uk.nhs.tis.sync.job.PersonPlacementEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PersonPlacementTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.PostEmployingBodyTrustJob;
@@ -22,6 +24,9 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
   private static final Logger LOG = LoggerFactory.getLogger(JobRunningListener.class);
 
   private static final long SLEEP_DURATION = 5 * 1000;
+
+  @Autowired
+  private PersonOwnerRebuildJob personOwnerRebuildJob;
 
   @Autowired
   private PersonPlacementEmployingBodyTrustJob personPlacementEmployingBodyTrustJob;
@@ -38,9 +43,11 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
   @Autowired
   private PersonElasticSearchSyncJob personElasticSearchSyncJob;
 
-  private LocalTime earliest = LocalTime.of(0, 0, 0);
+  @Value("${application.jobs.runOnStartup.earliest}")
+  private LocalTime earliest;
 
-  private LocalTime latest = LocalTime.of(7, 0, 0);
+  @Value("${application.jobs.runOnStartup.latest}")
+  private LocalTime latest;
 
   @Override
   public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -54,6 +61,11 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
 
   public void runJobs() {
     try {
+      personOwnerRebuildJob.personOwnerRebuildJob();
+      Thread.sleep(SLEEP_DURATION);
+      while (personOwnerRebuildJob.isCurrentlyRunning()) {
+        Thread.sleep(SLEEP_DURATION);
+      }
       personPlacementEmployingBodyTrustJob.doPersonPlacementEmployingBodyFullSync();
       Thread.sleep(SLEEP_DURATION);
       while (personPlacementEmployingBodyTrustJob.isCurrentlyRunning()) {
