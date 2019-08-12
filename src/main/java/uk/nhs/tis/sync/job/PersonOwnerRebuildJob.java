@@ -56,7 +56,7 @@ public class PersonOwnerRebuildJob {
   }
 
   private String getJobName() {
-    return "PersonOwner job";
+    return "PersonOwnerJob";
   }
 
   @ManagedOperation(description = "Is the Person Owner Rebuild job currently running")
