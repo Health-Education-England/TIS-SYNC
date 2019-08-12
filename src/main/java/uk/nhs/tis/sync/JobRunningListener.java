@@ -62,35 +62,29 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
   public void runJobs() {
     try {
       personOwnerRebuildJob.personOwnerRebuildJob();
-      Thread.sleep(SLEEP_DURATION);
-      while (personOwnerRebuildJob.isCurrentlyRunning()) {
+      do {
         Thread.sleep(SLEEP_DURATION);
-      }
+      } while (personOwnerRebuildJob.isCurrentlyRunning());
       personPlacementEmployingBodyTrustJob.doPersonPlacementEmployingBodyFullSync();
-      Thread.sleep(SLEEP_DURATION);
-      while (personPlacementEmployingBodyTrustJob.isCurrentlyRunning()) {
+      do {
         Thread.sleep(SLEEP_DURATION);
-      }
+      } while (personPlacementEmployingBodyTrustJob.isCurrentlyRunning());
       personPlacementTrainingBodyTrustJob.PersonPlacementTrainingBodyFullSync();
-      Thread.sleep(SLEEP_DURATION);
-      while (personPlacementTrainingBodyTrustJob.isCurrentlyRunning()) {
+      do {
         Thread.sleep(SLEEP_DURATION);
-      }
+      } while (personPlacementTrainingBodyTrustJob.isCurrentlyRunning());
       postEmployingBodyTrustJob.PostEmployingBodyTrustFullSync();
-      Thread.sleep(SLEEP_DURATION);
-      while (postEmployingBodyTrustJob.isCurrentlyRunning()) {
+      do {
         Thread.sleep(SLEEP_DURATION);
-      }
-      postTrainingBodyTrustJob.PostTrainingBodyTrustFullSync();;
-      Thread.sleep(SLEEP_DURATION);
-      while (postTrainingBodyTrustJob.isCurrentlyRunning()) {
+      } while (postEmployingBodyTrustJob.isCurrentlyRunning());
+      postTrainingBodyTrustJob.PostTrainingBodyTrustFullSync();
+      do {
         Thread.sleep(SLEEP_DURATION);
-      }
+      } while (postTrainingBodyTrustJob.isCurrentlyRunning());
       personElasticSearchSyncJob.personElasticSearchSync();
-      Thread.sleep(SLEEP_DURATION);
-      while (personElasticSearchSyncJob.isCurrentlyRunning()) {
+      do {
         Thread.sleep(SLEEP_DURATION);
-      }
+      } while (personElasticSearchSyncJob.isCurrentlyRunning());
     } catch (InterruptedException e) {
       LOG.error(e.getMessage(), e);
     }
