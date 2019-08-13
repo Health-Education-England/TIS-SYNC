@@ -43,10 +43,8 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
   @Autowired
   private PersonElasticSearchSyncJob personElasticSearchSyncJob;
 
-  @Value("${application.jobs.runOnStartup.earliest}")
   private LocalTime earliest;
 
-  @Value("${application.jobs.runOnStartup.latest}")
   private LocalTime latest;
 
   @Override
