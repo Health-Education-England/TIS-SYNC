@@ -190,12 +190,16 @@ jhipster:
 
 application:
   cron:
+    personOwnerRebuildJob: ${APPLICATION_CRON_PERSONOWNERREBUILDJOB:0 05 0 * * *}
     personPlacementEmployingBodyTrustJob: ${APPLICATION_CRON_PERSONPLACEMENTEMPLOYINGBODYTRUSTJOB:0 09 0 * * *}
     personPlacementTrainingBodyTrustJob: ${APPLICATION_CRON_PERSONPLACEMENTTRAININGBODYTRUSTJOB:0 29 0 * * *}
     postEmployingBodyTrustJob: ${APPLICATION_CRON_POSTEMPLOYINGBODYTRUSTJOB:0 09 1 * * *}
     postTrainingBodyTrustJob: ${APPLICATION_CRON_POSTTRAININGBODYTRUSTJOB:0 19 1 * * *}
     personElasticSearchJob: ${APPLICATION_CRON_PERSONELASTICSEARCHJOB:0 29 1 * * *}
-
+  jobs:
+    runOnStartup:
+      earliest: ${APPLICATION_JOBS_RUNONSTARTUP_EARLIEST:00:00}
+      latest: ${APPLICATION_JOBS_RUNONSTARTUP_LATEST:05:00}
 azure:
   accountName: ${CLOUD_BLOB_ACCOUNT_NAME}
   accountKey: ${CLOUD_BLOB_ACCOUNT_KEY}
