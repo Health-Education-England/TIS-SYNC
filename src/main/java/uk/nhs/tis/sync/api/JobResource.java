@@ -47,6 +47,12 @@ public class JobResource {
     this.personOwnerRebuildJob = personOwnerRebuildJob;
   }
 
+  /**
+   * GET /jobs/status : Get all the status of all 6 jobs
+   *
+   * @return the map of all the status.
+   * eg.{"personPlacementEmployingBodyTrustJob", "true"}, which means personPlacementEmployingBodyTrustJob is currently running.
+   */
   @GetMapping("/jobs/status")
   public ResponseEntity<Map> getStatus() {
     Map<String, Boolean> statusMap = new HashMap<>();
@@ -59,6 +65,9 @@ public class JobResource {
     return ResponseEntity.ok().body(statusMap);
   }
 
+  /**
+   * PUT /jobs : Trigger the sequentially running of all the jobs
+   */
   @PutMapping("/jobs")
   public ResponseEntity<Void> runJobsSequentially() {
     LOG.debug("REST reqeust to run all jobs sequentially");
@@ -66,6 +75,13 @@ public class JobResource {
     return ResponseEntity.ok().build();
   }
 
+  /**
+   * PUT /job/:name : Trigger one individual job
+   * @param name the name of the job to run
+   * @return status of the requested job :
+   * "already running" - the job has been running before triggering it
+   * "just started" - the job has been started by this request
+   */
   @PutMapping("/job/{name}")
   public ResponseEntity<String> runJob(@PathVariable String name) {
     LOG.debug("REST reqeust to run job: {}", name);
