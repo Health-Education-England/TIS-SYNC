@@ -89,12 +89,12 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
   }
 
   @Value("${application.jobs.runOnStartup.earliest}")
-  public void setEarliest(LocalTime earliest) {
-    this.earliest = earliest;
+  public void setEarliest(String earliest) {
+    this.earliest = LocalTime.parse(earliest);
   }
 
   @Value("${application.jobs.runOnStartup.latest}")
-  public void setLatest(LocalTime latest) {
-    this.latest = latest;
+  public void setLatest(String latest) {
+    this.latest = LocalTime.parse(latest);
   }
 }
