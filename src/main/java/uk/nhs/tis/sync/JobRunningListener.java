@@ -89,4 +89,14 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
       LOG.error(e.getMessage(), e);
     }
   }
+
+  @Value("${application.jobs.runOnStartup.earliest}")
+  public void setEarliest(LocalTime earliest) {
+    this.earliest = earliest;
+  }
+
+  @Value("${application.jobs.runOnStartup.latest}")
+  public void setLatest(LocalTime latest) {
+    this.latest = latest;
+  }
 }
