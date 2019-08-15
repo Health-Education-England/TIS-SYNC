@@ -4,10 +4,10 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.1.4.RELEASE</version>
-    <relativePath /> <!-- lookup parent from repository -->
+    <artifactId>tis-parent</artifactId>
+    <groupId>com.transformuk.hee</groupId>
+    <version>3.0.3</version>
+    <relativePath />
   </parent>
   <groupId>uk.nhs.tis</groupId>
   <artifactId>sync</artifactId>
@@ -41,20 +41,20 @@
     <sonar.issue.ignore.multicriteria>S3437,UndocumentedApi,BoldAndItalicTagsCheck
     </sonar.issue.ignore.multicriteria>
 
-    <!-- Rule https://sonarqube.com/coding_rules#rule_key=Web%3ABoldAndItalicTagsCheck 
-      is ignored. Even if we agree that using the "i" tag is an awful practice, 
+    <!-- Rule https://sonarqube.com/coding_rules#rule_key=Web%3ABoldAndItalicTagsCheck
+      is ignored. Even if we agree that using the "i" tag is an awful practice,
       this is what is recommended by http://fontawesome.io/examples/ -->
     <sonar.issue.ignore.multicriteria.BoldAndItalicTagsCheck.resourceKey>src/main/webapp/app/**/*.*
     </sonar.issue.ignore.multicriteria.BoldAndItalicTagsCheck.resourceKey>
     <sonar.issue.ignore.multicriteria.BoldAndItalicTagsCheck.ruleKey>Web:BoldAndItalicTagsCheck
     </sonar.issue.ignore.multicriteria.BoldAndItalicTagsCheck.ruleKey>
-    <!-- Rule https://sonarqube.com/coding_rules#rule_key=squid%3AS3437 is 
+    <!-- Rule https://sonarqube.com/coding_rules#rule_key=squid%3AS3437 is
       ignored, as a JPA-managed field cannot be transient -->
     <sonar.issue.ignore.multicriteria.S3437.resourceKey>src/main/java/**/*
     </sonar.issue.ignore.multicriteria.S3437.resourceKey>
     <sonar.issue.ignore.multicriteria.S3437.ruleKey>squid:S3437</sonar.issue.ignore.multicriteria.S3437.ruleKey>
-    <!-- Rule http://sonarqube.com/coding_rules#rule_key=squid%3AUndocumentedApi 
-      is ignored, as we want to follow "clean code" guidelines and classes, methods 
+    <!-- Rule http://sonarqube.com/coding_rules#rule_key=squid%3AUndocumentedApi
+      is ignored, as we want to follow "clean code" guidelines and classes, methods
       and arguments names should be self-explanatory -->
     <sonar.issue.ignore.multicriteria.UndocumentedApi.resourceKey>src/main/java/**/*
     </sonar.issue.ignore.multicriteria.UndocumentedApi.resourceKey>
@@ -185,41 +185,9 @@
       </dependency>
     <!-- Generally Useful Test Dependencies -->
     <dependency>
-      <groupId>org.junit.platform</groupId>
-      <artifactId>junit-platform-commons</artifactId>
-      <version>1.4.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <version>5.4.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-params</artifactId>
-      <version>5.4.2</version>
-      <scope>test</scope>
-  </dependencies>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>5.4.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
-      <version>5.4.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-junit-jupiter</artifactId>
-      <version>3.0.0</version>
-      <scope>test</scope>
+      <groupId>com.transformuk.hee</groupId>
+      <artifactId>tis-security-jwt</artifactId>
+      <version>5.0.0</version>
     </dependency>
   </dependencies>
 
@@ -343,7 +311,7 @@
         <configuration>
           <executable>true</executable>
           <fork>true</fork>
-          <!-- Enable the line below to have remote debugging of your application 
+          <!-- Enable the line below to have remote debugging of your application
             on port 5005 <jvmArguments>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</jvmArguments> -->
         </configuration>
       </plugin>
@@ -403,7 +371,7 @@
       </properties>
     </profile>
     <profile>
-      <!-- Profile for applying IDE-specific configuration. At the moment 
+      <!-- Profile for applying IDE-specific configuration. At the moment
         it only configures MapStruct, which you need when working with DTOs. -->
       <id>IDE</id>
       <dependencies>
