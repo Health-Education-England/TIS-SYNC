@@ -2,6 +2,7 @@ package uk.nhs.tis.sync.job.person;
 
 import com.google.common.base.Stopwatch;
 import com.transformuk.hee.tis.tcs.service.job.person.PersonView;
+import uk.nhs.tis.sync.event.JobExecutionEvent;
 import uk.nhs.tis.sync.service.PersonElasticSearchService;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
 import uk.nhs.tis.sync.service.impl.PersonViewRowMapper;
@@ -11,6 +12,7 @@ import org.elasticsearch.index.IndexNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -18,7 +20,6 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -46,6 +47,9 @@ public class PersonElasticSearchSyncJob {
   @Autowired
   private PersonElasticSearchService personElasticSearchService;
 
+  @Autowired(required = false)
+  private ApplicationEventPublisher applicationEventPublisher;
+
   @ManagedOperation(description = "Is the Person es sync just currently running")
   public boolean isCurrentlyRunning() {
     return mainStopWatch != null;
@@ -65,7 +69,8 @@ public class PersonElasticSearchSyncJob {
   }
 
   @Scheduled(cron = "${application.cron.personElasticSearchJob}")
-  @SchedulerLock(name = "personsElasticSearchScheduledTask", lockAtLeastFor = FIFTEEN_MIN, lockAtMostFor = FIFTEEN_MIN)
+  @SchedulerLock(name = "personsElasticSearchScheduledTask", lockAtLeastFor = FIFTEEN_MIN,
+      lockAtMostFor = FIFTEEN_MIN)
   @ManagedOperation(description = "Run sync of the persons es index")
   public void personElasticSearchSync() {
     runSyncJob();
@@ -91,14 +96,13 @@ public class PersonElasticSearchSyncJob {
   private List<PersonView> collectData(int page, int pageSize) {
     String query = sqlQuerySupplier.getQuery(SqlQuerySupplier.PERSON_ES_VIEW);
     String limitClause = "limit " + pageSize + " offset " + page * pageSize;
-    query = query.replace("TRUST_JOIN", "")
-        .replace("PROGRAMME_MEMBERSHIP_JOIN", "")
-        .replace("WHERECLAUSE", "")
-        .replace("ORDERBYCLAUSE", "ORDER BY id DESC")
+    query = query.replace("TRUST_JOIN", "").replace("PROGRAMME_MEMBERSHIP_JOIN", "")
+        .replace("WHERECLAUSE", "").replace("ORDERBYCLAUSE", "ORDER BY id DESC")
         .replace("LIMITCLAUSE", limitClause);
 
     MapSqlParameterSource paramSource = new MapSqlParameterSource();
-    List<PersonView> queryResult = namedParameterJdbcTemplate.query(query, paramSource, new PersonViewRowMapper());
+    List<PersonView> queryResult =
+        namedParameterJdbcTemplate.query(query, paramSource, new PersonViewRowMapper());
     personElasticSearchService.updateDocumentWithTrustData(queryResult);
     // this is to query from programmeMembership, Programme and TrainingNumber
     personElasticSearchService.updateDocumentWithProgrammeMembershipData(queryResult);
@@ -107,6 +111,10 @@ public class PersonElasticSearchSyncJob {
 
   protected void run() {
 
+    if (applicationEventPublisher != null) {
+      applicationEventPublisher
+          .publishEvent(new JobExecutionEvent(this, "Sync [" + getJobName() + "] started."));
+    }
     try {
       LOG.info("Sync [{}] started", getJobName());
       mainStopWatch = Stopwatch.createStarted();
@@ -139,11 +147,20 @@ public class PersonElasticSearchSyncJob {
       }
       elasticSearchOperations.refresh(PersonView.class);
       stopwatch.reset().start();
-      LOG.info("Sync job [{}] finished. Total time taken {} for processing [{}] records", getJobName(), mainStopWatch.stop().toString(), totalRecords);
+      LOG.info("Sync job [{}] finished. Total time taken {} for processing [{}] records",
+          getJobName(), mainStopWatch.stop().toString(), totalRecords);
       mainStopWatch = null;
+      if (applicationEventPublisher != null) {
+        applicationEventPublisher
+            .publishEvent(new JobExecutionEvent(this, "Sync [" + getJobName() + "] finished."));
+      }
     } catch (Exception e) {
       e.printStackTrace();
       mainStopWatch = null;
+      if (applicationEventPublisher != null) {
+        applicationEventPublisher.publishEvent(new JobExecutionEvent(this,
+            "Sync [" + getJobName() + "] failed with exception [" + e.getMessage() + "]."));
+      }
     }
   }
 

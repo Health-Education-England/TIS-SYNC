@@ -42,6 +42,8 @@ kc:
 slack:
   api:
     token: ${SLACK_API_TOKEN:}
+  job:
+    notification-channel: spaml
 
 # enable.es.search: true
 enable.es.search: false

@@ -123,6 +123,9 @@ azure:
 slack:
   api:
     token: ${SLACK_API_TOKEN:}
+  job:
+    notification-channel: slacktesting
+
 kc:
   realm: ${KC_REALM:lin}
   client:

@@ -4,6 +4,7 @@ import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.base.Stopwatch;
 import com.transformuk.hee.tis.tcs.service.repository.PersonRepository;
 import net.javacrumbs.shedlock.core.SchedulerLock;
+import uk.nhs.tis.sync.event.JobExecutionEvent;
 
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonOwnerRebuildJob",
@@ -22,6 +24,9 @@ public class PersonOwnerRebuildJob {
 
   @Autowired
   private PersonRepository personRepository;
+
+  @Autowired(required = false)
+  private ApplicationEventPublisher applicationEventPublisher;
 
   private Stopwatch mainStopWatch;
 
@@ -44,14 +49,29 @@ public class PersonOwnerRebuildJob {
   protected void run() {
     try {
       LOG.info("Sync [{}] started", getJobName());
+      if (applicationEventPublisher != null) {
+        applicationEventPublisher
+            .publishEvent(new JobExecutionEvent(this, "Sync [" + getJobName() + "] started."));
+      }
       mainStopWatch = Stopwatch.createStarted();
+
       personRepository.buildPersonView();
+
       LOG.info("Sync job [{}] finished. Total time taken {} to rebuild the table", getJobName(),
           mainStopWatch.stop().toString());
       mainStopWatch = null;
+      if (applicationEventPublisher != null) {
+        applicationEventPublisher
+            .publishEvent(new JobExecutionEvent(this, "Sync [" + getJobName() + "] finished."));
+      }
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
       mainStopWatch = null;
+      if (applicationEventPublisher != null) {
+        applicationEventPublisher.publishEvent(new JobExecutionEvent(this,
+            "Sync [" + getJobName() + "] failed with exception [" + e.getMessage() + "]."));
+      }
+      throw e;
     }
   }
 
