@@ -23,6 +23,7 @@ import java.net.UnknownHostException;
 @EnableSpringDataWebSupport
 @PropertySource({"classpath:/config/application.properties",
     "classpath:/config/referenceclientapplication.properties",
+    "classpath:/config/profileclientapplication.properties"
 })
 @EnableConfigurationProperties({ApplicationProperties.class})
 @EnableAutoConfiguration()

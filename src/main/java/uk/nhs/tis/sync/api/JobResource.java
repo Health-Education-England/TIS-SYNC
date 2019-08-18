@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.nhs.tis.sync.JobRunningListener;
 import uk.nhs.tis.sync.job.*;
@@ -54,6 +55,7 @@ public class JobResource {
    * eg.{"personPlacementEmployingBodyTrustJob", "true"}, which means personPlacementEmployingBodyTrustJob is currently running.
    */
   @GetMapping("/jobs/status")
+  @PreAuthorize("hasPermission('tis:sync::jobs:', 'View')")
   public ResponseEntity<Map> getStatus() {
     Map<String, Boolean> statusMap = new HashMap<>();
     statusMap.put("personPlacementEmployingBodyTrustJob", personPlacementEmployingBodyTrustJob.isCurrentlyRunning());
@@ -69,6 +71,7 @@ public class JobResource {
    * PUT /jobs : Trigger the sequentially running of all the jobs
    */
   @PutMapping("/jobs")
+  @PreAuthorize("hasPermission('tis:sync::jobs:', 'Update')")
   public ResponseEntity<Void> runJobsSequentially() {
     LOG.debug("REST reqeust to run all jobs sequentially");
     CompletableFuture.runAsync(jobRunningListener::runJobs);
@@ -83,6 +86,7 @@ public class JobResource {
    * "just started" - the job has been started by this request
    */
   @PutMapping("/job/{name}")
+  @PreAuthorize("hasPermission('tis:sync::jobs:', 'Update')")
   public ResponseEntity<String> runJob(@PathVariable String name) {
     LOG.debug("REST reqeust to run job: {}", name);
     final String ALREADY_RUNNING = "{\"status\":\"already running\"}";
