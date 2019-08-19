@@ -1,4 +1,4 @@
-package uk.nhs.tis.sync;
+package uk.nhs.tis.sync.event.listener;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;

@@ -7,7 +7,6 @@ import com.transformuk.hee.tis.tcs.service.repository.PersonTrustRepository;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import uk.nhs.tis.sync.model.EntityData;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +16,6 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
@@ -29,11 +27,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
-@ManagedResource(objectName = "sync.mbean:name=PersonPlacementEmployingBodyJob", description = "Service that clears the PersonTrust table and links Person with Placement EmployingBody(Trust)")
+@ManagedResource(objectName = "sync.mbean:name=PersonPlacementEmployingBodyJob",
+    description = "Service that clears the PersonTrust table and links Person with Placement EmployingBody(Trust)")
 @SuppressWarnings("unchecked")
 public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTemplate<PersonTrust> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(PersonPlacementEmployingBodyTrustJob.class);
+  private static final Logger LOG =
+      LoggerFactory.getLogger(PersonPlacementEmployingBodyTrustJob.class);
   private static final int FIFTEEN_MIN = 15 * 60 * 1000;
 
   @Autowired
@@ -46,8 +46,10 @@ public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTempl
   private SqlQuerySupplier sqlQuerySupplier;
 
   @Scheduled(cron = "${application.cron.personPlacementEmployingBodyTrustJob}")
-  @SchedulerLock(name = "personTrustEmployingBodyScheduledTask", lockAtLeastFor = FIFTEEN_MIN, lockAtMostFor = FIFTEEN_MIN)
-  @ManagedOperation(description = "Run sync of the PersonTrust table with Person to Placement EmployingBody")
+  @SchedulerLock(name = "personTrustEmployingBodyScheduledTask", lockAtLeastFor = FIFTEEN_MIN,
+      lockAtMostFor = FIFTEEN_MIN)
+  @ManagedOperation(
+      description = "Run sync of the PersonTrust table with Person to Placement EmployingBody")
   public void doPersonPlacementEmployingBodyFullSync() {
     runSyncJob();
   }
@@ -75,28 +77,36 @@ public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTempl
   }
 
   @Override
-  protected List<EntityData> collectData(int pageSize, long lastId, long lastEmployingBodyId, EntityManager entityManager) {
-    LOG.info("Querying with lastPersonId: [{}] and lastEmployingBodyId: [{}]", lastId, lastEmployingBodyId);
-    String personPlacementQuery = sqlQuerySupplier.getQuery(SqlQuerySupplier.PERSON_PLACEMENT_EMPLOYINGBODY);
+  protected List<EntityData> collectData(int pageSize, long lastId, long lastEmployingBodyId,
+      EntityManager entityManager) {
+    LOG.info("Querying with lastPersonId: [{}] and lastEmployingBodyId: [{}]", lastId,
+        lastEmployingBodyId);
+    String personPlacementQuery =
+        sqlQuerySupplier.getQuery(SqlQuerySupplier.PERSON_PLACEMENT_EMPLOYINGBODY);
 
-    Query query = entityManager.createNativeQuery(personPlacementQuery).setParameter("lastId", lastId)
-        .setParameter("lastEmployingBodyId", lastEmployingBodyId).setParameter("pageSize", pageSize);
+    Query query = entityManager.createNativeQuery(personPlacementQuery)
+        .setParameter("lastId", lastId).setParameter("lastEmployingBodyId", lastEmployingBodyId)
+        .setParameter("pageSize", pageSize);
     List<Object[]> resultList = query.getResultList();
 
     return resultList.stream().filter(Objects::nonNull)
-        .map(objArr -> new EntityData().entityId(((BigInteger) objArr[0]).longValue()).otherId(((BigInteger) objArr[1]).longValue()))
+        .map(objArr -> new EntityData().entityId(((BigInteger) objArr[0]).longValue())
+            .otherId(((BigInteger) objArr[1]).longValue()))
         .collect(Collectors.toList());
   }
 
   @Transactional(readOnly = true)
   @Override
-  protected int convertData(int skipped, Set<PersonTrust> entitiesToSave, List<EntityData> entityData, EntityManager entityManager) {
+  protected int convertData(int skipped, Set<PersonTrust> entitiesToSave,
+      List<EntityData> entityData, EntityManager entityManager) {
 
     if (CollectionUtils.isNotEmpty(entityData)) {
 
-      Set<Long> personIds = entityData.stream().map(EntityData::getEntityId).collect(Collectors.toSet());
+      Set<Long> personIds =
+          entityData.stream().map(EntityData::getEntityId).collect(Collectors.toSet());
       List<Person> allPersons = personRepository.findAllById(personIds);
-      Map<Long, Person> personIdToPerson = allPersons.stream().collect(Collectors.toMap(Person::getId, person -> person));
+      Map<Long, Person> personIdToPerson =
+          allPersons.stream().collect(Collectors.toMap(Person::getId, person -> person));
 
       for (EntityData ed : entityData) {
         if (ed != null) {

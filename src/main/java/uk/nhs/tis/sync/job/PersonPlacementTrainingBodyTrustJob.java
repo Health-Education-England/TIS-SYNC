@@ -15,7 +15,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import uk.nhs.tis.sync.model.EntityData;
-
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
@@ -31,7 +30,8 @@ import java.util.stream.Collectors;
     description = "Service that clears the PersonTrust table and links Person with Placement TrainingBody (Trusts)")
 public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTemplate<PersonTrust> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(PersonPlacementTrainingBodyTrustJob.class);
+  private static final Logger LOG =
+      LoggerFactory.getLogger(PersonPlacementTrainingBodyTrustJob.class);
   private static final int FIFTEEN_MIN = 15 * 60 * 1000;
 
   @Autowired
@@ -42,8 +42,10 @@ public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTempla
   private SqlQuerySupplier sqlQuerySupplier;
 
   @Scheduled(cron = "${application.cron.personPlacementTrainingBodyTrustJob}")
-  @SchedulerLock(name = "personTrustTrainingBodyScheduledTask", lockAtLeastFor = FIFTEEN_MIN, lockAtMostFor = FIFTEEN_MIN)
-  @ManagedOperation(description = "Run sync of the PersonTrust table with Person to Placement TrainingBody")
+  @SchedulerLock(name = "personTrustTrainingBodyScheduledTask", lockAtLeastFor = FIFTEEN_MIN,
+      lockAtMostFor = FIFTEEN_MIN)
+  @ManagedOperation(
+      description = "Run sync of the PersonTrust table with Person to Placement TrainingBody")
   public void PersonPlacementTrainingBodyFullSync() {
     runSyncJob();
   }
@@ -66,37 +68,44 @@ public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTempla
 
   @Override
   protected void deleteData() {
-    //This job runs after the PostEmployingBodyEmployingBodyTrustJob and therefore shouldn't truncate the table
+    // This job runs after the PostEmployingBodyEmployingBodyTrustJob and therefore shouldn't
+    // truncate the table
   }
 
 
   @Override
-  protected List<EntityData> collectData(int pageSize, long lastId, long lastTrainingBodyId, EntityManager entityManager) {
-    LOG.info("Querying with lastPersonId: [{}] and lastTrainingBodyId: [{}]", lastId, lastTrainingBodyId);
-    String personPlacementQuery = sqlQuerySupplier.getQuery(SqlQuerySupplier.PERSON_PLACEMENT_TRAININGBODY);
+  protected List<EntityData> collectData(int pageSize, long lastId, long lastTrainingBodyId,
+      EntityManager entityManager) {
+    LOG.info("Querying with lastPersonId: [{}] and lastTrainingBodyId: [{}]", lastId,
+        lastTrainingBodyId);
+    String personPlacementQuery =
+        sqlQuerySupplier.getQuery(SqlQuerySupplier.PERSON_PLACEMENT_TRAININGBODY);
 
-    Query query = entityManager.createNativeQuery(personPlacementQuery).setParameter("lastId", lastId)
-        .setParameter("lastTrainingBodyId", lastTrainingBodyId)
+    Query query = entityManager.createNativeQuery(personPlacementQuery)
+        .setParameter("lastId", lastId).setParameter("lastTrainingBodyId", lastTrainingBodyId)
         .setParameter("pageSize", pageSize);
 
     List<Object[]> resultList = query.getResultList();
-    List<EntityData> result = resultList.stream().filter(Objects::nonNull).map(objArr -> new EntityData()
-        .entityId(((BigInteger) objArr[0]).longValue())
-        .otherId(((BigInteger) objArr[1]).longValue())).collect(Collectors.toList());
+    List<EntityData> result = resultList.stream().filter(Objects::nonNull)
+        .map(objArr -> new EntityData().entityId(((BigInteger) objArr[0]).longValue())
+            .otherId(((BigInteger) objArr[1]).longValue()))
+        .collect(Collectors.toList());
 
     return result;
   }
 
   @Transactional(readOnly = true)
   @Override
-  protected int convertData(int skipped, Set<PersonTrust> entitiesToSave, List<EntityData> entityData,
-                            EntityManager entityManager) {
+  protected int convertData(int skipped, Set<PersonTrust> entitiesToSave,
+      List<EntityData> entityData, EntityManager entityManager) {
 
     if (CollectionUtils.isNotEmpty(entityData)) {
 
-      Set<Long> personIds = entityData.stream().map(EntityData::getEntityId).collect(Collectors.toSet());
+      Set<Long> personIds =
+          entityData.stream().map(EntityData::getEntityId).collect(Collectors.toSet());
       List<Person> allPersons = personRepository.findAllById(personIds);
-      Map<Long, Person> personIdToPerson = allPersons.stream().collect(Collectors.toMap(Person::getId, person -> person));
+      Map<Long, Person> personIdToPerson =
+          allPersons.stream().collect(Collectors.toMap(Person::getId, person -> person));
 
       for (EntityData ed : entityData) {
         if (ed != null) {
@@ -116,6 +125,5 @@ public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTempla
     return skipped;
   }
 }
-
 
 

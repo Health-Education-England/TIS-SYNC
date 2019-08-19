@@ -51,4 +51,8 @@ jhipster:
 
 application:
 
+slack:
+  api:
+    token: ${SLACK_API_TOKEN}
+
 enable.es.search: ${ENABLE_ES_SEARCH}

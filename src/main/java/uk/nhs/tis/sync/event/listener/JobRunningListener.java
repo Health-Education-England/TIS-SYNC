@@ -1,7 +1,7 @@
 /**
  * 
  */
-package uk.nhs.tis.sync;
+package uk.nhs.tis.sync.event.listener;
 
 import java.time.LocalTime;
 import org.slf4j.Logger;

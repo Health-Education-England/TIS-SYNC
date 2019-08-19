@@ -39,5 +39,11 @@ kc:
   password: ${KC_PASSWORD:tcs_trust_admin}
   timeout: ${KC_TIMEOUT:10000}
 
+slack:
+  api:
+    token: ${SLACK_API_TOKEN:}
+  job:
+    notification-channel: spaml
+
 # enable.es.search: true
 enable.es.search: false

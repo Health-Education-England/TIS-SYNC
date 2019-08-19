@@ -2,14 +2,14 @@ package uk.nhs.tis.sync.job;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
-
+import uk.nhs.tis.sync.event.JobExecutionEvent;
 import uk.nhs.tis.sync.model.EntityData;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jmx.export.annotation.ManagedOperation;
-
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
@@ -20,6 +20,9 @@ import java.util.concurrent.CompletableFuture;
 public abstract class TrustAdminSyncJobTemplate<ENTITY> {
 
   private static final Logger LOG = LoggerFactory.getLogger(TrustAdminSyncJobTemplate.class);
+
+  @Autowired(required = false)
+  private ApplicationEventPublisher applicationEventPublisher;
 
   private Stopwatch mainStopWatch;
 
@@ -51,13 +54,18 @@ public abstract class TrustAdminSyncJobTemplate<ENTITY> {
 
   protected abstract void deleteData();
 
-  protected abstract List<EntityData> collectData(int pageSize, long lastId, long lastSiteId, EntityManager entityManager);
+  protected abstract List<EntityData> collectData(int pageSize, long lastId, long lastSiteId,
+      EntityManager entityManager);
 
-  protected abstract int convertData(int skipped, Set<ENTITY> entitiesToSave, List<EntityData> entityData, EntityManager entityManager);
+  protected abstract int convertData(int skipped, Set<ENTITY> entitiesToSave,
+      List<EntityData> entityData, EntityManager entityManager);
 
   protected void run() {
 
-
+    if (applicationEventPublisher != null) {
+      applicationEventPublisher
+          .publishEvent(new JobExecutionEvent(this, "Sync [" + getJobName() + "] started."));
+    }
     LOG.info("Sync [{}] started", getJobName());
     mainStopWatch = Stopwatch.createStarted();
     Stopwatch stopwatch = Stopwatch.createStarted();
@@ -79,7 +87,8 @@ public abstract class TrustAdminSyncJobTemplate<ENTITY> {
         transaction = entityManager.getTransaction();
         transaction.begin();
 
-        List<EntityData> collectedData = collectData(getPageSize(), lastEntityId, lastSiteId, entityManager);
+        List<EntityData> collectedData =
+            collectData(getPageSize(), lastEntityId, lastSiteId, entityManager);
         hasMoreResults = collectedData.size() > 0;
         LOG.info("Time taken to read chunk : [{}]", stopwatch.toString());
 
@@ -102,6 +111,10 @@ public abstract class TrustAdminSyncJobTemplate<ENTITY> {
         if (transaction != null && transaction.isActive()) {
           transaction.rollback();
         }
+        if (applicationEventPublisher != null) {
+          applicationEventPublisher
+              .publishEvent(new JobExecutionEvent(this, getFailureMessage(getJobName(), e)));
+        }
         throw e;
       } finally {
         if (entityManager != null && entityManager.isOpen()) {
@@ -111,10 +124,22 @@ public abstract class TrustAdminSyncJobTemplate<ENTITY> {
       LOG.info("Time taken to save chunk : [{}]", stopwatch.toString());
     }
     stopwatch.reset().start();
-    LOG.info("Sync job [{}] finished. Total time taken {} for processing [{}] records", getJobName(),
-        mainStopWatch.stop().toString(), totalRecords);
+    LOG.info("Sync job [{}] finished. Total time taken {} for processing [{}] records",
+        getJobName(), mainStopWatch.stop().toString(), totalRecords);
     LOG.info("Skipped records {}", skipped);
     mainStopWatch = null;
+    if (applicationEventPublisher != null) {
+      applicationEventPublisher
+          .publishEvent(new JobExecutionEvent(this, getSuccessMessage(getJobName())));
+    }
+  }
+
+  protected String getSuccessMessage(String jobName) {
+    return "Sync [" + getJobName() + "] completed successfully.";
+  }
+
+  protected String getFailureMessage(String jobName, Exception e) {
+    return "@channel Sync [" + getJobName() + "] failed with exception [" + e.getMessage() + "].";
   }
 
 }
