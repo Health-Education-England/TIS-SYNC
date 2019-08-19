@@ -20,6 +20,7 @@ import uk.nhs.tis.sync.event.JobExecutionEvent;
 public class PersonOwnerRebuildJob {
 
   private static final Logger LOG = LoggerFactory.getLogger(PersonOwnerRebuildJob.class);
+
   private static final int FIFTEEN_MIN = 15 * 60 * 1000;
 
   @Autowired
@@ -68,8 +69,8 @@ public class PersonOwnerRebuildJob {
       LOG.error(e.getMessage(), e);
       mainStopWatch = null;
       if (applicationEventPublisher != null) {
-        applicationEventPublisher.publishEvent(new JobExecutionEvent(this,
-            "Sync [" + getJobName() + "] failed with exception [" + e.getMessage() + "]."));
+        applicationEventPublisher.publishEvent(new JobExecutionEvent(this, "@channel Sync ["
+            + getJobName() + "] failed with exception [" + e.getMessage() + "]."));
       }
       throw e;
     }

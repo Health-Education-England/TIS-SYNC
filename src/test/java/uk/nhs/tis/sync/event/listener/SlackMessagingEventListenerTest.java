@@ -30,7 +30,7 @@ public class SlackMessagingEventListenerTest {
 
     // When a job completion event is received
     JobExecutionEvent event = new JobExecutionEvent(this, "Test message");
-    testClass.handleJobCompletionEvent(event);
+    testClass.handleJobExecutionEvent(event);
 
     // Then our client should receive a message.
     verify(mockClient).postMessage(any());

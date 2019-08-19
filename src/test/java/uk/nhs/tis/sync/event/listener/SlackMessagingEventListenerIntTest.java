@@ -25,7 +25,7 @@ public class SlackMessagingEventListenerIntTest {
 
     // When a job completion event is received
     JobExecutionEvent event = new JobExecutionEvent(this, "Slack integration test run.");
-    testClass.handleJobCompletionEvent(event);
+    testClass.handleJobExecutionEvent(event);
 
   }
 
