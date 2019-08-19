@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import uk.nhs.tis.sync.JobRunningListener;
+import uk.nhs.tis.sync.event.listener.JobRunningListener;
 import uk.nhs.tis.sync.job.*;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
 
@@ -80,6 +80,7 @@ public class JobResource {
 
   /**
    * PUT /job/:name : Trigger one individual job
+   *
    * @param name the name of the job to run
    * @return status of the requested job :
    * "already running" - the job has been running before triggering it

@@ -60,7 +60,7 @@ public class JobResourceTest {
 
   @DisplayName("get Status")
   @Test
-  public void shouldReturnAllStatusWhenGetStatus() throws Exception{
+  public void shouldReturnAllStatusWhenGetStatus() throws Exception {
     when(personPlacementEmployingBodyTrustJob.isCurrentlyRunning())
       .thenReturn(false);
     when(personPlacementTrainingBodyTrustJob.isCurrentlyRunning())
