@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sync Jobs</title>
+    <script type="text/javascript" src="main.js"></script>
+  </head>
+<body>
+  <div>
+    <button type="button" onclick="runJob()" id="personOwnerRebuildJob">Run PersonOwnerRebuildJob</button> <p id="personOwnerRebuildJob_status"></p>
+    <button type="button" onclick="runJob()" id="personPlacementEmployingBodyTrustJob">Run PersonPlacementEmployingBodyTrustJob</button>
+    <button type="button" onclick="runJob()" id="personPlacementTrainingBodyTrustJob">Run PersonPlacementTrainingBodyTrustJob</button>
+    <button type="button" onclick="runJob()" id="postEmployingBodyTrustJob">Run PostEmployingBodyTrustJob</button>
+    <button type="button" onclick="runJob()" id="postTrainingBodyTrustJob">Run PostTrainingBodyTrustJob</button>
+    <button type="button" onclick="runJob()" id="personElasticSearchSyncJob">Run PersonElasticSearchSyncJob</button>
+
+    <button type="button" onclick="runAllJobs()" id="runAllJobs">Run All Jobs</button>
+
+    <button type="button" onclick="getStatus()" id="getStatus">Get Status</button>
+  </div>
+</body>
+</html>
