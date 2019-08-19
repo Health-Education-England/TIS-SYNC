@@ -26,7 +26,7 @@ public class SlackMessagingEventListener {
   }
 
   @EventListener
-  public void handleJobCompletionEvent(JobExecutionEvent event) {
+  public void handleJobExecutionEvent(JobExecutionEvent event) {
     LOG.debug("Received job completion event with message [" + event.getMessage() + "]");
     ChatPostMessageParams params = ChatPostMessageParams.builder().setChannelId(CHANNEL_ID)
         .setText(event.getMessage()).build();
