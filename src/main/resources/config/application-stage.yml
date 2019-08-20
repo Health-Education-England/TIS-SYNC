@@ -22,6 +22,10 @@ spring:
 logging:
   file: ${LOG_DIR:${HOME}}/sync.log
 
+slack:
+  job:
+    notification-channel: stage-monitoring
+
 application:
 
 enable.es.search: ${ENABLE_ES_SEARCH}
