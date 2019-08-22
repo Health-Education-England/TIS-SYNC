@@ -1,0 +1,71 @@
+.container-1, .container-2, .container-3, .container-4, .container-5, .container-6{
+  display:flex;
+  border:1px #ccc solid;
+  padding:10px;
+  width:700px;
+  align-items:center;
+  margin-right:auto;
+  margin-left:auto;
+}
+
+h2 {
+  font-size: 1em;
+ }
+
+h2, p, button{
+  font-family: Arial, Helvetica, sans-serif;
+ }
+
+.box-1{
+  flex:3;
+}
+
+.box-2{
+  flex:1;
+}
+
+.box-3{
+  flex:1;
+  align-text:center;
+}
+
+.jobs-status-buttons{
+  margin:1em;
+  text-align:center;
+}
+
+p{
+  align-text:center;
+  margin-left: 1em;
+  font-size:0.9em;
+  color:red;
+}
+
+button{
+  background: #0072CE;
+  color: white;
+  border: 0;
+  border-radius:5px;
+  height: 2em;
+}
+
+button:hover{
+  background: #41B6E6;
+  cursor: pointer;
+}
+
+.jobs-status-buttons button{
+  background: #41B6E6;
+  color: white;
+  text-weight: bold;
+  margin: 0em 2em 0em 2em;
+  width: 10em;
+}
+
+.jobs-status-buttons button:hover{
+  background: #0072CE;
+}
+
+.running-text{
+  color: green;
+}
