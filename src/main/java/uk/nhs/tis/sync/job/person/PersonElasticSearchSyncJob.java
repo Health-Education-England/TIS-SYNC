@@ -158,7 +158,7 @@ public class PersonElasticSearchSyncJob {
       e.printStackTrace();
       mainStopWatch = null;
       if (applicationEventPublisher != null) {
-        applicationEventPublisher.publishEvent(new JobExecutionEvent(this, "@channel Sync ["
+        applicationEventPublisher.publishEvent(new JobExecutionEvent(this, "<!channel> Sync ["
             + getJobName() + "] failed with exception [" + e.getMessage() + "]."));
       }
     }
