@@ -11,7 +11,7 @@
   </parent>
   <groupId>uk.nhs.tis</groupId>
   <artifactId>sync</artifactId>
-  <version>1.6.0</version>
+  <version>1.6.1</version>
   <packaging>jar</packaging>
   <name>sync</name>
   <description>Separate Microservice for synchronisation</description>
@@ -86,7 +86,7 @@
     <dependency>
       <groupId>uk.nhs.tis</groupId>
       <artifactId>tcs-persistence</artifactId>
-      <version>1.2.0</version>
+      <version>1.5.0</version>
     </dependency>
     <dependency>
       <groupId>com.transformuk.hee</groupId>
