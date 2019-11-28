@@ -139,7 +139,7 @@ public abstract class TrustAdminSyncJobTemplate<ENTITY> {
   }
 
   protected String getFailureMessage(String jobName, Exception e) {
-    return "@channel Sync [" + getJobName() + "] failed with exception [" + e.getMessage() + "].";
+    return "<!channel> Sync [" + getJobName() + "] failed with exception [" + e.getMessage() + "].";
   }
 
 }
