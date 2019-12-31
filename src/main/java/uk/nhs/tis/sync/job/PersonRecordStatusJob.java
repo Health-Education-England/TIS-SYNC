@@ -1,6 +1,5 @@
 package uk.nhs.tis.sync.job;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -26,7 +25,6 @@ import org.springframework.stereotype.Component;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
 import com.transformuk.hee.tis.tcs.service.model.Person;
-import com.transformuk.hee.tis.tcs.service.repository.PersonRepository;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import uk.nhs.tis.sync.event.JobExecutionEvent;
 
@@ -44,8 +42,6 @@ public class PersonRecordStatusJob {
           + " ORDER BY personId LIMIT :pageSize";
   @Autowired
   private EntityManagerFactory entityManagerFactory;
-  @Autowired
-  private PersonRepository personRepository;
   private Stopwatch mainStopWatch;
 
   @Scheduled(cron = "${application.cron.personRecordStatusJob}")
@@ -84,7 +80,7 @@ public class PersonRecordStatusJob {
   protected int convertData(Set<Person> entitiesToSave, List<Long> entityData,
       EntityManager entityManager) {
     int entities = entityData.size();
-    entityData.parallelStream().map((id) -> {return entityManager.find(Person.class, id);})
+    entityData.stream().map((id) -> {return entityManager.find(Person.class, id);})
         .filter(Objects::nonNull)
         .filter(p -> p.getStatus() != p.programmeMembershipsStatus())
         .peek(p -> p.setStatus(p.programmeMembershipsStatus()))
@@ -123,7 +119,7 @@ public class PersonRecordStatusJob {
       queryString = BASE_QUERY.replace(":endDate", endDate).replace(":startDate", startDate)
           .replace(":pageSize", "" + getPageSize());
     } else {
-      queryString = BASE_QUERY
+      queryString = BASE_QUERY.replace(":pageSize", "" + getPageSize())
           .replace(" AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')", "");
     }
     int skipped = 0, totalRecords = 0;
