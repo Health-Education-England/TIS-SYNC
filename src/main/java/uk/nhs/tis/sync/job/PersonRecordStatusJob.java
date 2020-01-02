@@ -14,9 +14,11 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -42,6 +44,8 @@ public class PersonRecordStatusJob {
           + " ORDER BY personId LIMIT :pageSize";
   @Autowired
   private EntityManagerFactory entityManagerFactory;
+  @Value("${application.jobs.personRecordStatusJob.dateOfChangeOverride:}")
+  private String dateOfChangeOverride;
   private Stopwatch mainStopWatch;
 
   @Scheduled(cron = "${application.cron.personRecordStatusJob}")
@@ -153,8 +157,8 @@ public class PersonRecordStatusJob {
           totalRecords += collectedData.size();
           skipped += convertData(dataToSave, collectedData, entityManager);
         }
+        stopwatch.reset().start();
         if (CollectionUtils.isNotEmpty(dataToSave)) {
-          stopwatch.reset().start();
           dataToSave.forEach(entityManager::persist);
           entityManager.flush();
         }
@@ -180,8 +184,8 @@ public class PersonRecordStatusJob {
         }
       }
       LOG.info("Time taken to save chunk : [{}]", stopwatch.toString());
+      stopwatch.reset().start();
     }
-    stopwatch.reset().start();
     LOG.info("Sync job [{}] finished. Total time taken {} for processing [{}] records",
         getJobName(), mainStopWatch.stop().toString(), totalRecords);
     LOG.info("Skipped records {}", skipped);
@@ -193,8 +197,17 @@ public class PersonRecordStatusJob {
   }
 
   private LocalDate magicallyGetDateOfChanges() {
-    //TODO Check configuration for a date
-    return LocalDate.now();
+    if (StringUtils.isEmpty(dateOfChangeOverride)) {
+      return LocalDate.now();
+    } else if ("ANY".equalsIgnoreCase(dateOfChangeOverride)) {
+      return null;
+    } else {
+      return LocalDate.parse(dateOfChangeOverride);
+    }
+  }
+
+  private void setDateOfChange(String dateOfChangeOverride) {
+    this.dateOfChangeOverride = dateOfChangeOverride;
   }
 
   protected String getSuccessMessage(Optional<String> jobName) {
