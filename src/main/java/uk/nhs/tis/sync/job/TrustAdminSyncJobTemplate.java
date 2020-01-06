@@ -14,6 +14,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -113,7 +114,7 @@ public abstract class TrustAdminSyncJobTemplate<ENTITY> {
         }
         if (applicationEventPublisher != null) {
           applicationEventPublisher
-              .publishEvent(new JobExecutionEvent(this, getFailureMessage(getJobName(), e)));
+              .publishEvent(new JobExecutionEvent(this, getFailureMessage(Optional.ofNullable(getJobName()), e)));
         }
         throw e;
       } finally {
@@ -130,16 +131,16 @@ public abstract class TrustAdminSyncJobTemplate<ENTITY> {
     mainStopWatch = null;
     if (applicationEventPublisher != null) {
       applicationEventPublisher
-          .publishEvent(new JobExecutionEvent(this, getSuccessMessage(getJobName())));
+          .publishEvent(new JobExecutionEvent(this, getSuccessMessage(Optional.ofNullable(getJobName()))));
     }
   }
 
-  protected String getSuccessMessage(String jobName) {
-    return "Sync [" + getJobName() + "] completed successfully.";
+  protected String getSuccessMessage(Optional<String> jobName) {
+    return "Sync [" + jobName.orElse(getJobName()) + "] completed successfully.";
   }
 
-  protected String getFailureMessage(String jobName, Exception e) {
-    return "<!channel> Sync [" + getJobName() + "] failed with exception [" + e.getMessage() + "].";
+  protected String getFailureMessage(Optional<String> jobName, Exception e) {
+    return "<!channel> Sync [" + jobName.orElse(getJobName()) + "] failed with exception [" + e.getMessage() + "].";
   }
 
 }

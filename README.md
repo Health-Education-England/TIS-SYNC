@@ -18,6 +18,7 @@ For more description, see [Confluence Sync Service Description](https://hee-tis.
 | **PersonPlacementTrainingBodyTrustJob**  | PersonPlacementTrainingBodyTrustJob |    PersonPlacementTrainingBodyFullSync |                        **PersonElasticSearchSyncJob** (assuming only this failed) |
 | **PostEmployingBodyTrustJob**            |      PostEmployingBodyTrustJob      |         PostEmployingBodyTrustFullSync |                                               Re-run **PostTrainingBodyTrustJob** |
 | **PostTrainingBodyTrustJob**             |      PostTrainingBodyTrustJob       |          PostTrainingBodyTrustFullSync |                                                  none (assuming only this failed) |
+| **PersonRecordStatusJob**  | PersonRecordStatusJob |    personRecordStatusJob |                        **PersonElasticSearchSyncJob** (assuming only this failed) |
 | **PersonElasticSearchSyncJob**           |       PersonElasticSearchJob        |                personElasticSearchSync |                                                                              none |
 
 ### Run jobs on Buttons Page

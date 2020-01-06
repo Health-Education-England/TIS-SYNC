@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.job.PersonOwnerRebuildJob;
 import uk.nhs.tis.sync.job.PersonPlacementEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PersonPlacementTrainingBodyTrustJob;
+import uk.nhs.tis.sync.job.PersonRecordStatusJob;
 import uk.nhs.tis.sync.job.PostEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PostTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
@@ -39,6 +40,10 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
 
   @Autowired
   private PostTrainingBodyTrustJob postTrainingBodyTrustJob;
+  
+  @Autowired
+  private PersonRecordStatusJob personRecordStatusJob;
+  
 
   @Autowired
   private PersonElasticSearchSyncJob personElasticSearchSyncJob;
@@ -79,6 +84,10 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
       do {
         Thread.sleep(SLEEP_DURATION);
       } while (postTrainingBodyTrustJob.isCurrentlyRunning());
+      personRecordStatusJob.personRecordStatusJob();
+      do {
+        Thread.sleep(SLEEP_DURATION);
+      } while (personRecordStatusJob.isCurrentlyRunning());
       personElasticSearchSyncJob.personElasticSearchSync();
       do {
         Thread.sleep(SLEEP_DURATION);

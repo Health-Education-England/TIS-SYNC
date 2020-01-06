@@ -28,6 +28,7 @@ public class JobResource {
   private PostTrainingBodyTrustJob postTrainingBodyTrustJob;
   private PersonElasticSearchSyncJob personElasticSearchSyncJob;
   private PersonOwnerRebuildJob personOwnerRebuildJob;
+  private PersonRecordStatusJob personRecordStatusJob;
 
   @Autowired
   private JobRunningListener jobRunningListener;
@@ -39,13 +40,15 @@ public class JobResource {
                      PostEmployingBodyTrustJob postEmployingBodyTrustJob,
                      PostTrainingBodyTrustJob postTrainingBodyTrustJob,
                      PersonElasticSearchSyncJob personElasticSearchSyncJob,
-                     PersonOwnerRebuildJob personOwnerRebuildJob) {
+                     PersonOwnerRebuildJob personOwnerRebuildJob,
+                     PersonRecordStatusJob personRecordStatusJob) {
     this.personPlacementEmployingBodyTrustJob = personPlacementEmployingBodyTrustJob;
     this.personPlacementTrainingBodyTrustJob = personPlacementTrainingBodyTrustJob;
     this.postEmployingBodyTrustJob = postEmployingBodyTrustJob;
     this.postTrainingBodyTrustJob = postTrainingBodyTrustJob;
     this.personElasticSearchSyncJob = personElasticSearchSyncJob;
     this.personOwnerRebuildJob = personOwnerRebuildJob;
+    this.personRecordStatusJob = personRecordStatusJob;
   }
 
   /**
@@ -64,6 +67,7 @@ public class JobResource {
     statusMap.put("postTrainingBodyTrustJob", postTrainingBodyTrustJob.isCurrentlyRunning());
     statusMap.put("personElasticSearchSyncJob", personElasticSearchSyncJob.isCurrentlyRunning());
     statusMap.put("personOwnerRebuildJob", personOwnerRebuildJob.isCurrentlyRunning());
+    statusMap.put("personRecordStatusJob", personRecordStatusJob.isCurrentlyRunning());
     return ResponseEntity.ok().body(statusMap);
   }
 
@@ -136,6 +140,13 @@ public class JobResource {
           status = ALREADY_RUNNING;
         } else {
           personOwnerRebuildJob.personOwnerRebuildJob();
+        }
+        break;
+      case "personRecordStatusJob":
+        if (personRecordStatusJob.isCurrentlyRunning()) {
+          status = ALREADY_RUNNING;
+        } else {
+          personRecordStatusJob.personRecordStatusJob();
         }
         break;
       default:

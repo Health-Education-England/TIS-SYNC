@@ -38,6 +38,7 @@ public class PersonElasticSearchSyncJob {
 
   @Autowired
   private SqlQuerySupplier sqlQuerySupplier;
+  
   @Autowired
   private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
