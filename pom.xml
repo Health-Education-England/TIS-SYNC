@@ -28,58 +28,19 @@
     <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
+
     <!-- Sonar properties -->
-    <project.testresult.directory>${project.build.directory}/test-results</project.testresult.directory>
-    <run.addResources>false</run.addResources>
-    <sonar-maven-plugin.version>3.2</sonar-maven-plugin.version>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+    <sonar.organization>health-education-england</sonar.organization>
+    <sonar.projectKey>Health-Education-England_TIS-SYNC</sonar.projectKey>
 
-    <sonar.exclusions>src/main/webapp/content/**/*.*,
-      src/main/webapp/bower_components/**/*.*,
-      src/main/webapp/i18n/*.js
-    </sonar.exclusions>
-
-    <sonar.issue.ignore.multicriteria>S3437,UndocumentedApi,BoldAndItalicTagsCheck
-    </sonar.issue.ignore.multicriteria>
-
-    <!-- Rule https://sonarqube.com/coding_rules#rule_key=Web%3ABoldAndItalicTagsCheck
-      is ignored. Even if we agree that using the "i" tag is an awful practice,
-      this is what is recommended by http://fontawesome.io/examples/ -->
-    <sonar.issue.ignore.multicriteria.BoldAndItalicTagsCheck.resourceKey>src/main/webapp/app/**/*.*
-    </sonar.issue.ignore.multicriteria.BoldAndItalicTagsCheck.resourceKey>
-    <sonar.issue.ignore.multicriteria.BoldAndItalicTagsCheck.ruleKey>Web:BoldAndItalicTagsCheck
-    </sonar.issue.ignore.multicriteria.BoldAndItalicTagsCheck.ruleKey>
-    <!-- Rule https://sonarqube.com/coding_rules#rule_key=squid%3AS3437 is
-      ignored, as a JPA-managed field cannot be transient -->
-    <sonar.issue.ignore.multicriteria.S3437.resourceKey>src/main/java/**/*
-    </sonar.issue.ignore.multicriteria.S3437.resourceKey>
-    <sonar.issue.ignore.multicriteria.S3437.ruleKey>squid:S3437</sonar.issue.ignore.multicriteria.S3437.ruleKey>
-    <!-- Rule http://sonarqube.com/coding_rules#rule_key=squid%3AUndocumentedApi
-      is ignored, as we want to follow "clean code" guidelines and classes, methods
-      and arguments names should be self-explanatory -->
-    <sonar.issue.ignore.multicriteria.UndocumentedApi.resourceKey>src/main/java/**/*
-    </sonar.issue.ignore.multicriteria.UndocumentedApi.resourceKey>
-    <sonar.issue.ignore.multicriteria.UndocumentedApi.ruleKey>squid:UndocumentedApi
-    </sonar.issue.ignore.multicriteria.UndocumentedApi.ruleKey>
-
-    <sonar.javascript.jstestdriver.reportsPath>${project.testresult.directory}/karma
-    </sonar.javascript.jstestdriver.reportsPath>
-    <!-- For Sonar < 6.2 -->
-    <sonar.javascript.lcov.reportPath>${project.testresult.directory}/coverage/report-lcov/lcov.info
-    </sonar.javascript.lcov.reportPath>
-    <!-- For Sonar >= 6.2 -->
-    <sonar.javascript.lcov.reportPaths>${project.testresult.directory}/coverage/report-lcov/lcov.info
-    </sonar.javascript.lcov.reportPaths>
-
-    <sonar.sources>${project.basedir}/src/main/</sonar.sources>
-    <sonar.surefire.reportsPath>${project.testresult.directory}/surefire-reports</sonar.surefire.reportsPath>
-    <sonar.tests>${project.basedir}/src/test/</sonar.tests>
+    <sonar.java.checkstyle.reportPaths>${project.build.directory}/checkstyle-result.xml</sonar.java.checkstyle.reportPaths>
 
     <spock.version>1.1-groovy-2.4</spock.version>
     <!-- Spring properties -->
     <tis.shared.modules.version>2.3.0</tis.shared.modules.version>
     <undertow.version>2.0.15.Final</undertow.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
-
   </properties>
 
   <dependencies>
@@ -321,11 +282,6 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.sonarsource.scanner.maven</groupId>
-        <artifactId>sonar-maven-plugin</artifactId>
-        <version>${sonar-maven-plugin.version}</version>
-      </plugin>
-      <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
@@ -340,6 +296,50 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>versions-maven-plugin</artifactId>
         <version>2.5</version>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.5</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <version>3.0.0</version>
+        <configuration>
+          <configLocation>google_checks.xml</configLocation>
+          <consoleOutput>true</consoleOutput>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>8.22</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>validate</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
