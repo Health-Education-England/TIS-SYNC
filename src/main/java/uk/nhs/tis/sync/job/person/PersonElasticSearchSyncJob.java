@@ -38,7 +38,7 @@ public class PersonElasticSearchSyncJob {
 
   @Autowired
   private SqlQuerySupplier sqlQuerySupplier;
-  
+
   @Autowired
   private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
@@ -156,7 +156,7 @@ public class PersonElasticSearchSyncJob {
             .publishEvent(new JobExecutionEvent(this, "Sync [" + getJobName() + "] finished."));
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.error(e.getLocalizedMessage(), e);
       mainStopWatch = null;
       if (applicationEventPublisher != null) {
         applicationEventPublisher.publishEvent(new JobExecutionEvent(this, "<!channel> Sync ["
