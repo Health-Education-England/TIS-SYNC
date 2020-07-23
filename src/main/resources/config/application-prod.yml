@@ -52,7 +52,7 @@ jhipster:
 application:
 
 slack:
-  api:
-    token: ${SLACK_API_TOKEN}
+  job:
+    notification-channel: monitoring-prod
 
 enable.es.search: ${ENABLE_ES_SEARCH}
