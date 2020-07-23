@@ -24,7 +24,7 @@ logging:
 
 slack:
   job:
-    notification-channel: stage-monitoring
+    notification-channel: monitoring-stage
 
 application:
 
