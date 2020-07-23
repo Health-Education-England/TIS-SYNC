@@ -127,7 +127,7 @@ slack:
   api:
     token: ${SLACK_API_TOKEN:}
   job:
-    notification-channel: slacktesting
+    notification-channel: testing-slack-integration
 
 kc:
   realm: ${KC_REALM:lin}
