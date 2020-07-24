@@ -53,6 +53,6 @@ application:
 
 slack:
   job:
-    notification-channel: monitoring-prod
+    notification-channel: ${SLACK_NOTIFICATION_CHANNEL:monitoring-prod}
 
 enable.es.search: ${ENABLE_ES_SEARCH}
