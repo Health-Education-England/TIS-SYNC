@@ -227,7 +227,5 @@ logging:
 slack:
   api:
     token: ${SLACK_API_TOKEN}
-  job:
-    notification-channel: monitoring
 
 auto.generate.npn: true
