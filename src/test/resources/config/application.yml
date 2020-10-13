@@ -71,24 +71,6 @@ server:
   address: localhost
 
 # ===================================================================
-# JHipster specific properties
-#
-# Full reference is available at: https://jhipster.github.io/common-application-properties/
-# ===================================================================
-
-jhipster:
-  async:
-    core-pool-size: 2
-    max-pool-size: 50
-    queue-capacity: 10000
-  security:
-    authentication:
-      jwt:
-        secret: 20fb0c95203947e254dd09243256257d9abc1f9a
-        # Token is valid 24 hours
-        token-validity-in-seconds: 86400
-
-# ===================================================================
 # Application specific properties
 # Add your own application properties here, see the ApplicationProperties class
 # to have type-safe configuration, like in the JHipsterProperties above
@@ -118,11 +100,6 @@ application:
     personRecordStatusJob:
       dateOfChangeOverride: ${APPLICATION_JOBS_PERSONRECORDSTATUSJOB_DATEOFCHANGEOVERRIDE:}
 
-azure:
-  accountName: ${CLOUD_BLOB_ACCOUNT_NAME:tisdevstor}
-  accountKey: ${CLOUD_BLOB_ACCOUNT_KEY:C+3kNX/Ttim1chPZUFcjyakUNY7Nx86YNZP5ftZIWzy17+zNlkAj9+uX3TdpJrE49To12DvD/VKx97JWeKPZnA==}
-  containerName: ${CLOUD_BLOB_CONTAINER_NAME:document-manager}
-
 slack:
   api:
     token: ${SLACK_API_TOKEN:}
@@ -134,9 +111,9 @@ kc:
   client:
     id: ${KC_CLIENT_ID:api-tokens}
   server:
-    url: ${KC_SERVER_URL:https://dev-apps.tis.nhs.uk/auth/}
-  username: ${KC_USERNAME:tcs_trust_admin}
-  password: ${KC_PASSWORD:tcs_trust_admin}
+    url: ${KC_SERVER_URL:}
+  username: ${KC_USERNAME:}
+  password: ${KC_PASSWORD:}
   timeout: ${KC_TIMEOUT:10000}
 
 enable.es.search: false
