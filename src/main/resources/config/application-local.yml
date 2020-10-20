@@ -12,10 +12,6 @@ spring:
   elasticsearch:
     rest:
       uris: http://localhost:9200
-  data:
-    elasticsearch:
-      cluster-nodes: localhost:9300
-      cluster-name: docker-cluster
   jpa:
     show_sql: false
 

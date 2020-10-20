@@ -4,14 +4,14 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>tis-parent</artifactId>
-    <groupId>com.transformuk.hee</groupId>
-    <version>3.0.3</version>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.3.1.RELEASE</version>
     <relativePath />
   </parent>
   <groupId>uk.nhs.tis</groupId>
   <artifactId>sync</artifactId>
-  <version>1.7.3</version>
+  <version>1.8.0</version>
   <packaging>jar</packaging>
   <name>sync</name>
   <description>Separate Microservice for synchronisation</description>
@@ -47,7 +47,12 @@
     <dependency>
       <groupId>uk.nhs.tis</groupId>
       <artifactId>tcs-persistence</artifactId>
-      <version>1.7.1</version>
+      <version>2.13.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.transformuk.hee</groupId>
+      <artifactId>audit</artifactId>
+      <version>3.0.0</version>
     </dependency>
     <dependency>
       <groupId>com.transformuk.hee</groupId>
@@ -171,6 +176,16 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-core</artifactId>
+        <version>5.2.4</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <build>
     <defaultGoal>spring-boot:run</defaultGoal>
