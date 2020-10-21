@@ -34,7 +34,7 @@ public class PersonElasticSearchSyncJob {
 
   private Stopwatch mainStopWatch;
 
-  protected static final int DEFAULT_PAGE_SIZE = 10_000;
+  protected static final int DEFAULT_PAGE_SIZE = 8_000;
 
   @Autowired
   private SqlQuerySupplier sqlQuerySupplier;
