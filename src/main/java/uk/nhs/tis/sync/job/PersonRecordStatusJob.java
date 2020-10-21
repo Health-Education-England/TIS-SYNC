@@ -213,7 +213,6 @@ public class PersonRecordStatusJob {
   protected String getSuccessMessage(Optional<String> jobName) {
     return "Sync [" + jobName.orElse(getJobName()) + "] completed successfully.";
   }
-  
 
   protected String getFailureMessage(Optional<String> jobName, Exception e) {
     return "<!channel> Sync [" + jobName.orElse(getJobName()) + "] failed with exception ["
