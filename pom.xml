@@ -156,7 +156,7 @@
     <dependency>
       <groupId>com.hubspot.slack</groupId>
       <artifactId>slack-java-client</artifactId>
-      <version>1.2</version>
+      <version>1.12</version> <!-- 1.7+ resolves invalid as_user parameter for new Slack app calls  -->
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
