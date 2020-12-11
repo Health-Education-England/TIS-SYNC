@@ -47,6 +47,6 @@ public class SlackMessagingAPICompatibilityTest  {
 
     Boolean noAsUserParameter = out.toString().indexOf("as_user") == -1;
 
-    assertEquals(noAsUserParameter, true);
+    assertEquals(true, noAsUserParameter);
   }
 }
