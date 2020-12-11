@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import com.hubspot.slack.client.SlackClient;
+import static org.junit.Assert.assertEquals;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -46,6 +47,6 @@ public class SlackMessagingAPICompatibilityTest  {
 
     Boolean noAsUserParameter = out.toString().indexOf("as_user") == -1;
 
-    assert noAsUserParameter;
+    assertEquals(noAsUserParameter, true);
   }
 }
