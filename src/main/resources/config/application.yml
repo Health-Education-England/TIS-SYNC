@@ -62,6 +62,7 @@ spring:
         rewriteBatchedStatements: true
         useLocalSessionState: true
       maximumPoolSize: 20
+      maxLifetime: 380000
   jackson:
     serialization.write_dates_as_timestamps: false
     serialization.indent_output: true
