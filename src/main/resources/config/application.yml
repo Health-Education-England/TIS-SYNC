@@ -204,6 +204,25 @@ application:
       latest: ${APPLICATION_JOBS_RUNONSTARTUP_LATEST:05:00}
     personRecordStatusJob:
       dateOfChangeOverride: ${APPLICATION_JOBS_PERSONRECORDSTATUSJOB_DATEOFCHANGEOVERRIDE:}
+  aws:
+    access:
+      key:
+        id: ${AWS_ACCESS_KEY_ID}
+    secret:
+      access:
+        key: ${AWS_SECRET_ACCESS_KEY}
+    region: ${AWS_REGION:eu-west-2}
+
+tcs.server:
+  name: ${TCS_HOST:localhost}
+  port: ${TCS_PORT:80}
+
+tcs.service:
+  url: ${TCS_SERVER_URL:http://${tcs.server.name}:${tcs.server.port}/tcs}
+
+tcs.client:
+  rate.limit: ${TCS_CLIENT_RATE_LIMIT:100}
+  bulk.rate.limit: ${TCS_CLIENT_BULK_RATE_LIMIT:10}
 
 azure:
   accountName: ${CLOUD_BLOB_ACCOUNT_NAME}

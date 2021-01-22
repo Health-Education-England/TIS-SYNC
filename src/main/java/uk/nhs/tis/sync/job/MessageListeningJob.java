@@ -2,9 +2,11 @@ package uk.nhs.tis.sync.job;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.model.PutRecordsRequest;
@@ -33,6 +35,10 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
   description = "Job that listens for incoming messages")
 public class MessageListeningJob {
 
+  private String QUEUE_NAME = "tis-trainee-sync-queue-preprod";
+
+  private String KINESIS_STREAM_NAME = "azure-stage-db-to-aws-kinesis-continuous";
+
   private static final Logger LOG = LoggerFactory.getLogger(PersonOwnerRebuildJob.class);
 
   private Stopwatch mainStopWatch;
@@ -46,10 +52,16 @@ public class MessageListeningJob {
   @Autowired
   private AmazonKinesis amazonKinesis;
 
+  private AmazonSQS sqs;
+
+  private String queue_url;
+
   @Scheduled(cron = "${application.cron.messageListeningJob}")
   @ManagedOperation(description = "Run MessageListening job")
   public void messageListeningJob() {
     runMessageListeningJob();
+    this.sqs = AmazonSQSClientBuilder.defaultClient();
+    this.queue_url = sqs.getQueueUrl(QUEUE_NAME).getQueueUrl();
   }
 
   protected void runMessageListeningJob() {
@@ -63,8 +75,6 @@ public class MessageListeningJob {
   protected void run() {
     try {
       LOG.info("Listening job [{}] started", getJobName());
-      AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
-      String queue_url = sqs.getQueueUrl("tis-trainee-sync-queue-preprod").getQueueUrl();
       List<Message> messages = sqs.receiveMessage(queue_url).getMessages();
       for(Message message : messages) {
         String messageBody = message.getBody();
@@ -95,7 +105,7 @@ public class MessageListeningJob {
 
   private void sendDataIntoKinesisStream(PostDTO postDTO) {
     PutRecordsRequest putRecordsRequest  = new PutRecordsRequest();
-    putRecordsRequest.setStreamName("tis-stage-mysql-cdc-stream");
+    putRecordsRequest.setStreamName(KINESIS_STREAM_NAME);
     List <PutRecordsRequestEntry> putRecordsRequestEntryList  = new ArrayList<>();
 
     PutRecordsRequestEntry putRecordsRequestEntry  = new PutRecordsRequestEntry();
@@ -105,7 +115,7 @@ public class MessageListeningJob {
 
     putRecordsRequest.setRecords(putRecordsRequestEntryList);
     PutRecordsResult putRecordsResult  = amazonKinesis.putRecords(putRecordsRequest);
-    System.out.println("Put Result" + putRecordsResult);
+    LOG.info("Put Result" + putRecordsResult);
   }
 
 
@@ -119,6 +129,16 @@ public class MessageListeningJob {
       e.printStackTrace();
     }
     return stringifiedPostDTO;
+  }
+
+  private Map<String, String> messageBodyMap(String messageBody) {
+    Map<String, String> map = Arrays.stream(messageBody.split(","))
+      .map(s -> s.split(":"))
+      .collect(Collectors.toMap(
+        a -> a[0],  //key
+        a -> a[1]   //value
+      ));
+    return map;
   }
 
   private String getJobName() {

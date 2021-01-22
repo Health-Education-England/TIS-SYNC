@@ -98,7 +98,7 @@
     </dependency>
     <!-- Dependecies to try removing -->
     <dependency>
-      <groupId>commons-lang</groupId>
+      <groupId>commons-lang</groupId>j
       <artifactId>commons-lang</artifactId>
       <version>2.6</version>
     </dependency>
@@ -190,6 +190,11 @@
       <groupId>com.amazonaws</groupId>
       <artifactId>amazon-kinesis-client</artifactId>
       <version>1.14.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-core</artifactId>
+      <version>1.11.844</version>
     </dependency>
   </dependencies>
 
