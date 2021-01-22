@@ -98,7 +98,7 @@
     </dependency>
     <!-- Dependecies to try removing -->
     <dependency>
-      <groupId>commons-lang</groupId>j
+      <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
       <version>2.6</version>
     </dependency>

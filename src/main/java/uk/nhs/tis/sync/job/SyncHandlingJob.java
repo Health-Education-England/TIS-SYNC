@@ -33,7 +33,7 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonOwnerRebuildJob",
   description = "Job that listens for incoming messages")
-public class MessageListeningJob {
+public class SyncHandlingJob {
 
   private String QUEUE_NAME = "tis-trainee-sync-queue-preprod";
 
