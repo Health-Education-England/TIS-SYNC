@@ -18,11 +18,14 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AmazonKinesisConfiguration {
 
-  @Value("${app.aws.access.key.id}")
+  @Value("${application.aws.access.key.id}")
   private String awsAccessKeyId;
 
-  @Value("${app.aws.secret.access.key}")
+  @Value("${application.aws.secret.access.key}")
   private String awsSecretAccessKey;
+
+  @Value("${application.aws.region}")
+  private String region;
 
   AWSCredentialsProvider credentialsProvider() {
     String secretFirst10 = StringUtils.isBlank(this.awsSecretAccessKey) ? null : this.awsSecretAccessKey.substring(0, 10);
@@ -34,7 +37,7 @@ public class AmazonKinesisConfiguration {
   @Bean
   public AmazonKinesis amazonKinesis() {
     AmazonKinesisClientBuilder clientBuilder =  AmazonKinesisClientBuilder.standard();
-    clientBuilder.setRegion("eu-west-2");
+    clientBuilder.setRegion(region);
     clientBuilder.setCredentials(credentialsProvider());
     clientBuilder.setClientConfiguration(new ClientConfiguration());
 
