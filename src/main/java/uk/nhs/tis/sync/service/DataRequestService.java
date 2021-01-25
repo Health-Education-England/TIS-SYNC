@@ -1,28 +1,24 @@
 package uk.nhs.tis.sync.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.nhs.tis.sync.dto.AmazonSQSMessageDto;
 import org.slf4j.Logger;
-import uk.nhs.tis.sync.job.SyncHandlingJob;
 
 @Slf4j
 @Service
-public class ReconciliationService {
+public class DataRequestService {
 
   private String TABLE_POST = "Post";
 
-  private static final Logger LOG = LoggerFactory.getLogger(ReconciliationService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DataRequestService.class);
 
   private TcsServiceImpl tcsServiceImpl;
 
-  public ReconciliationService(TcsServiceImpl tcsServiceImpl) {
+  public DataRequestService(TcsServiceImpl tcsServiceImpl) {
     this.tcsServiceImpl = tcsServiceImpl;
   }
 

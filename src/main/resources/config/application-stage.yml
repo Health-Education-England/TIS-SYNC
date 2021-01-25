@@ -23,5 +23,10 @@ slack:
     notification-channel: monitoring-stage
 
 application:
+  aws:
+    kinesis:
+      streamName: ${AWS_KINESIS_STREAM_NAME:azure-stage-db-to-aws-kinesis-continuous}
+    sqs:
+      queueName: ${AWS_SQS_QUEUE_NAME:tis-trainee-sync-queue-preprod}
 
 enable.es.search: ${ENABLE_ES_SEARCH}

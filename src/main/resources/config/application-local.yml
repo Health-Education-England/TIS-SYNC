@@ -36,3 +36,12 @@ slack:
 
 # enable.es.search: true
 enable.es.search: false
+
+application:
+  cron:
+    syncHandlingJob: ${APPLICATION_CRON_SYNCHANDLINGJOB:0/10 * * * * *}
+  aws:
+    kinesis:
+      streamName: ${AWS_KINESIS_STREAM_NAME:azure-stage-db-to-aws-kinesis-continuous}
+    sqs:
+      queueName: ${AWS_SQS_QUEUE_NAME:tis-trainee-sync-queue-preprod}
