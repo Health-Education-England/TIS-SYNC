@@ -1,4 +1,4 @@
-package uk.nhs.tis.sync.job;
+package uk.nhs.tis.sync.service;
 
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.model.PutRecordsRequest;
@@ -6,30 +6,33 @@ import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
 import com.amazonaws.services.kinesis.model.PutRecordsResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SendDataIntoKinesisStreamJob {
+@Service
+public class SendDataIntoKinesisService {
 
-  private String KINESIS_STREAM_NAME = "azure-stage-db-to-aws-kinesis-continuous";
-
-  private static final Logger LOG = LoggerFactory.getLogger(SendDataIntoKinesisStreamJob.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SendDataIntoKinesisService.class);
 
   private AmazonKinesis amazonKinesis;
 
-  public SendDataIntoKinesisStreamJob(AmazonKinesis amazonKinesis) {
+  private String kinesisStreamName;
+
+  public SendDataIntoKinesisService(AmazonKinesis amazonKinesis,
+                                    @Value("${application.aws.kinesis.streamName}") String kinesisStreamName) {
     this.amazonKinesis = amazonKinesis;
+    this.kinesisStreamName = kinesisStreamName;
   }
 
   protected void sendDataIntoKinesisStream(Object dto) {
     PutRecordsRequest putRecordsRequest  = new PutRecordsRequest();
-    putRecordsRequest.setStreamName(KINESIS_STREAM_NAME);
+    putRecordsRequest.setStreamName(kinesisStreamName);
     List<PutRecordsRequestEntry> putRecordsRequestEntryList  = new ArrayList<>();
 
     PutRecordsRequestEntry putRecordsRequestEntry  = new PutRecordsRequestEntry();

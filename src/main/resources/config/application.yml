@@ -213,6 +213,10 @@ application:
       access:
         key: ${AWS_SECRET_ACCESS_KEY}
     region: ${AWS_REGION:eu-west-2}
+    kinesis:
+      streamName: ${AWS_KINESIS_STREAM_NAME}
+    sqs:
+      queueName: ${AWS_SQS_QUEUE_NAME}
 
 tcs.server:
   name: ${TCS_HOST:localhost}
