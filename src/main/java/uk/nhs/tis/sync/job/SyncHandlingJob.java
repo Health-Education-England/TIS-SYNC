@@ -1,30 +1,31 @@
 package uk.nhs.tis.sync.job;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
 import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.model.GetQueueUrlResult;
 import com.amazonaws.services.sqs.model.Message;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.common.base.Stopwatch;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import com.google.common.base.Stopwatch;
-import uk.nhs.tis.sync.dto.AmazonSQSMessageDto;
+import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 import uk.nhs.tis.sync.service.DataRequestService;
 import uk.nhs.tis.sync.service.SendDataIntoKinesisService;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @ManagedResource(objectName = "sync.mbean:name=SyncHandlingJob",
-  description = "Job that handles data input into a kinesis stream based on info received via Amazon SQS message")
+    description = "Job that parses an sqs message, sends data accordingly into a Kinesis stream")
 public class SyncHandlingJob {
 
   private static final Logger LOG = LoggerFactory.getLogger(SyncHandlingJob.class);
+
+  private String JOB_NAME = "Sync Handling job";
 
   private Stopwatch mainStopWatch;
 
@@ -35,8 +36,6 @@ public class SyncHandlingJob {
   private AmazonSQS sqs;
 
   private DataRequestService dataRequestService;
-
-  private String queueUrl;
 
   private String queueName;
 
@@ -60,7 +59,7 @@ public class SyncHandlingJob {
 
   protected void runSyncHandlingJob() {
     if (mainStopWatch != null) {
-      LOG.info("Sync job [{}] already running, exiting this execution", getJobName());
+      LOG.info("Sync job [{}] already running, exiting this execution", JOB_NAME);
       return;
     }
     CompletableFuture.runAsync(this::run);
@@ -68,19 +67,22 @@ public class SyncHandlingJob {
 
   protected void run() {
     try {
-      LOG.info("Reading [{}] started", getJobName());
-      GetQueueUrlResult getQueueUrlResult = sqs.getQueueUrl(queueName);
-      queueUrl = getQueueUrlResult.getQueueUrl();
+      LOG.info("Reading [{}] started", JOB_NAME);
+      mainStopWatch = Stopwatch.createStarted();
+      String queueUrl = sqs.getQueueUrl(queueName).getQueueUrl();
       List<Message> messages = sqs.receiveMessage(queueUrl).getMessages();
-      for(Message message : messages) {
+      for (Message message : messages) {
         String messageBody = message.getBody();
-        AmazonSQSMessageDto amazonSQSMessageDto = objectMapper.readValue(messageBody, AmazonSQSMessageDto.class);
+        AmazonSqsMessageDto messageDto = objectMapper
+          .readValue(messageBody, AmazonSqsMessageDto.class);
 
         LOG.info(messageBody);
 
-        Object dto = dataRequestService.retrieveDTO(amazonSQSMessageDto);
+        Object dto = dataRequestService.retrieveDto(messageDto);
 
         sendDataIntoKinesisService.sendDataIntoKinesisStream(dto);
+        mainStopWatch.stop();
+        mainStopWatch = null;
       }
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
@@ -88,18 +90,9 @@ public class SyncHandlingJob {
     }
   }
 
-  private String getJobName() {
-    return "Sync Handling job";
-  }
-
   @ManagedOperation(description = "Is the Sync Handling job currently running")
   public boolean isCurrentlyRunning() {
     return mainStopWatch != null;
-  }
-
-  @ManagedOperation(description = "The current elapsed time of the current sync job")
-  public String elapsedTime() {
-    return mainStopWatch != null ? mainStopWatch.toString() : "0s";
   }
 
 }

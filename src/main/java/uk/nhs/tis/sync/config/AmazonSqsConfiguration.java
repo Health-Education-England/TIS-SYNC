@@ -6,10 +6,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class AmazonSQSConfiguration {
+public class AmazonSqsConfiguration {
 
   @Bean
-  public AmazonSQS amazonSQS() {
+  public AmazonSQS amazonSqs() {
     return AmazonSQSClientBuilder.defaultClient();
   }
 }

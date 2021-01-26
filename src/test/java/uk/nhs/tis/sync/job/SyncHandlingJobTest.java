@@ -9,19 +9,13 @@ import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.mockito.*;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.nhs.tis.sync.config.AmazonKinesisConfiguration;
-import uk.nhs.tis.sync.config.AmazonSQSConfiguration;
-import uk.nhs.tis.sync.dto.AmazonSQSMessageDto;
+import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 import uk.nhs.tis.sync.service.DataRequestService;
 import uk.nhs.tis.sync.service.SendDataIntoKinesisService;
 
@@ -74,7 +68,7 @@ public class SyncHandlingJobTest {
     ReceiveMessageResult receiveMessageResult = mock(ReceiveMessageResult.class);
     when(amazonSQSMock.receiveMessage(anyString())).thenReturn(receiveMessageResult);
     when(receiveMessageResult.getMessages()).thenReturn(newArrayList(message));
-    when(dataRequestServiceMock.retrieveDTO(any(AmazonSQSMessageDto.class))).thenReturn(dto);
+    when(dataRequestServiceMock.retrieveDto(any(AmazonSqsMessageDto.class))).thenReturn(dto);
 
     GetQueueUrlResult getQueueUrlResultMock = mock(GetQueueUrlResult.class);
 

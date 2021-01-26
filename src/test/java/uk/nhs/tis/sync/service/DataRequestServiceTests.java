@@ -13,7 +13,7 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
-import uk.nhs.tis.sync.dto.AmazonSQSMessageDto;
+import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -31,11 +31,11 @@ public class DataRequestServiceTests {
     PostDTO expectedPostDTO = new PostDTO();
     expectedPostDTO.setId(10L);
 
-    AmazonSQSMessageDto amazonSQSMessageDto = new AmazonSQSMessageDto("Post", "10");
+    AmazonSqsMessageDto amazonSQSMessageDto = new AmazonSqsMessageDto("Post", "10");
 
     when(tcsServiceImplMock.getPostById(10L)).thenReturn(expectedPostDTO);
 
-    Object retrievedDto = testObj.retrieveDTO(amazonSQSMessageDto);
+    Object retrievedDto = testObj.retrieveDto(amazonSQSMessageDto);
 
     Assert.assertEquals(retrievedDto, expectedPostDTO);
   }
@@ -45,10 +45,10 @@ public class DataRequestServiceTests {
 
   @Test
   public void shouldCatchExceptionWhenADtoIsNotFoundAndDtoWillReturnNull() {
-    AmazonSQSMessageDto amazonSQSMessageDto = new AmazonSQSMessageDto("Post", "10");
+    AmazonSqsMessageDto amazonSQSMessageDto = new AmazonSqsMessageDto("Post", "10");
     when(tcsServiceImplMock.getPostById(10L)).thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 
-    Object dto = testObj.retrieveDTO(amazonSQSMessageDto);
+    Object dto = testObj.retrieveDto(amazonSQSMessageDto);
 
     Assert.assertNull(dto);
   }

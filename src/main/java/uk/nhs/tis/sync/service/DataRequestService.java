@@ -1,18 +1,15 @@
 package uk.nhs.tis.sync.service;
 
-import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import uk.nhs.tis.sync.dto.AmazonSQSMessageDto;
 import org.slf4j.Logger;
+import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 
 @Slf4j
 @Service
 public class DataRequestService {
-
-  private final String TABLE_POST = "Post";
 
   private static final Logger LOG = LoggerFactory.getLogger(DataRequestService.class);
 
@@ -27,7 +24,7 @@ public class DataRequestService {
    *
    * @param amazonSQSMessageDto The amazonSQSMessageDto to get info from for DTO retrieval.
    */
-  public Object retrieveDTO(AmazonSQSMessageDto amazonSQSMessageDto) {
+  public Object retrieveDto(AmazonSqsMessageDto amazonSQSMessageDto) {
     String table = amazonSQSMessageDto.getTable();
     String id = amazonSQSMessageDto.getId();
 
@@ -35,7 +32,7 @@ public class DataRequestService {
 
     if (table.equals("Post")) {
       try {
-        dto = (PostDTO) tcsServiceImpl.getPostById(Long.parseLong(id));
+        dto = tcsServiceImpl.getPostById(Long.parseLong(id));
       } catch (Exception e) {
         LOG.error(e.getMessage(), e);
       }
