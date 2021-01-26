@@ -4,16 +4,14 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.model.GetQueueUrlResult;
 import com.amazonaws.services.sqs.model.Message;
-import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import com.google.common.base.Stopwatch;
@@ -30,7 +28,7 @@ public class SyncHandlingJob {
 
   private Stopwatch mainStopWatch;
 
-  private SendDataIntoKinesisService sendDataIntoKinesisStreamJob;
+  private SendDataIntoKinesisService sendDataIntoKinesisService;
 
   private ObjectMapper objectMapper;
 
@@ -40,17 +38,18 @@ public class SyncHandlingJob {
 
   private String queueUrl;
 
-  @Autowired
+  private String queueName;
+
   public SyncHandlingJob(SendDataIntoKinesisService sendDataIntoKinesisService,
                          DataRequestService dataRequestService,
                          ObjectMapper objectMapper,
                          AmazonSQS sqs,
                          @Value("${application.aws.sqs.queueName}") String queueName) {
-    this.sendDataIntoKinesisStreamJob = sendDataIntoKinesisService;
+    this.sendDataIntoKinesisService = sendDataIntoKinesisService;
     this.dataRequestService = dataRequestService;
     this.objectMapper = objectMapper;
     this.sqs = sqs;
-    this.queueUrl = sqs.getQueueUrl(queueName).getQueueUrl();
+    this.queueName = queueName;
   }
 
   @Scheduled(cron = "${application.cron.syncHandlingJob}")
@@ -70,6 +69,8 @@ public class SyncHandlingJob {
   protected void run() {
     try {
       LOG.info("Reading [{}] started", getJobName());
+      GetQueueUrlResult getQueueUrlResult = sqs.getQueueUrl(queueName);
+      queueUrl = getQueueUrlResult.getQueueUrl();
       List<Message> messages = sqs.receiveMessage(queueUrl).getMessages();
       for(Message message : messages) {
         String messageBody = message.getBody();
@@ -79,7 +80,7 @@ public class SyncHandlingJob {
 
         Object dto = dataRequestService.retrieveDTO(amazonSQSMessageDto);
 
-        sendDataIntoKinesisStreamJob.sendDataIntoKinesisStream(dto);
+        sendDataIntoKinesisService.sendDataIntoKinesisStream(dto);
       }
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
