@@ -51,9 +51,11 @@ public class SyncHandlingJobTest {
 
   @BeforeEach
   public void setUp() {
-
-
-    job = new SyncHandlingJob(sendDataIntoKinesisServiceMock, dataRequestServiceMock, new ObjectMapper(), amazonSQSMock, QUEUE_NAME);
+    job = new SyncHandlingJob(sendDataIntoKinesisServiceMock,
+        dataRequestServiceMock,
+        new ObjectMapper(),
+        amazonSQSMock,
+        QUEUE_NAME);
   }
 
   @Test
@@ -82,7 +84,7 @@ public class SyncHandlingJobTest {
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
-    Mockito.verify(sendDataIntoKinesisServiceMock, times(1)).sendDataIntoKinesisStream(any(Object.class));
+    verify(sendDataIntoKinesisServiceMock).sendDataIntoKinesisStream(any(Object.class));
   }
 
   @Test
