@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 @Service
 public class DataRequestService {
 
-  private String TABLE_POST = "Post";
+  private final String TABLE_POST = "Post";
 
   private static final Logger LOG = LoggerFactory.getLogger(DataRequestService.class);
 
@@ -40,7 +40,6 @@ public class DataRequestService {
         LOG.error(e.getMessage(), e);
       }
     }
-
     return dto;
   }
 }

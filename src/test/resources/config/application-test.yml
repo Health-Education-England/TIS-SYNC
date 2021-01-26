@@ -99,10 +99,19 @@ application:
       latest: ${APPLICATION_JOBS_RUNONSTARTUP_LATEST:05:00}
     personRecordStatusJob:
       dateOfChangeOverride: ${APPLICATION_JOBS_PERSONRECORDSTATUSJOB_DATEOFCHANGEOVERRIDE:}
+  application:
+    aws:
+      access:
+        key:
+          id: accessKeyId
+      secret:
+        access:
+          key: secretAccessKey
+      region: eu-west-2
 
 slack:
   api:
-    token: ${SLACK_API_TOKEN:}
+    token: ${SLACK_API_TOKEN:token}
   job:
     notification-channel: testing-slack-integration
 
@@ -111,9 +120,9 @@ kc:
   client:
     id: ${KC_CLIENT_ID:api-tokens}
   server:
-    url: ${KC_SERVER_URL:}
-  username: ${KC_USERNAME:}
-  password: ${KC_PASSWORD:}
+    url: ${KC_SERVER_URL:url}
+  username: ${KC_USERNAME:username}
+  password: ${KC_PASSWORD:password}
   timeout: ${KC_TIMEOUT:10000}
 
 enable.es.search: false
