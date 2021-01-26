@@ -30,7 +30,7 @@ public class SendDataIntoKinesisService {
     this.kinesisStreamName = kinesisStreamName;
   }
 
-  protected void sendDataIntoKinesisStream(Object dto) {
+  public void sendDataIntoKinesisStream(Object dto) {
     PutRecordsRequest putRecordsRequest  = new PutRecordsRequest();
     putRecordsRequest.setStreamName(kinesisStreamName);
     List<PutRecordsRequestEntry> putRecordsRequestEntryList  = new ArrayList<>();

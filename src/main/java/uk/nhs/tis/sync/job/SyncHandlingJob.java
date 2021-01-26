@@ -5,12 +5,15 @@ import java.util.concurrent.CompletableFuture;
 
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.Message;
+import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import com.google.common.base.Stopwatch;
@@ -33,17 +36,18 @@ public class SyncHandlingJob {
 
   private AmazonSQS sqs;
 
-  private DataRequestService reconciliationService;
+  private DataRequestService dataRequestService;
 
   private String queueUrl;
 
-  public SyncHandlingJob(SendDataIntoKinesisService sendDataIntoKinesisStreamJob,
-                         DataRequestService reconciliationService,
+  @Autowired
+  public SyncHandlingJob(SendDataIntoKinesisService sendDataIntoKinesisService,
+                         DataRequestService dataRequestService,
                          ObjectMapper objectMapper,
                          AmazonSQS sqs,
                          @Value("${application.aws.sqs.queueName}") String queueName) {
-    this.sendDataIntoKinesisStreamJob = sendDataIntoKinesisStreamJob;
-    this.reconciliationService = reconciliationService;
+    this.sendDataIntoKinesisStreamJob = sendDataIntoKinesisService;
+    this.dataRequestService = dataRequestService;
     this.objectMapper = objectMapper;
     this.sqs = sqs;
     this.queueUrl = sqs.getQueueUrl(queueName).getQueueUrl();
@@ -52,10 +56,10 @@ public class SyncHandlingJob {
   @Scheduled(cron = "${application.cron.syncHandlingJob}")
   @ManagedOperation(description = "Run Sync Handling Job")
   public void syncHandlingJob() {
-    runMessageListeningJob();
+    runSyncHandlingJob();
   }
 
-  protected void runMessageListeningJob() {
+  protected void runSyncHandlingJob() {
     if (mainStopWatch != null) {
       LOG.info("Sync job [{}] already running, exiting this execution", getJobName());
       return;
@@ -73,7 +77,7 @@ public class SyncHandlingJob {
 
         LOG.info(messageBody);
 
-        Object dto = reconciliationService.retrieveDTO(amazonSQSMessageDto);
+        Object dto = dataRequestService.retrieveDTO(amazonSQSMessageDto);
 
         sendDataIntoKinesisStreamJob.sendDataIntoKinesisStream(dto);
       }
