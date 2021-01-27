@@ -12,11 +12,13 @@ import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.stereotype.Service;
 import uk.nhs.tis.sync.dto.OutputDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 
 @Service
+@EnableWebSecurity(debug = false)
 public class SendDataIntoKinesisService {
 
   private static final Logger LOG = LoggerFactory.getLogger(SendDataIntoKinesisService.class);
@@ -69,7 +71,7 @@ public class SendDataIntoKinesisService {
     try {
       json = objectMapper.writeValueAsString(outputDto);
     } catch (JsonProcessingException e) {
-      e.printStackTrace();
+      LOG.info(e.getMessage());
     }
     return json;
   }
