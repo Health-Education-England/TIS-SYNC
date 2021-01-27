@@ -86,19 +86,4 @@ public class SyncHandlingJobTest {
     }
     verify(sendDataIntoKinesisServiceMock).sendDataIntoKinesisStream(any(Object.class));
   }
-
-  @Test
-  public void testJobRun() throws Exception {
-    job.runSyncHandlingJob();
-    int maxLoops = 1440, loops = 0;
-    //Loop while the job is running up to 2 hours
-    Thread.sleep(5 * 1000L);
-    while (job.isCurrentlyRunning() && loops <= maxLoops) {
-      log.info("Job running");
-      Thread.sleep(5 * 1000L);
-      loops++;
-    }
-   assertThat("should show the job is not currently running", job.isCurrentlyRunning(), not(true));
-   assertThat("The job should not have timed out", loops > maxLoops, not(true));
-  }
 }

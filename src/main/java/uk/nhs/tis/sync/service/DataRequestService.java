@@ -3,8 +3,8 @@ package uk.nhs.tis.sync.service;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 
 @Slf4j
@@ -22,11 +22,11 @@ public class DataRequestService {
   /**
    * Retrieve a DTO using TcsServiceImpl according to the info contained in an Amazon SQS message.
    *
-   * @param amazonSQSMessageDto The amazonSQSMessageDto to get info from for DTO retrieval.
+   * @param amazonSqsMessageDto The amazonSqsMessageDto to get info from for DTO retrieval.
    */
-  public Object retrieveDto(AmazonSqsMessageDto amazonSQSMessageDto) {
-    String table = amazonSQSMessageDto.getTable();
-    String id = amazonSQSMessageDto.getId();
+  public Object retrieveDto(AmazonSqsMessageDto amazonSqsMessageDto) {
+    String table = amazonSqsMessageDto.getTable();
+    String id = amazonSqsMessageDto.getId();
 
     Object dto = null;
 

@@ -1,13 +1,13 @@
 package uk.nhs.tis.sync.job;
 
-import java.util.List;
+
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.Message;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.time.StopWatch;
+import java.util.List;
+import com.google.common.base.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.base.Stopwatch;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -27,8 +27,6 @@ public class SyncHandlingJob {
 
   private String JOB_NAME = "Sync Handling job";
 
-  private Stopwatch mainStopWatch;
-
   private SendDataIntoKinesisService sendDataIntoKinesisService;
 
   private ObjectMapper objectMapper;
@@ -39,6 +37,14 @@ public class SyncHandlingJob {
 
   private String queueName;
 
+  /**
+   *
+   * @param sendDataIntoKinesisService A service responsible for outputting into the stream.
+   * @param dataRequestService A service wrapping TcsServiceImpl to fetch a dto.
+   * @param objectMapper To map a message into an AmazonSqsMessageDto.
+   * @param sqs An AmazonSQS object to interact with a queue.
+   * @param queueName The name of the queue to interact with.
+   */
   public SyncHandlingJob(SendDataIntoKinesisService sendDataIntoKinesisService,
                          DataRequestService dataRequestService,
                          ObjectMapper objectMapper,
@@ -58,41 +64,27 @@ public class SyncHandlingJob {
   }
 
   protected void runSyncHandlingJob() {
-    if (mainStopWatch != null) {
-      LOG.info("Sync job [{}] already running, exiting this execution", JOB_NAME);
-      return;
-    }
     CompletableFuture.runAsync(this::run);
   }
 
   protected void run() {
     try {
       LOG.info("Reading [{}] started", JOB_NAME);
-      mainStopWatch = Stopwatch.createStarted();
       String queueUrl = sqs.getQueueUrl(queueName).getQueueUrl();
       List<Message> messages = sqs.receiveMessage(queueUrl).getMessages();
       for (Message message : messages) {
         String messageBody = message.getBody();
         AmazonSqsMessageDto messageDto = objectMapper
-          .readValue(messageBody, AmazonSqsMessageDto.class);
+            .readValue(messageBody, AmazonSqsMessageDto.class);
 
         LOG.info(messageBody);
 
         Object dto = dataRequestService.retrieveDto(messageDto);
 
         sendDataIntoKinesisService.sendDataIntoKinesisStream(dto);
-        mainStopWatch.stop();
-        mainStopWatch = null;
       }
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
-      mainStopWatch = null;
     }
   }
-
-  @ManagedOperation(description = "Is the Sync Handling job currently running")
-  public boolean isCurrentlyRunning() {
-    return mainStopWatch != null;
-  }
-
 }

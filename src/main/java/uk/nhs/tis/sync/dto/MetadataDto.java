@@ -10,6 +10,12 @@ public class MetadataDto {
   String table;
   String operation;
 
+  /**
+   * Metadata to be sent together with Data as part of a comprehensive object.
+   * @param schema
+   * @param table
+   * @param operation
+   */
   @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
   public MetadataDto(@JsonProperty("schema") String schema,
                      @JsonProperty("table") String table,

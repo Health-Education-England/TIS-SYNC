@@ -1,19 +1,19 @@
 package uk.nhs.tis.sync.service;
 
 import java.util.ArrayList;
-import java.util.List;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.model.PutRecordsRequest;
 import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
 import com.amazonaws.services.kinesis.model.PutRecordsResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.nio.ByteBuffer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.nhs.tis.sync.dto.InputDto;
+import uk.nhs.tis.sync.dto.OutputDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 
 @Service
@@ -47,8 +47,12 @@ public class SendDataIntoKinesisService {
 
     PutRecordsRequestEntry putRecordsRequestEntry  = new PutRecordsRequestEntry();
 
-    String jsonStringInput = buildDataInput(dto);
-    putRecordsRequestEntry.setData(ByteBuffer.wrap(jsonStringInput.getBytes()));
+    String jsonStringOutput = buildDataOutput(dto);
+
+    if (jsonStringOutput != null) {
+      putRecordsRequestEntry.setData(ByteBuffer.wrap(jsonStringOutput.getBytes()));
+    }
+
     int listSize = putRecordsRequestEntryList.size();
     putRecordsRequestEntry.setPartitionKey(String.format("partitionKey-%d", listSize));
     putRecordsRequestEntryList.add(putRecordsRequestEntry);
@@ -58,12 +62,12 @@ public class SendDataIntoKinesisService {
     LOG.info("Put Result {}", putRecordsResult);
   }
 
-  private String buildDataInput(Object dto) {
+  private String buildDataOutput(Object dto) {
     MetadataDto metadataDto = new MetadataDto("tcs", "Post", "load");
-    InputDto inputDto = new InputDto(dto, metadataDto);
+    OutputDto outputDto = new OutputDto(dto, metadataDto);
     String json = null;
     try {
-      json = objectMapper.writeValueAsString(inputDto);
+      json = objectMapper.writeValueAsString(outputDto);
     } catch (JsonProcessingException e) {
       e.printStackTrace();
     }
