@@ -1,7 +1,6 @@
 package uk.nhs.tis.sync.job;
 
 import com.transformuk.hee.tis.tcs.service.repository.PersonTrustRepository;
-import uk.nhs.tis.sync.Application;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Assert;
@@ -10,8 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
@@ -19,6 +17,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 //@Sql(scripts = {"/scripts/posts.sql","/scripts/personRows.sql","/scripts/placements.sql"})
 //@Sql(scripts = {"/scripts/deletePlacements.sql","/scripts/deletePersonRows.sql","/scripts/deletePosts.sql"}, executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 public class PersonPlacementTrainingBodyTrustJobIntegrationTest {
+
+  // Mock the sync handler as it requires an SQS queue to be accessible.
+  @MockBean
+  private SyncHandlingJob syncHandlingJob;
 
   @Autowired
   PersonPlacementTrainingBodyTrustJob job;
