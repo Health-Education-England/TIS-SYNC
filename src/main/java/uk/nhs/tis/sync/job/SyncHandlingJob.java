@@ -80,7 +80,7 @@ public class SyncHandlingJob {
 
         Object dto = dataRequestService.retrieveDto(messageDto);
 
-        sendDataIntoKinesisService.sendDataIntoKinesisStream(dto);
+        sendDataIntoKinesisService.sendDataIntoKinesisStream(dto, messageDto.getTable());
       }
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);

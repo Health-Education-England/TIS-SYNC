@@ -40,8 +40,6 @@ public class SyncHandlingJobTest {
   @MockBean
   DataRequestService dataRequestServiceMock;
 
-  ObjectMapper objectMapper;
-
   @MockBean
   AmazonSQS amazonSQSMock;
 
@@ -84,6 +82,6 @@ public class SyncHandlingJobTest {
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
-    verify(sendDataIntoKinesisServiceMock).sendDataIntoKinesisStream(any(Object.class));
+    verify(sendDataIntoKinesisServiceMock).sendDataIntoKinesisStream(any(Object.class), eq("Post"));
   }
 }

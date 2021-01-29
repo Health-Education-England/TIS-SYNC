@@ -42,14 +42,14 @@ public class SendDataIntoKinesisService {
     this.objectMapper = new ObjectMapper();
   }
 
-  public void sendDataIntoKinesisStream(Object dto) {
+  public void sendDataIntoKinesisStream(Object dto, String table) {
     PutRecordsRequest putRecordsRequest  = new PutRecordsRequest();
     putRecordsRequest.setStreamName(kinesisStreamName);
     List<PutRecordsRequestEntry> putRecordsRequestEntryList  = new ArrayList<>();
 
     PutRecordsRequestEntry putRecordsRequestEntry  = new PutRecordsRequestEntry();
 
-    String jsonStringOutput = buildDataOutput(dto);
+    String jsonStringOutput = buildDataOutput(dto, table);
 
     if (jsonStringOutput != null) {
       putRecordsRequestEntry.setData(ByteBuffer.wrap(jsonStringOutput.getBytes()));
@@ -64,8 +64,8 @@ public class SendDataIntoKinesisService {
     LOG.info("Put Result {}", putRecordsResult);
   }
 
-  private String buildDataOutput(Object dto) {
-    MetadataDto metadataDto = new MetadataDto("tcs", "Post", "load");
+  private String buildDataOutput(Object dto, String table) {
+    MetadataDto metadataDto = new MetadataDto("tcs", table, "load");
     OutputDto outputDto = new OutputDto(dto, metadataDto);
     String json = null;
     try {

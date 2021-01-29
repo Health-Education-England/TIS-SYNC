@@ -45,14 +45,14 @@ public class SendDataIntoKinesisServiceTest {
 
   @Test
   public void amazonKinesisShouldSendRecords() {
-    testObj.sendDataIntoKinesisStream(dto);
+    testObj.sendDataIntoKinesisStream(dto, "Post");
     verify(amazonKinesisMock, times(1)).putRecords(any(PutRecordsRequest.class));
   }
 
   @Test
   public void amazonKinesisShouldSendAPutRecordsRequest() {
     PutRecordsRequest putRecordsRequest = new PutRecordsRequest();
-    testObj.sendDataIntoKinesisStream(dto);
+    testObj.sendDataIntoKinesisStream(dto, "Post");
     verify(amazonKinesisMock).putRecords(argThat(argument -> {
       assertThat(argument).isNotNull();
       assertThat(argument).isInstanceOf(PutRecordsRequest.class);
@@ -63,7 +63,7 @@ public class SendDataIntoKinesisServiceTest {
   @Test
   public void dataSentShouldBeFormattedCorrectly() throws JsonProcessingException {
     ArgumentCaptor<PutRecordsRequest> captor = ArgumentCaptor.forClass(PutRecordsRequest.class);
-    testObj.sendDataIntoKinesisStream(dto);
+    testObj.sendDataIntoKinesisStream(dto, "Post");
 
     verify(amazonKinesisMock).putRecords(captor.capture());
     PutRecordsRequest putRecordsRequest = captor.getValue();

@@ -1,8 +1,11 @@
 package uk.nhs.tis.sync.service;
 
+import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
+import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -22,22 +25,40 @@ public class DataRequestServiceTests {
   @Mock
   private TcsServiceImpl tcsServiceImplMock;
 
+  @Mock
+  private ReferenceServiceImpl referenceServiceImplMock;
+
   @Spy
   @InjectMocks
   private DataRequestService testObj;
 
+  private AmazonSqsMessageDto messageForAPost;
+
+  private AmazonSqsMessageDto messageForATrust;
+
+  @Before
+  public void setUp() {
+    messageForAPost = new AmazonSqsMessageDto("Post", "10");
+    messageForATrust = new AmazonSqsMessageDto("Trust", "20");
+  }
+
   @Test
-  public void shouldRetrieveADtoWhenPassedAnAmazonSQSMessage() {
-    PostDTO expectedPostDTO = new PostDTO();
-    expectedPostDTO.setId(10L);
+  public void shouldRetrieveAPostDtoWhenPassedAnAmazonSqsMessageAskingForAPost() {
+    PostDTO expectedPostDto = new PostDTO();
+    expectedPostDto.setId(10L);
+    when(tcsServiceImplMock.getPostById(10L)).thenReturn(expectedPostDto);
 
-    AmazonSqsMessageDto amazonSQSMessageDto = new AmazonSqsMessageDto("Post", "10");
+    Object retrievedDto = testObj.retrieveDto(messageForAPost);
 
-    when(tcsServiceImplMock.getPostById(10L)).thenReturn(expectedPostDTO);
+    Assert.assertEquals(retrievedDto, expectedPostDto);
+  }
 
-    Object retrievedDto = testObj.retrieveDto(amazonSQSMessageDto);
+  @Test
+  public void shouldRetrieveATrustDtoWhenPassedAndAmazonSqsMessageAskingForATrust() {
+    TrustDTO expectedTrustDto = new TrustDTO();
+    expectedTrustDto.setId(20L);
+    //when(referenceServiceImplMock.findTrustByTrustKnownAs(20L)).thenReturn(expectedTrustDto);
 
-    Assert.assertEquals(retrievedDto, expectedPostDTO);
   }
 
   @Rule
