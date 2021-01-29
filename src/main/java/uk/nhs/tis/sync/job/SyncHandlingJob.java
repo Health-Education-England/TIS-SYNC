@@ -1,10 +1,10 @@
 package uk.nhs.tis.sync.job;
 
-
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.Message;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 import uk.nhs.tis.sync.service.DataRequestService;
 import uk.nhs.tis.sync.service.SendDataIntoKinesisService;
-import java.util.concurrent.CompletableFuture;
 
 @Component
 @ManagedResource(objectName = "sync.mbean:name=SyncHandlingJob",
@@ -24,7 +23,7 @@ public class SyncHandlingJob {
 
   private static final Logger LOG = LoggerFactory.getLogger(SyncHandlingJob.class);
 
-  private String JOB_NAME = "Sync Handling job";
+  private static final String JOB_NAME = "Sync Handling job";
 
   private SendDataIntoKinesisService sendDataIntoKinesisService;
 
@@ -34,26 +33,23 @@ public class SyncHandlingJob {
 
   private DataRequestService dataRequestService;
 
-  private String queueName;
+  private String queueUrl;
 
   /**
-   *
    * @param sendDataIntoKinesisService A service responsible for outputting into the stream.
-   * @param dataRequestService A service wrapping TcsServiceImpl to fetch a dto.
-   * @param objectMapper To map a message into an AmazonSqsMessageDto.
-   * @param sqs An AmazonSQS object to interact with a queue.
-   * @param queueName The name of the queue to interact with.
+   * @param dataRequestService         A service wrapping TcsServiceImpl to fetch a dto.
+   * @param objectMapper               To map a message into an AmazonSqsMessageDto.
+   * @param sqs                        An AmazonSQS object to interact with a queue.
+   * @param queueName                  The name of the queue to interact with.
    */
   public SyncHandlingJob(SendDataIntoKinesisService sendDataIntoKinesisService,
-                         DataRequestService dataRequestService,
-                         ObjectMapper objectMapper,
-                         AmazonSQS sqs,
-                         @Value("${application.aws.sqs.queueName}") String queueName) {
+      DataRequestService dataRequestService, ObjectMapper objectMapper, AmazonSQS sqs,
+      @Value("${application.aws.sqs.queueName}") String queueName) {
     this.sendDataIntoKinesisService = sendDataIntoKinesisService;
     this.dataRequestService = dataRequestService;
     this.objectMapper = objectMapper;
     this.sqs = sqs;
-    this.queueName = queueName;
+    queueUrl = sqs.getQueueUrl(queueName).getQueueUrl();
   }
 
   @Scheduled(cron = "${application.cron.syncHandlingJob}")
@@ -69,7 +65,6 @@ public class SyncHandlingJob {
   protected void run() {
     try {
       LOG.info("Reading [{}] started", JOB_NAME);
-      String queueUrl = sqs.getQueueUrl(queueName).getQueueUrl();
       List<Message> messages = sqs.receiveMessage(queueUrl).getMessages();
       for (Message message : messages) {
         String messageBody = message.getBody();
