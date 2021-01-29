@@ -4,6 +4,12 @@ This Service takes the current cron jobs from the TCS service, running them from
 
 For more description, see [Confluence Sync Service Description](https://hee-tis.atlassian.net/wiki/spaces/NTCS/pages/1263271954/Sync+Service)
 
+## Pre-requisites
+The following environmental variables must be provided
+ - `AWS_ACCESS_KEY_ID`
+ - `AWS_SECRET_ACCESS_KEY`
+ - `AWS_REGION`
+
 ## Run jobs out of schedule
 
 ### Job Execution Order
