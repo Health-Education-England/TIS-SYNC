@@ -7,8 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
@@ -17,19 +16,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 //TODO @Sql(scripts = {"/scripts/deleteProgrammeMemberships.sql","/scripts/deletePersonRows.sql","/scripts/deleteProgrammes.sql"}, executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 public class PersonRecordStatusJobIntegrationTest {
 
+  // Mock the sync handler as it requires an SQS queue to be accessible.
+  @MockBean
+  private SyncHandlingJob syncHandlingJob;
+
   @Autowired
   PersonRecordStatusJob job;
 
   @Autowired
   private PersonRepository repo;
-
-//  @Before
-//  public void setUp() throws Exception {
-//  }
-//
-//  @After
-//  public void tearDown() throws Exception {
-//  }
 
   @Test
   public void testJobRun() throws Exception {
