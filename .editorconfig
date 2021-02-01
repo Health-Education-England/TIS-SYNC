@@ -34,3 +34,7 @@ indent_style = tab
 [*.md]
 trim_trailing_whitespace = false
 
+[*.java]
+# IntelliJ specific config should not be here, but is required to allow correct
+# application of styling rules. Otherwise continued lines use standard indent.
+ij_continuation_indent_size = 4

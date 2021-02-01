@@ -101,13 +101,6 @@ application:
     personRecordStatusJob:
       dateOfChangeOverride: ${APPLICATION_JOBS_PERSONRECORDSTATUSJOB_DATEOFCHANGEOVERRIDE:}
   aws:
-    access:
-      key:
-        id: accessKeyId
-    secret:
-      access:
-        key: secretAccessKey
-    region: eu-west-2
     kinesis:
       streamName: ${AWS_KINESIS_STREAM_NAME:streamName}
     sqs:
