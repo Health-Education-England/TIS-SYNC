@@ -106,16 +106,14 @@ application:
     sqs:
       queueName: ${AWS_SQS_QUEUE_NAME:queueName}
 
-tcs.server:
-  name: ${TCS_HOST:localhost}
-  port: ${TCS_PORT:80}
-
-tcs.service:
-  url: ${TCS_SERVER_URL:http://${tcs.server.name}:${tcs.server.port}/tcs}
-
-tcs.client:
-  rate.limit: ${TCS_CLIENT_RATE_LIMIT:100}
-  bulk.rate.limit: ${TCS_CLIENT_BULK_RATE_LIMIT:10}
+tcs:
+  client:
+    rate.limit: ${TCS_CLIENT_RATE_LIMIT:100}
+    bulk.rate.limit: ${TCS_CLIENT_BULK_RATE_LIMIT:10}
+  server:
+    name: ${TCS_HOST:localhost}
+    port: ${TCS_PORT:80}
+    url: ${TCS_SERVER_URL:http://${tcs.server.name}:${tcs.server.port}/tcs}
 
 slack:
   api:
