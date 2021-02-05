@@ -37,6 +37,8 @@ public class SyncHandlingJob {
   private String queueUrl;
 
   /**
+   * A job that reads queue messages, interprets what dto is being requested, fetches it, and
+   * sends it as data into a kinesis stream.
    * @param sendDataIntoKinesisStreamService A service responsible for outputting into the stream.
    * @param dataRequestService         A service wrapping TcsServiceImpl to fetch a dto.
    * @param objectMapper               To map a message into an AmazonSqsMessageDto.
@@ -44,7 +46,8 @@ public class SyncHandlingJob {
    * @param queueName                  The name of the queue to interact with.
    */
   public SyncHandlingJob(SendDataIntoKinesisStreamService sendDataIntoKinesisStreamService,
-                         DataRequestService dataRequestService, ObjectMapper objectMapper, AmazonSQS sqs,
+                         DataRequestService dataRequestService, ObjectMapper objectMapper,
+                         AmazonSQS sqs,
                          @Value("${application.aws.sqs.queueName}") String queueName) {
     this.sendDataIntoKinesisStreamService = sendDataIntoKinesisStreamService;
     this.dataRequestService = dataRequestService;

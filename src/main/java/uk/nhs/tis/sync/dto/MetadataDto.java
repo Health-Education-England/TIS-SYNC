@@ -12,9 +12,9 @@ public class MetadataDto {
 
   /**
    * Metadata to be sent together with Data as part of a comprehensive object.
-   * @param schema
-   * @param table
-   * @param operation
+   * @param schema    The schema of the data.
+   * @param table     The table data belongs to.
+   * @param operation The type of operation (e.g. "load").
    */
   @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
   public MetadataDto(@JsonProperty("schema") String schema,

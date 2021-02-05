@@ -1,24 +1,21 @@
 package uk.nhs.tis.sync.service;
 
-import java.util.ArrayList;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.model.PutRecordsRequest;
 import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
 import com.amazonaws.services.kinesis.model.PutRecordsResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.List;
 import java.nio.ByteBuffer;
-
-import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
-import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.stereotype.Service;
-import uk.nhs.tis.sync.dto.OutputDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
+import uk.nhs.tis.sync.dto.OutputDto;
 
 @Service
 @EnableWebSecurity(debug = false)
@@ -47,6 +44,14 @@ public class SendDataIntoKinesisStreamService {
     this.amazonKinesis = amazonKinesis;
     this.kinesisStreamName = kinesisStreamName;
     this.objectMapper = new ObjectMapper();
+  }
+
+  public ObjectMapper getObjectMapper() {
+    return objectMapper;
+  }
+
+  public void setObjectMapper(ObjectMapper objectMapper) {
+    this.objectMapper = objectMapper;
   }
 
   /**
@@ -100,7 +105,7 @@ public class SendDataIntoKinesisStreamService {
     MetadataDto metadataDto = new MetadataDto(schema, table, "load");
     OutputDto outputDto = new OutputDto(dto, metadataDto);
 
-    String json = null;
+    String json = "";
     try {
       json = objectMapper.writeValueAsString(outputDto);
     } catch (JsonProcessingException e) {

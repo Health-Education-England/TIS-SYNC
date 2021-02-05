@@ -1,7 +1,11 @@
 package uk.nhs.tis.sync.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.amazonaws.services.kinesis.AmazonKinesis;
-import com.amazonaws.services.kinesis.model.PutRecordResult;
 import com.amazonaws.services.kinesis.model.PutRecordsRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,17 +17,12 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-
 
 @RunWith(MockitoJUnitRunner.class)
 public class SendDataIntoKinesisStreamServiceTest {
@@ -89,7 +88,37 @@ public class SendDataIntoKinesisStreamServiceTest {
     ByteBuffer bytesBeingSent = putRecordsRequest.getRecords().get(0).getData();
     String stringBeingSent = StandardCharsets.ISO_8859_1.decode(bytesBeingSent).toString();
 
-    assertThat(stringBeingSent).contains("\"table\":\"Trust\"");
-    assertThat(stringBeingSent).contains("\"schema\":\"reference\"");
+    assertThat(stringBeingSent)
+        .contains("\"table\":\"Trust\"")
+        .contains("\"schema\":\"reference\"");
+  }
+
+  @Test
+  public void exceptionShouldBeCaughtIfObjectMapperThrowsOne() throws JsonProcessingException {
+    ObjectMapper objectMapperMock = mock(ObjectMapper.class);
+    doThrow(JsonProcessingException.class).when(objectMapperMock).writeValueAsString(any());
+
+    SendDataIntoKinesisStreamService testObj2 =
+        new SendDataIntoKinesisStreamService(amazonKinesisMock, "streamName");
+    testObj2.setObjectMapper(objectMapperMock);
+
+    Throwable throwable = catchThrowable(() -> testObj2.sendData(trustDTO, "Trust"));
+    assertThat(throwable).isNull();
+  }
+
+  @Test
+  public void getObjectMapperGetsTheObjectMapper() {
+    ObjectMapper objectMapper = testObj.getObjectMapper();
+    assertThat(objectMapper).isNotNull().isInstanceOf(ObjectMapper.class);
+  }
+
+  @Test
+  public void setObjectMapperSetsTheObjectMapper() {
+    ObjectMapper originalObjectMapper = testObj.getObjectMapper();
+    ObjectMapper newObjectMapper = new ObjectMapper();
+    testObj.setObjectMapper(newObjectMapper);
+
+    assertThat(originalObjectMapper).isNotEqualTo(testObj.getObjectMapper());
+    assertThat(newObjectMapper).isEqualTo(testObj.getObjectMapper());
   }
 }

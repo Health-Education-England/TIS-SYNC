@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AmazonKinesisConfiguration {
   /**
+   * Configuration for an Amazon Kinesis bean.
    * @return an Amazon Kinesis object, necessary to send data into a Kinesis stream.
    */
   @Bean

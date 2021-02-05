@@ -3,8 +3,8 @@ package uk.nhs.tis.sync.service;
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 
@@ -21,7 +21,8 @@ public class DataRequestService {
 
   private ReferenceServiceImpl referenceServiceImpl;
 
-  public DataRequestService(TcsServiceImpl tcsServiceImpl, ReferenceServiceImpl referenceServiceImpl) {
+  public DataRequestService(TcsServiceImpl tcsServiceImpl,
+                            ReferenceServiceImpl referenceServiceImpl) {
     this.tcsServiceImpl = tcsServiceImpl;
     this.referenceServiceImpl = referenceServiceImpl;
   }
