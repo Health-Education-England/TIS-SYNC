@@ -2,6 +2,7 @@ package uk.nhs.tis.sync.service;
 
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
+import com.transformuk.hee.tis.security.model.Trust;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
 import org.junit.Assert;
@@ -36,29 +37,28 @@ public class DataRequestServiceTests {
 
   private AmazonSqsMessageDto messageForATrust;
 
-  @Before
-  public void setUp() {
-    messageForAPost = new AmazonSqsMessageDto("Post", "10");
-    messageForATrust = new AmazonSqsMessageDto("Trust", "20");
-  }
-
   @Test
   public void shouldRetrieveAPostDtoWhenPassedAnAmazonSqsMessageAskingForAPost() {
     PostDTO expectedPostDto = new PostDTO();
     expectedPostDto.setId(10L);
     when(tcsServiceImplMock.getPostById(10L)).thenReturn(expectedPostDto);
 
+    messageForAPost = new AmazonSqsMessageDto("Post", "10");
     Object retrievedDto = testObj.retrieveDto(messageForAPost);
 
-    Assert.assertEquals(retrievedDto, expectedPostDto);
+    Assert.assertEquals(expectedPostDto, retrievedDto);
   }
 
   @Test
-  public void shouldRetrieveATrustDtoWhenPassedAndAmazonSqsMessageAskingForATrust() {
+  public void shouldRetrieveATrustDtoWhenPassedAnAmazonSqsMessageAskingForATrust() {
     TrustDTO expectedTrustDto = new TrustDTO();
     expectedTrustDto.setId(20L);
-    //when(referenceServiceImplMock.findTrustByTrustKnownAs(20L)).thenReturn(expectedTrustDto);
+    when(referenceServiceImplMock.findTrustById(20L)).thenReturn(expectedTrustDto);
 
+    messageForATrust = new AmazonSqsMessageDto("Trust", "20");
+    Object retrievedDto = testObj.retrieveDto(messageForATrust);
+
+    Assert.assertEquals(expectedTrustDto, retrievedDto);
   }
 
   @Rule
