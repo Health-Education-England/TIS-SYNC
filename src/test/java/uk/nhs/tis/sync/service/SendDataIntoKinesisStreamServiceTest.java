@@ -79,7 +79,22 @@ public class SendDataIntoKinesisStreamServiceTest {
   }
 
   @Test
-  public void metadataShouldBeCorrect() throws JsonProcessingException {
+  public void metadataShouldBeConsistentWhenSendingAPost() {
+    ArgumentCaptor<PutRecordsRequest> captor = ArgumentCaptor.forClass(PutRecordsRequest.class);
+    testObj.sendData(postDTO, "Post");
+
+    verify(amazonKinesisMock).putRecords(captor.capture());
+    PutRecordsRequest putRecordsRequest = captor.getValue();
+    ByteBuffer bytesBeingSent = putRecordsRequest.getRecords().get(0).getData();
+    String stringBeingSent = StandardCharsets.ISO_8859_1.decode(bytesBeingSent).toString();
+
+    assertThat(stringBeingSent)
+        .contains("\"table\":\"Post\"")
+        .contains("\"schema\":\"tcs\"");
+  }
+
+  @Test
+  public void metadataShouldBeConsistentWhenSendingATrust() {
     ArgumentCaptor<PutRecordsRequest> captor = ArgumentCaptor.forClass(PutRecordsRequest.class);
     testObj.sendData(trustDTO, "Trust");
 

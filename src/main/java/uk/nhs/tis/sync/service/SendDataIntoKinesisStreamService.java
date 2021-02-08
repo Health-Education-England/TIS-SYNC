@@ -71,19 +71,20 @@ public class SendDataIntoKinesisStreamService {
 
     PutRecordsRequestEntry putRecordsRequestEntry  = new PutRecordsRequestEntry();
 
-    String jsonStringOutput = buildDataOutput(dto, table);
-    if (jsonStringOutput != null) {
+    try {
+      String jsonStringOutput = buildDataOutput(dto, table);
       putRecordsRequestEntry.setData(ByteBuffer.wrap(jsonStringOutput.getBytes()));
+      int listSize = putRecordsRequestEntryList.size();
+      putRecordsRequestEntry.setPartitionKey(String.format("partitionKey-%d", listSize));
+      putRecordsRequestEntryList.add(putRecordsRequestEntry);
+
+      putRecordsRequest.setRecords(putRecordsRequestEntryList);
+      PutRecordsResult putRecordsResult  = amazonKinesis.putRecords(putRecordsRequest);
+
+      LOG.info("Put Result {}", putRecordsResult);
+    } catch (JsonProcessingException e) {
+      LOG.info(e.getMessage());
     }
-
-    int listSize = putRecordsRequestEntryList.size();
-    putRecordsRequestEntry.setPartitionKey(String.format("partitionKey-%d", listSize));
-    putRecordsRequestEntryList.add(putRecordsRequestEntry);
-
-    putRecordsRequest.setRecords(putRecordsRequestEntryList);
-    PutRecordsResult putRecordsResult  = amazonKinesis.putRecords(putRecordsRequest);
-
-    LOG.info("Put Result {}", putRecordsResult);
   }
 
   /**
@@ -93,7 +94,7 @@ public class SendDataIntoKinesisStreamService {
    * @param table The table that object belonged to.
    * @return      The string in json format that will be sent into a kinesis stream.
    */
-  private String buildDataOutput(Object dto, String table) {
+  private String buildDataOutput(Object dto, String table) throws JsonProcessingException {
     String schema = "";
 
     if (table.equals("Post")) {
@@ -105,12 +106,8 @@ public class SendDataIntoKinesisStreamService {
     MetadataDto metadataDto = new MetadataDto(schema, table, "load");
     OutputDto outputDto = new OutputDto(dto, metadataDto);
 
-    String json = "";
-    try {
-      json = objectMapper.writeValueAsString(outputDto);
-    } catch (JsonProcessingException e) {
-      LOG.info(e.getMessage());
-    }
+    String json;
+    json = objectMapper.writeValueAsString(outputDto);
     return json;
   }
 }

@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class DataRequestServiceTests {
+public class DataRequestServiceTest {
 
   @Mock
   private TcsServiceImpl tcsServiceImplMock;
