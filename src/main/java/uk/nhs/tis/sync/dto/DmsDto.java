@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Value;
 
 @Value
-public class OutputDto {
+public class DmsDto {
   Object data;
   MetadataDto metadata;
 
@@ -15,8 +15,8 @@ public class OutputDto {
    * @param metadata The Metadata object with three String fields to be sent in addition.
    */
   @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-  public OutputDto(@JsonProperty("data")Object data,
-                   @JsonProperty("metadata") MetadataDto metadata) {
+  public DmsDto(@JsonProperty("data")Object data,
+                @JsonProperty("metadata") MetadataDto metadata) {
     this.data = data;
     this.metadata = metadata;
   }

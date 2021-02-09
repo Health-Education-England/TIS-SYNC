@@ -19,7 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 import uk.nhs.tis.sync.service.DataRequestService;
-import uk.nhs.tis.sync.service.SendDataIntoKinesisStreamService;
+import uk.nhs.tis.sync.service.KinesisService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +36,7 @@ class SyncHandlingJobTest {
   private SyncHandlingJob jobSpy;
 
   @Mock
-  SendDataIntoKinesisStreamService sendDataIntoKinesisStreamServiceMock;
+  KinesisService kinesisServiceMock;
 
   @Mock
   DataRequestService dataRequestServiceMock;
@@ -49,7 +49,7 @@ class SyncHandlingJobTest {
     GetQueueUrlResult urlResult = new GetQueueUrlResult().withQueueUrl(QUEUE_URL);
     when(amazonSqsMock.getQueueUrl(QUEUE_NAME)).thenReturn(urlResult);
 
-    job = new SyncHandlingJob(sendDataIntoKinesisStreamServiceMock,
+    job = new SyncHandlingJob(kinesisServiceMock,
         dataRequestServiceMock,
         new ObjectMapper(),
         amazonSqsMock,
@@ -74,7 +74,7 @@ class SyncHandlingJobTest {
 
     job.run();
 
-    verify(sendDataIntoKinesisStreamServiceMock).sendData(dto, "Post");
+    verify(kinesisServiceMock).sendData(dto);
   }
 
   @Test
@@ -95,7 +95,7 @@ class SyncHandlingJobTest {
     messages.add(new Message());
     when(receiveMessageResultMock.getMessages()).thenReturn(messages);
 
-    job = new SyncHandlingJob(sendDataIntoKinesisStreamServiceMock,
+    job = new SyncHandlingJob(kinesisServiceMock,
         dataRequestServiceMock,
         objectMapperMock,
         amazonSqsMock,

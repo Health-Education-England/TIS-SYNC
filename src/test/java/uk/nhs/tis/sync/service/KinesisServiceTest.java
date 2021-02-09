@@ -19,13 +19,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
+import uk.nhs.tis.sync.mapper.DmsDtoAssembler;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SendDataIntoKinesisStreamServiceTest {
+public class KinesisServiceTest {
 
   PostDTO postDTO;
 
@@ -36,9 +37,12 @@ public class SendDataIntoKinesisStreamServiceTest {
   @Mock
   private AmazonKinesis amazonKinesisMock;
 
+  @Mock
+  private DmsDtoAssembler dmsDtoAssemblerMock;
+
   @Spy
   @InjectMocks
-  SendDataIntoKinesisStreamService testObj;
+  KinesisService testObj;
 
   @Before
   public void setUp() {
@@ -49,13 +53,13 @@ public class SendDataIntoKinesisStreamServiceTest {
 
   @Test
   public void amazonKinesisShouldSendRecords() {
-    testObj.sendData(postDTO, "Post");
+    testObj.sendData(postDTO);
     verify(amazonKinesisMock, times(1)).putRecords(any(PutRecordsRequest.class));
   }
 
   @Test
   public void amazonKinesisShouldSendAPutRecordsRequest() {
-    testObj.sendData(postDTO, "Post");
+    testObj.sendData(postDTO);
     verify(amazonKinesisMock).putRecords(argThat(argument -> {
       assertThat(argument).isNotNull();
       assertThat(argument).isInstanceOf(PutRecordsRequest.class);
@@ -66,7 +70,7 @@ public class SendDataIntoKinesisStreamServiceTest {
   @Test
   public void dataSentShouldBeFormattedCorrectly() throws JsonProcessingException {
     ArgumentCaptor<PutRecordsRequest> captor = ArgumentCaptor.forClass(PutRecordsRequest.class);
-    testObj.sendData(postDTO, "Post");
+    testObj.sendData(postDTO);
 
     verify(amazonKinesisMock).putRecords(captor.capture());
     PutRecordsRequest putRecordsRequest = captor.getValue();
@@ -81,7 +85,7 @@ public class SendDataIntoKinesisStreamServiceTest {
   @Test
   public void metadataShouldBeConsistentWhenSendingAPost() {
     ArgumentCaptor<PutRecordsRequest> captor = ArgumentCaptor.forClass(PutRecordsRequest.class);
-    testObj.sendData(postDTO, "Post");
+    testObj.sendData(postDTO);
 
     verify(amazonKinesisMock).putRecords(captor.capture());
     PutRecordsRequest putRecordsRequest = captor.getValue();
@@ -96,7 +100,7 @@ public class SendDataIntoKinesisStreamServiceTest {
   @Test
   public void metadataShouldBeConsistentWhenSendingATrust() {
     ArgumentCaptor<PutRecordsRequest> captor = ArgumentCaptor.forClass(PutRecordsRequest.class);
-    testObj.sendData(trustDTO, "Trust");
+    testObj.sendData(trustDTO);
 
     verify(amazonKinesisMock).putRecords(captor.capture());
     PutRecordsRequest putRecordsRequest = captor.getValue();
@@ -113,11 +117,11 @@ public class SendDataIntoKinesisStreamServiceTest {
     ObjectMapper objectMapperMock = mock(ObjectMapper.class);
     doThrow(JsonProcessingException.class).when(objectMapperMock).writeValueAsString(any());
 
-    SendDataIntoKinesisStreamService testObj2 =
-        new SendDataIntoKinesisStreamService(amazonKinesisMock, "streamName");
+    KinesisService testObj2 =
+        new KinesisService(amazonKinesisMock, dmsDtoAssemblerMock, "streamName");
     testObj2.setObjectMapper(objectMapperMock);
 
-    Throwable throwable = catchThrowable(() -> testObj2.sendData(trustDTO, "Trust"));
+    Throwable throwable = catchThrowable(() -> testObj2.sendData(trustDTO));
     assertThat(throwable).isNull();
   }
 

@@ -12,16 +12,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.stereotype.Service;
-import uk.nhs.tis.sync.dto.MetadataDto;
-import uk.nhs.tis.sync.dto.OutputDto;
+import uk.nhs.tis.sync.mapper.DmsDtoAssembler;
 
 @Service
-@EnableWebSecurity(debug = false)
-public class SendDataIntoKinesisStreamService {
+public class KinesisService {
 
-  private static final Logger LOG = LoggerFactory.getLogger(SendDataIntoKinesisStreamService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(KinesisService.class);
 
   private static final String SCHEMA_TCS = "tcs";
 
@@ -33,15 +30,19 @@ public class SendDataIntoKinesisStreamService {
 
   private ObjectMapper objectMapper;
 
+  private DmsDtoAssembler dmsDtoAssembler;
+
   /**
    * An object to send data into a Kinesis data stream.
    * @param amazonKinesis Object needed to a PutRecordsRequest object into the stream.
    * @param kinesisStreamName Name of the Kinesis stream.
    */
-  public SendDataIntoKinesisStreamService(
+  public KinesisService(
       AmazonKinesis amazonKinesis,
+      DmsDtoAssembler dmsDtoAssembler,
       @Value("${application.aws.kinesis.streamName}") String kinesisStreamName) {
     this.amazonKinesis = amazonKinesis;
+    this.dmsDtoAssembler = dmsDtoAssembler;
     this.kinesisStreamName = kinesisStreamName;
     this.objectMapper = new ObjectMapper();
   }
@@ -60,9 +61,8 @@ public class SendDataIntoKinesisStreamService {
    * which is part of a list of entries, which can be set as records in a PutRecordRequest
    * object, which can be sent into a stream by the amazonKinesis object.
    * @param dto   The retrieved dto that is being sent into the stream.
-   * @param table The name of the table that dto belongs to.
    */
-  public void sendData(Object dto, String table) {
+  public void sendData(Object dto) {
     PutRecordsRequest putRecordsRequest  = new PutRecordsRequest();
 
     putRecordsRequest.setStreamName(kinesisStreamName);
@@ -72,7 +72,9 @@ public class SendDataIntoKinesisStreamService {
     PutRecordsRequestEntry putRecordsRequestEntry  = new PutRecordsRequestEntry();
 
     try {
-      String jsonStringOutput = buildDataOutput(dto, table);
+      String jsonStringOutput = dmsDtoAssembler.buildRecord(dto);
+      LOG.info("Trying to send {}", jsonStringOutput);
+
       putRecordsRequestEntry.setData(ByteBuffer.wrap(jsonStringOutput.getBytes()));
       int listSize = putRecordsRequestEntryList.size();
       putRecordsRequestEntry.setPartitionKey(String.format("partitionKey-%d", listSize));
@@ -85,29 +87,5 @@ public class SendDataIntoKinesisStreamService {
     } catch (JsonProcessingException e) {
       LOG.info(e.getMessage());
     }
-  }
-
-  /**
-   * A method to build the string in json format that will represent the data output that will be
-   * sent into the stream.
-   * @param dto   The retrieved dto that will be sent as a string into a kinesis stream.
-   * @param table The table that object belonged to.
-   * @return      The string in json format that will be sent into a kinesis stream.
-   */
-  private String buildDataOutput(Object dto, String table) throws JsonProcessingException {
-    String schema = "";
-
-    if (table.equals("Post")) {
-      schema = SCHEMA_TCS;
-    } else if (table.equals("Trust")) {
-      schema = SCHEMA_REFERENCE;
-    }
-
-    MetadataDto metadataDto = new MetadataDto(schema, table, "load");
-    OutputDto outputDto = new OutputDto(dto, metadataDto);
-
-    String json;
-    json = objectMapper.writeValueAsString(outputDto);
-    return json;
   }
 }

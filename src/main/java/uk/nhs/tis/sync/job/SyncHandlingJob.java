@@ -15,7 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 import uk.nhs.tis.sync.service.DataRequestService;
-import uk.nhs.tis.sync.service.SendDataIntoKinesisStreamService;
+import uk.nhs.tis.sync.service.KinesisService;
 
 @Component
 @ManagedResource(objectName = "sync.mbean:name=SyncHandlingJob",
@@ -26,7 +26,7 @@ public class SyncHandlingJob {
 
   private static final String JOB_NAME = "Sync Handling job";
 
-  private SendDataIntoKinesisStreamService sendDataIntoKinesisStreamService;
+  private KinesisService kinesisService;
 
   private ObjectMapper objectMapper;
 
@@ -39,21 +39,21 @@ public class SyncHandlingJob {
   /**
    * A job that reads queue messages, interprets what dto is being requested, fetches it, and
    * sends it as data into a kinesis stream.
-   * @param sendDataIntoKinesisStreamService A service responsible for outputting into the stream.
+   * @param kinesisService A service responsible for outputting into the stream.
    * @param dataRequestService         A service wrapping TcsServiceImpl to fetch a dto.
    * @param objectMapper               To map a message into an AmazonSqsMessageDto.
    * @param sqs                        An AmazonSQS object to interact with a queue.
-   * @param queueName                  The name of the queue to interact with.
+   * @param queueUrl                   The url of the queue to interact with.
    */
-  public SyncHandlingJob(SendDataIntoKinesisStreamService sendDataIntoKinesisStreamService,
+  public SyncHandlingJob(KinesisService kinesisService,
                          DataRequestService dataRequestService, ObjectMapper objectMapper,
                          AmazonSQS sqs,
-                         @Value("${application.aws.sqs.queueName}") String queueName) {
-    this.sendDataIntoKinesisStreamService = sendDataIntoKinesisStreamService;
+                         @Value("${application.aws.sqs.queueUrl}") String queueUrl) {
+    this.kinesisService = kinesisService;
     this.dataRequestService = dataRequestService;
     this.objectMapper = objectMapper;
     this.sqs = sqs;
-    queueUrl = sqs.getQueueUrl(queueName).getQueueUrl();
+    this.queueUrl = queueUrl;
   }
 
   @Scheduled(cron = "${application.cron.syncHandlingJob}")
@@ -79,7 +79,9 @@ public class SyncHandlingJob {
 
         Object dto = dataRequestService.retrieveDto(messageDto);
 
-        sendDataIntoKinesisStreamService.sendData(dto, messageDto.getTable());
+        if (dto != null) {
+          kinesisService.sendData(dto);
+        }
       }
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
