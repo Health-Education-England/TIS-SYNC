@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.nhs.tis.sync.job.SyncHandlingJob;
+import uk.nhs.tis.sync.job.RecordResendingJob;
 import uk.nhs.tis.sync.service.DmsRecordAssembler;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -25,14 +25,14 @@ public class ApplicationTest {
 
   // Mock the sync handler as it requires an SQS queue to be accessible.
   @MockBean
-  private SyncHandlingJob syncHandlingJob;
+  private RecordResendingJob recordResendingJob;
 
   @MockBean
   private DmsRecordAssembler dmsRecordAssembler;
 
   @Test
   public void testContextLoads() {
-    assertThat("Unexpected bean.", applicationContext.getBean(SyncHandlingJob.class), is(syncHandlingJob));
+    assertThat("Unexpected bean.", applicationContext.getBean(RecordResendingJob.class), is(recordResendingJob));
   }
 
 }

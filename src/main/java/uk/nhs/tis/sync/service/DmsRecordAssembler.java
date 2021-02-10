@@ -1,9 +1,10 @@
 package uk.nhs.tis.sync.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PostDataDmsDto;
@@ -11,59 +12,67 @@ import uk.nhs.tis.sync.dto.TrustDataDmsDto;
 import uk.nhs.tis.sync.mapper.PostDtoToDataDmsDtoMapper;
 import uk.nhs.tis.sync.mapper.TrustDtoToDataDmsDtoMapper;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-
 public class DmsRecordAssembler {
+
+  private static final String LOAD = "load";
+
+  public static final String DATA = "data";
+
+  public static final String PARTITION_KEY_TYPE = "schema-table";
 
   private PostDtoToDataDmsDtoMapper postDtoToDataDmsDtoMapper;
 
   private TrustDtoToDataDmsDtoMapper trustDtoToDataDmsDtoMapper;
 
-  private ObjectMapper objectMapper;
-
+  /**
+   * Constructor for a DmsRecordAssembler, which instantiates the relevant mappers.
+   */
   public DmsRecordAssembler() {
     postDtoToDataDmsDtoMapper = new PostDtoToDataDmsDtoMapper();
     trustDtoToDataDmsDtoMapper = new TrustDtoToDataDmsDtoMapper();
-    objectMapper = new ObjectMapper();
   }
 
-  public String buildRecord(Object dto) throws JsonProcessingException {
-    String stringifiedDmsDto = null;
+
+  /**
+   * The method that assembles a complete DmsDto starting from a dto (e.g. a PostDto or a TrustDto)
+   * @param dto The dto which will be mapped to a -DataDmsDto (e.g. a PostDataDmsDto, or a
+   *            TrustDataDmsDto)
+   * @return    The DmsDto, complete with data and metadata.
+   */
+  public DmsDto assembleDmsDto(Object dto) {
+    DmsDto dmsDto = null;
 
     if (dto instanceof PostDTO) {
       PostDataDmsDto postDataDmsDto = postDtoToDataDmsDtoMapper.postDtoToDataDmsDto((PostDTO) dto);
       MetadataDto metadataDto = new MetadataDto(
           LocalDateTime.now().toString(),
-          "data",
-          "load",
-          "schema-table",
+          DATA,
+          LOAD,
+          PARTITION_KEY_TYPE,
           "tcs",
           "Post",
-          "transaction-id"
+          UUID.randomUUID().toString()
       );
 
-      DmsDto dmsDto = new DmsDto(postDataDmsDto, metadataDto);
-      objectMapper.writeValueAsString(metadataDto);
-      stringifiedDmsDto = objectMapper.writeValueAsString(dmsDto);
+      dmsDto = new DmsDto(postDataDmsDto, metadataDto);
     }
 
     if (dto instanceof TrustDTO) {
-      TrustDataDmsDto trustDataDmsDto = trustDtoToDataDmsDtoMapper.trustDtoToDataDmsDto((TrustDTO) dto);
+      TrustDataDmsDto trustDataDmsDto = trustDtoToDataDmsDtoMapper
+          .trustDtoToDataDmsDto((TrustDTO) dto);
       MetadataDto metadataDto = new MetadataDto(
           Instant.now().toString(),
-          "data",
-          "load",
-          "schema-table",
+          DATA,
+          LOAD,
+          PARTITION_KEY_TYPE,
           "reference",
           "Trust",
-          "transaction-id"
+          UUID.randomUUID().toString()
       );
 
-      DmsDto dmsDto = new DmsDto(trustDataDmsDto, metadataDto);
-      stringifiedDmsDto = objectMapper.writeValueAsString(dmsDto);
+      dmsDto = new DmsDto(trustDataDmsDto, metadataDto);
     }
 
-    return stringifiedDmsDto;
+    return dmsDto;
   }
 }

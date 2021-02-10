@@ -13,8 +13,8 @@ public class DmsDto {
 
   /**
    * And object that encapsulates the information to be sent into a Kinesis data stream.
-   * @param data Normally a previously fetched dto (e.g. PostDTO)
-   * @param metadata The Metadata object with three String fields to be sent in addition.
+   * @param data     A previously fetched dto (e.g. PostDTO)
+   * @param metadata The Metadata object that completes the record.
    */
   @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
   public DmsDto(@JsonProperty("data") Object data,

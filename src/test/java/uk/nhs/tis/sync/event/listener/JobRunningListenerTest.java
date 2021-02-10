@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.nhs.tis.sync.job.PersonOwnerRebuildJob;
-import uk.nhs.tis.sync.job.SyncHandlingJob;
+import uk.nhs.tis.sync.job.RecordResendingJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
 
 @RunWith(SpringRunner.class)
@@ -25,7 +25,7 @@ public class JobRunningListenerTest {
   @MockBean
   private PersonOwnerRebuildJob personOwnerRebuildJob;
   @MockBean
-  private SyncHandlingJob syncHandlingJob;
+  private RecordResendingJob recordResendingJob;
 
   @Autowired
   JobRunningListener testClass;

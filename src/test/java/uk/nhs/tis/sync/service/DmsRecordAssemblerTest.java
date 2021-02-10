@@ -1,40 +1,29 @@
 package uk.nhs.tis.sync.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.tis.sync.mapper.PostDtoToDataDmsDtoMapper;
-import uk.nhs.tis.sync.mapper.TrustDtoToDataDmsDtoMapper;
+import uk.nhs.tis.sync.dto.DmsDto;
+import uk.nhs.tis.sync.dto.MetadataDto;
+import uk.nhs.tis.sync.dto.PostDataDmsDto;
+import uk.nhs.tis.sync.dto.TrustDataDmsDto;
 
-import java.util.Map;
-
+import static com.transformuk.hee.tis.reference.api.enums.Status.CURRENT;
 import static org.junit.Assert.assertEquals;
 
-@ExtendWith(MockitoExtension.class)
 public class DmsRecordAssemblerTest {
 
   private DmsRecordAssembler dmsRecordAssembler;
 
-  private ObjectMapper objectMapper;
-
   private PostDTO postDto;
 
-  @Mock
-  private PostDtoToDataDmsDtoMapper postDtoToDataDmsDtoMapper;
-
-  @Mock
-  TrustDtoToDataDmsDtoMapper trustDtoToDataDmsDtoMapper;
+  private TrustDTO trustDto;
 
   @Before
   public void setUp() {
     dmsRecordAssembler = new DmsRecordAssembler();
-    objectMapper = new ObjectMapper();
 
     PostDTO newPost = new PostDTO();
     newPost.setId(184668L);
@@ -49,40 +38,81 @@ public class DmsRecordAssemblerTest {
     postDto.oldPost(null);
     postDto.owner("Health Education England North West London");
     postDto.intrepidId("128374444");
+
+    trustDto = new TrustDTO();
+    trustDto.setCode("000");
+    trustDto.setLocalOffice("someLocalOffice");
+    trustDto.setStatus(CURRENT);
+    trustDto.setTrustKnownAs("trustKnownAs");
+    trustDto.setTrustName("trustName");
+    trustDto.setTrustNumber("111");
+    trustDto.setIntrepidId("222");
+    trustDto.setId(333L);
   }
 
   @Test
-  public void shouldReturnARecordAsAJsonStringWhenPassedADto() throws JsonProcessingException {
-    String actualRecord = dmsRecordAssembler.buildRecord(postDto);
-    Map actualRecordMap = objectMapper.readValue(actualRecord, Map.class);
-    Map metadata = (Map) actualRecordMap.get("metadata");
+  public void shouldAssembleADmsDtoWhenGivenAPostDto() {
+    DmsDto actualDmsDto = dmsRecordAssembler.assembleDmsDto(postDto);
 
-    String timestamp = (String) metadata.get("timestamp");
+    PostDataDmsDto expectedPostDataDmsDto = new PostDataDmsDto("44381",
+        "EAN/8EJ83/094/SPR/001",
+        "CURRENT",
+        "287",
+        "1464",
+        null,
+        "184668",
+        "Health Education England North West London",
+        "128374444"
+    );
 
-    String expectedRecord = "{\n" +
-        "\"data\":\t{\n" +
-        "\"id\":\t44381,\n" +
-        "\"nationalPostNumber\":\t\"EAN/8EJ83/094/SPR/001\",\n" +
-        "\"status\":\t\"CURRENT\",\n" +
-        "\"employingBodyId\":\t287,\n" +
-        "\"trainingBodyId\":\t1464,\n" +
-        "\"newPostId\":\t184668,\n" +
-        "\"owner\":\t\"Health Education England North West London\",\n" +
-        "\"intrepidId\":\t\"128374444\"\n" +
-        "},\n" +
-        "\"metadata\":\t{\n" +
-        "\"timestamp\":\t\"" + timestamp + "\",\n" +
-        "\"record-type\":\t\"data\",\n" +
-        "\"operation\":\t\"load\",\n" +
-        "\"partition-key-type\":\t\"schema-table\",\n" +
-        "\"schema-name\":\t\"tcs\",\n" +
-        "\"table-name\":\t\"Post\",\n" +
-        "\"transaction-id\":\t\"transaction-id\"\n" +
-        "}\n" +
-        "}";
+    //inject the timestamp from the actualDmsDto into the expectedDmsDto
+    String timestamp = actualDmsDto.getMetadata().getTimestamp();
 
-    Map<String, String> expectedRecordMap = objectMapper.readValue(expectedRecord, Map.class);
+    //ingect the transaction-id from the actualDmsDto into the expectedDmsDto
+    String transactionId = actualDmsDto.getMetadata().getTransactionId();
 
-    assertEquals(expectedRecordMap.toString(), actualRecordMap.toString());
+    MetadataDto expectedMetadataDto = new MetadataDto(timestamp,
+        "data",
+        "load",
+        "schema-table",
+        "tcs",
+        "Post",
+        transactionId);
+
+    DmsDto expectedDmsDto = new DmsDto(expectedPostDataDmsDto, expectedMetadataDto);
+
+    assertEquals(expectedDmsDto, actualDmsDto);
+  }
+
+  @Test
+  public void shouldAssembleADmsDtoWhenGivenATrustDto() {
+    DmsDto actualDmsDto = dmsRecordAssembler.assembleDmsDto(trustDto);
+
+    TrustDataDmsDto expectedTrustDataDmsDto = new TrustDataDmsDto("000",
+        "someLocalOffice",
+        "CURRENT",
+        "trustKnownAs",
+        "trustName",
+        "111",
+        "222",
+        "333");
+
+    //inject the timestamp from the actualDmsDto into the expectedDmsDto
+    String timestamp = actualDmsDto.getMetadata().getTimestamp();
+
+    //ingect the transaction-id from the actualDmsDto into the expectedDmsDto
+    String transactionId = actualDmsDto.getMetadata().getTransactionId();
+
+    MetadataDto expectedMetadataDto = new MetadataDto(timestamp,
+        "data",
+        "load",
+        "schema-table",
+        "reference",
+        "Trust",
+        transactionId);
+
+    DmsDto expectedDmsDto = new DmsDto(expectedTrustDataDmsDto, expectedMetadataDto);
+
+    assertEquals(expectedDmsDto, actualDmsDto);
   }
 }

@@ -5,6 +5,11 @@ import uk.nhs.tis.sync.dto.TrustDataDmsDto;
 
 public class TrustDtoToDataDmsDtoMapper {
 
+  /**
+   * Method to map a TrustDto to a TrustDataDmsDto.
+   * @param trustDto The original TrustDto
+   * @return        The TrustDataDmsDto mapped from the TrustDto
+   */
   public TrustDataDmsDto trustDtoToDataDmsDto(TrustDTO trustDto) {
     return new TrustDataDmsDto(
         trustDto.getCode(),

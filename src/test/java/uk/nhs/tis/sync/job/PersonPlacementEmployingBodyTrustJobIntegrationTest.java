@@ -20,7 +20,7 @@ public class PersonPlacementEmployingBodyTrustJobIntegrationTest {
 
   // Mock the sync handler as it requires an SQS queue to be accessible.
   @MockBean
-  private SyncHandlingJob syncHandlingJob;
+  private RecordResendingJob recordResendingJob;
 
   @Autowired
   PersonPlacementEmployingBodyTrustJob job;

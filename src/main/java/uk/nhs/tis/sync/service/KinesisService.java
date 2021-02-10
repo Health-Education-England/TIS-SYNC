@@ -9,40 +9,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.nhs.tis.sync.dto.DmsDto;
 
 @Service
 public class KinesisService {
 
   private static final Logger LOG = LoggerFactory.getLogger(KinesisService.class);
 
-  private static final String SCHEMA_TCS = "tcs";
-
-  private static final String SCHEMA_REFERENCE = "reference";
-
   private AmazonKinesis amazonKinesis;
 
-  private String kinesisStreamName;
-
   private ObjectMapper objectMapper;
-
-  private DmsRecordAssembler dmsRecordAssembler;
 
   /**
    * An object to send data into a Kinesis data stream.
    * @param amazonKinesis Object needed to a PutRecordsRequest object into the stream.
-   * @param kinesisStreamName Name of the Kinesis stream.
    */
   public KinesisService(
-      AmazonKinesis amazonKinesis,
-      DmsRecordAssembler dmsRecordAssembler,
-      @Value("${application.aws.kinesis.streamName}") String kinesisStreamName) {
+      AmazonKinesis amazonKinesis) {
     this.amazonKinesis = amazonKinesis;
-    this.dmsRecordAssembler = dmsRecordAssembler;
-    this.kinesisStreamName = kinesisStreamName;
     this.objectMapper = new ObjectMapper();
   }
 
@@ -59,25 +47,25 @@ public class KinesisService {
    * case), wrapped as bytes in a ByteBuffer, and set as data in a PutRecordRequestEntry object,
    * which is part of a list of entries, which can be set as records in a PutRecordRequest
    * object, which can be sent into a stream by the amazonKinesis object.
-   * @param dto   The retrieved dto that is being sent into the stream.
+   * @param kinesisStreamName The name of the stream where shards are being sent into.
+   * @param dmsDtoList        A list of DmsDtos ready to be transformed into json strings.
    */
-  public void sendData(Object dto) {
+  public void sendData(String kinesisStreamName, List<DmsDto> dmsDtoList) {
     PutRecordsRequest putRecordsRequest  = new PutRecordsRequest();
 
     putRecordsRequest.setStreamName(kinesisStreamName);
 
     List<PutRecordsRequestEntry> putRecordsRequestEntryList  = new ArrayList<>();
 
-    PutRecordsRequestEntry putRecordsRequestEntry  = new PutRecordsRequestEntry();
-
     try {
-      String jsonStringOutput = dmsRecordAssembler.buildRecord(dto);
-      LOG.info("Trying to send {}", jsonStringOutput);
-
-      putRecordsRequestEntry.setData(ByteBuffer.wrap(jsonStringOutput.getBytes()));
-      int listSize = putRecordsRequestEntryList.size();
-      putRecordsRequestEntry.setPartitionKey(String.format("partitionKey-%d", listSize));
-      putRecordsRequestEntryList.add(putRecordsRequestEntry);
+      for (DmsDto dmsDto: dmsDtoList) {
+        String jsonString = objectMapper.writeValueAsString(dmsDto);
+        LOG.info("Trying to send{}", jsonString);
+        PutRecordsRequestEntry putRecordsRequestEntry  = new PutRecordsRequestEntry();
+        putRecordsRequestEntry.setData(ByteBuffer.wrap(jsonString.getBytes()));
+        putRecordsRequestEntryList.add(putRecordsRequestEntry);
+        putRecordsRequestEntry.setPartitionKey("partition-key");
+      }
 
       putRecordsRequest.setRecords(putRecordsRequestEntryList);
       PutRecordsResult putRecordsResult  = amazonKinesis.putRecords(putRecordsRequest);
