@@ -9,7 +9,6 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.mapper.PostDtoToDataDmsDtoMapper;
 import uk.nhs.tis.sync.mapper.TrustDtoToDataDmsDtoMapper;
 
@@ -24,7 +23,7 @@ public class DmsRecordAssemblerTest {
 
   private ObjectMapper objectMapper;
 
-  private PostDTO postDTO;
+  private PostDTO postDto;
 
   @Mock
   private PostDtoToDataDmsDtoMapper postDtoToDataDmsDtoMapper;
@@ -40,21 +39,21 @@ public class DmsRecordAssemblerTest {
     PostDTO newPost = new PostDTO();
     newPost.setId(184668L);
 
-    postDTO = new PostDTO();
-    postDTO.setId(44381L);
-    postDTO.setNationalPostNumber("EAN/8EJ83/094/SPR/001");
-    postDTO.status(Status.CURRENT);
-    postDTO.employingBodyId(287L);
-    postDTO.trainingBodyId(1464L);
-    postDTO.newPost(newPost);
-    postDTO.oldPost(null);
-    postDTO.owner("Health Education England North West London");
-    postDTO.intrepidId("128374444");
+    postDto = new PostDTO();
+    postDto.setId(44381L);
+    postDto.setNationalPostNumber("EAN/8EJ83/094/SPR/001");
+    postDto.status(Status.CURRENT);
+    postDto.employingBodyId(287L);
+    postDto.trainingBodyId(1464L);
+    postDto.newPost(newPost);
+    postDto.oldPost(null);
+    postDto.owner("Health Education England North West London");
+    postDto.intrepidId("128374444");
   }
 
   @Test
   public void shouldReturnARecordAsAJsonStringWhenPassedADto() throws JsonProcessingException {
-    String actualRecord = dmsRecordAssembler.buildRecord(postDTO);
+    String actualRecord = dmsRecordAssembler.buildRecord(postDto);
     Map actualRecordMap = objectMapper.readValue(actualRecord, Map.class);
     Map metadata = (Map) actualRecordMap.get("metadata");
 
@@ -86,5 +85,4 @@ public class DmsRecordAssemblerTest {
 
     assertEquals(expectedRecordMap.toString(), actualRecordMap.toString());
   }
-
 }

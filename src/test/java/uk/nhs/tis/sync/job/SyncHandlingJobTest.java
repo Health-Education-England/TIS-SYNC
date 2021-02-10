@@ -46,14 +46,11 @@ class SyncHandlingJobTest {
 
   @BeforeEach
   void setUp() {
-    GetQueueUrlResult urlResult = new GetQueueUrlResult().withQueueUrl(QUEUE_URL);
-    when(amazonSqsMock.getQueueUrl(QUEUE_NAME)).thenReturn(urlResult);
-
     job = new SyncHandlingJob(kinesisServiceMock,
         dataRequestServiceMock,
         new ObjectMapper(),
         amazonSqsMock,
-        QUEUE_NAME);
+        QUEUE_URL);
 
     jobSpy = spy(job);
   }
@@ -99,7 +96,7 @@ class SyncHandlingJobTest {
         dataRequestServiceMock,
         objectMapperMock,
         amazonSqsMock,
-        QUEUE_NAME);
+        QUEUE_URL);
 
     job.run();
 
