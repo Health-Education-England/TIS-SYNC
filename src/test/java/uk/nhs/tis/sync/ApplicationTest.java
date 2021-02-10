@@ -1,6 +1,5 @@
 package uk.nhs.tis.sync;
 
-import com.amazonaws.services.sqs.AmazonSQS;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +8,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.nhs.tis.sync.job.SyncHandlingJob;
+import uk.nhs.tis.sync.service.DmsRecordAssembler;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -26,6 +26,9 @@ public class ApplicationTest {
   // Mock the sync handler as it requires an SQS queue to be accessible.
   @MockBean
   private SyncHandlingJob syncHandlingJob;
+
+  @MockBean
+  private DmsRecordAssembler dmsRecordAssembler;
 
   @Test
   public void testContextLoads() {

@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.nhs.tis.sync.mapper.DmsDtoAssembler;
 
 @Service
 public class KinesisService {
@@ -30,7 +29,7 @@ public class KinesisService {
 
   private ObjectMapper objectMapper;
 
-  private DmsDtoAssembler dmsDtoAssembler;
+  private DmsRecordAssembler dmsRecordAssembler;
 
   /**
    * An object to send data into a Kinesis data stream.
@@ -39,10 +38,10 @@ public class KinesisService {
    */
   public KinesisService(
       AmazonKinesis amazonKinesis,
-      DmsDtoAssembler dmsDtoAssembler,
+      DmsRecordAssembler dmsRecordAssembler,
       @Value("${application.aws.kinesis.streamName}") String kinesisStreamName) {
     this.amazonKinesis = amazonKinesis;
-    this.dmsDtoAssembler = dmsDtoAssembler;
+    this.dmsRecordAssembler = dmsRecordAssembler;
     this.kinesisStreamName = kinesisStreamName;
     this.objectMapper = new ObjectMapper();
   }
@@ -72,7 +71,7 @@ public class KinesisService {
     PutRecordsRequestEntry putRecordsRequestEntry  = new PutRecordsRequestEntry();
 
     try {
-      String jsonStringOutput = dmsDtoAssembler.buildRecord(dto);
+      String jsonStringOutput = dmsRecordAssembler.buildRecord(dto);
       LOG.info("Trying to send {}", jsonStringOutput);
 
       putRecordsRequestEntry.setData(ByteBuffer.wrap(jsonStringOutput.getBytes()));

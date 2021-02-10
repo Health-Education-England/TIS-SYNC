@@ -1,17 +1,29 @@
 package uk.nhs.tis.sync.dto;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Value;
+import org.springframework.data.elasticsearch.annotations.Field;
 
-@Value
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonPropertyOrder({"timestamp", "record-type", "operation", "partition-key-type", "schema-name",
+    "table-name", "transaction-id"})
+@Data
 public class MetadataDto {
+  @JsonProperty("timestamp")
   String timestamp;
+  @JsonProperty("record-type")
   String recordType;
+  @JsonProperty("operation")
   String operation;
+  @JsonProperty("partition-key-type")
   String partitionKeyType;
+  @JsonProperty("schema-name")
   String schemaName;
+  @JsonProperty("table-name")
   String tableName;
+  @JsonProperty("transaction-id")
   String transactionId;
 
   /**
@@ -26,7 +38,7 @@ public class MetadataDto {
    */
   @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
   public MetadataDto(@JsonProperty("timestamp") String timestamp,
-                     @JsonProperty("recordType") String recordType,
+                     @JsonProperty("record-type") String recordType,
                      @JsonProperty("operation") String operation,
                      @JsonProperty("partition-key-type") String partitionKeyType,
                      @JsonProperty("schema-name") String schemaName,

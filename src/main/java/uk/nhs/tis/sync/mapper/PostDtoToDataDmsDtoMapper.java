@@ -11,7 +11,7 @@ public class PostDtoToDataDmsDtoMapper {
     return new PostDataDmsDto(
         String.valueOf(postDto.getId()),
         postDto.getNationalPostNumber(),
-        postDto.getStatus().toString(),
+        postDto.getStatus().toString().toUpperCase(),
         String.valueOf(postDto.getEmployingBodyId()),
         String.valueOf(postDto.getTrainingBodyId()),
         ofNullable(postDto.getOldPost()).map(PostDTO::getId).map(String::valueOf).orElse(null),

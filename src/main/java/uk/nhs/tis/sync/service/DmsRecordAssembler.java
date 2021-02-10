@@ -1,4 +1,4 @@
-package uk.nhs.tis.sync.mapper;
+package uk.nhs.tis.sync.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,10 +8,13 @@ import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PostDataDmsDto;
 import uk.nhs.tis.sync.dto.TrustDataDmsDto;
+import uk.nhs.tis.sync.mapper.PostDtoToDataDmsDtoMapper;
+import uk.nhs.tis.sync.mapper.TrustDtoToDataDmsDtoMapper;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
-public class DmsDtoAssembler {
+public class DmsRecordAssembler {
 
   private PostDtoToDataDmsDtoMapper postDtoToDataDmsDtoMapper;
 
@@ -19,12 +22,10 @@ public class DmsDtoAssembler {
 
   private ObjectMapper objectMapper;
 
-  public DmsDtoAssembler(PostDtoToDataDmsDtoMapper postDtoToDataDmsDtoMapper,
-                         TrustDtoToDataDmsDtoMapper trustDtoToDataDmsDtoMapper,
-                         ObjectMapper objectMapper) {
-    this.postDtoToDataDmsDtoMapper = postDtoToDataDmsDtoMapper;
-    this.trustDtoToDataDmsDtoMapper = trustDtoToDataDmsDtoMapper;
-    this.objectMapper = new ObjectMapper();
+  public DmsRecordAssembler() {
+    postDtoToDataDmsDtoMapper = new PostDtoToDataDmsDtoMapper();
+    trustDtoToDataDmsDtoMapper = new TrustDtoToDataDmsDtoMapper();
+    objectMapper = new ObjectMapper();
   }
 
   public String buildRecord(Object dto) throws JsonProcessingException {
@@ -39,23 +40,24 @@ public class DmsDtoAssembler {
           "schema-table",
           "tcs",
           "Post",
-          "transactionId"
+          "transaction-id"
       );
 
       DmsDto dmsDto = new DmsDto(postDataDmsDto, metadataDto);
+      objectMapper.writeValueAsString(metadataDto);
       stringifiedDmsDto = objectMapper.writeValueAsString(dmsDto);
     }
 
     if (dto instanceof TrustDTO) {
       TrustDataDmsDto trustDataDmsDto = trustDtoToDataDmsDtoMapper.trustDtoToDataDmsDto((TrustDTO) dto);
       MetadataDto metadataDto = new MetadataDto(
-          LocalDateTime.now().toString(),
+          Instant.now().toString(),
           "data",
           "load",
           "schema-table",
           "reference",
           "Trust",
-          "transactionId"
+          "transaction-id"
       );
 
       DmsDto dmsDto = new DmsDto(trustDataDmsDto, metadataDto);
