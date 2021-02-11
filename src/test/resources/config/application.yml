@@ -106,19 +106,9 @@ application:
     sqs:
       queueUrl: ${AWS_SQS_QUEUE_URL:queueUrl}
 
-tcs:
-  client:
-    rate.limit: ${TCS_CLIENT_RATE_LIMIT:100}
-    bulk.rate.limit: ${TCS_CLIENT_BULK_RATE_LIMIT:10}
-  service:
-    url: ${TCS_SERVER_URL:http://${tcs.server.name}:${tcs.server.port}/tcs}
-  server:
-    name: ${TCS_HOST:localhost}
-    port: ${TCS_PORT:80}
-
 slack:
   api:
-    token: ${SLACK_API_TOKEN:token}
+    token: ${SLACK_API_TOKEN:slack-api-token}
   job:
     notification-channel: testing-slack-integration
 

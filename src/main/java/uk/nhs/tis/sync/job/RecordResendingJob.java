@@ -22,13 +22,13 @@ import uk.nhs.tis.sync.service.DmsRecordAssembler;
 import uk.nhs.tis.sync.service.KinesisService;
 
 @Component
-@ManagedResource(objectName = "sync.mbean:name=SyncHandlingJob",
+@ManagedResource(objectName = "sync.mbean:name=RecordResendingJob",
     description = "Job that parses an sqs message, sends data accordingly into a Kinesis stream")
 public class RecordResendingJob {
 
   private static final Logger LOG = LoggerFactory.getLogger(RecordResendingJob.class);
 
-  private static final String JOB_NAME = "Sync Handling job";
+  private static final String JOB_NAME = "Record Resending job";
 
   private KinesisService kinesisService;
 
@@ -69,13 +69,13 @@ public class RecordResendingJob {
     this.streamName = streamName;
   }
 
-  @Scheduled(cron = "${application.cron.syncHandlingJob}")
-  @ManagedOperation(description = "Run Sync Handling Job")
-  public void syncHandlingJob() {
-    runSyncHandlingJob();
+  @Scheduled(cron = "${application.cron.recordResendingJob}")
+  @ManagedOperation(description = "Run RecordResendingJob")
+  public void recordResendingJob() {
+    runRecordResendingJob();
   }
 
-  protected void runSyncHandlingJob() {
+  protected void runRecordResendingJob() {
     CompletableFuture.runAsync(this::run);
   }
 

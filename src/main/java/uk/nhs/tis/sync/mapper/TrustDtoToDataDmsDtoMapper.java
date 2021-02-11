@@ -1,8 +1,10 @@
 package uk.nhs.tis.sync.mapper;
 
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
+import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.dto.TrustDataDmsDto;
 
+@Component
 public class TrustDtoToDataDmsDtoMapper {
 
   /**

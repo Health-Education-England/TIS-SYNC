@@ -3,8 +3,10 @@ package uk.nhs.tis.sync.mapper;
 import static java.util.Optional.ofNullable;
 
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
+import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.dto.PostDataDmsDto;
 
+@Component
 public class PostDtoToDataDmsDtoMapper {
 
   /**

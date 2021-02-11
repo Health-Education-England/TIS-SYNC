@@ -3,7 +3,14 @@ package uk.nhs.tis.sync.job;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.Message;
@@ -131,8 +138,8 @@ class RecordResendingJobTest {
   void runSyncHandlingJobShouldBeCalled() {
     reset(amazonSqsMock);
     jobSpy = spy(job);
-    jobSpy.syncHandlingJob();
-    verify(jobSpy).runSyncHandlingJob();
+    jobSpy.recordResendingJob();
+    verify(jobSpy).runRecordResendingJob();
   }
 
   @Test

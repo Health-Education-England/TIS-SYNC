@@ -5,6 +5,9 @@ import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PostDataDmsDto;
@@ -12,6 +15,7 @@ import uk.nhs.tis.sync.dto.TrustDataDmsDto;
 import uk.nhs.tis.sync.mapper.PostDtoToDataDmsDtoMapper;
 import uk.nhs.tis.sync.mapper.TrustDtoToDataDmsDtoMapper;
 
+@Component
 public class DmsRecordAssembler {
 
   private static final String LOAD = "load";
@@ -20,16 +24,19 @@ public class DmsRecordAssembler {
 
   public static final String PARTITION_KEY_TYPE = "schema-table";
 
+  @Autowired
   private PostDtoToDataDmsDtoMapper postDtoToDataDmsDtoMapper;
 
+  @Autowired
   private TrustDtoToDataDmsDtoMapper trustDtoToDataDmsDtoMapper;
 
   /**
    * Constructor for a DmsRecordAssembler, which instantiates the relevant mappers.
    */
-  public DmsRecordAssembler() {
-    postDtoToDataDmsDtoMapper = new PostDtoToDataDmsDtoMapper();
-    trustDtoToDataDmsDtoMapper = new TrustDtoToDataDmsDtoMapper();
+  public DmsRecordAssembler(PostDtoToDataDmsDtoMapper postDtoToDataDmsDtoMapper,
+                            TrustDtoToDataDmsDtoMapper trustDtoToDataDmsDtoMapper) {
+    this.postDtoToDataDmsDtoMapper = postDtoToDataDmsDtoMapper;
+    this.trustDtoToDataDmsDtoMapper = trustDtoToDataDmsDtoMapper;
   }
 
 

@@ -9,6 +9,8 @@ import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PostDataDmsDto;
 import uk.nhs.tis.sync.dto.TrustDataDmsDto;
+import uk.nhs.tis.sync.mapper.PostDtoToDataDmsDtoMapper;
+import uk.nhs.tis.sync.mapper.TrustDtoToDataDmsDtoMapper;
 
 import static com.transformuk.hee.tis.reference.api.enums.Status.CURRENT;
 import static org.junit.Assert.assertEquals;
@@ -23,7 +25,8 @@ public class DmsRecordAssemblerTest {
 
   @Before
   public void setUp() {
-    dmsRecordAssembler = new DmsRecordAssembler();
+    dmsRecordAssembler = new DmsRecordAssembler(new PostDtoToDataDmsDtoMapper(),
+        new TrustDtoToDataDmsDtoMapper());
 
     PostDTO newPost = new PostDTO();
     newPost.setId(184668L);

@@ -1,15 +1,19 @@
 package uk.nhs.tis.sync.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.model.PutRecordsRequest;
 import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
+import com.amazonaws.services.kinesis.model.PutRecordsResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,6 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.skyscreamer.jsonassert.JSONAssert;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PostDataDmsDto;
@@ -103,7 +108,7 @@ public class KinesisServiceTest {
   }
 
   @Test
-  public void givenAListOfDmsDtosItShouldSendThemSerializedIntoAStream() throws JsonProcessingException {
+  public void givenAListOfDmsDtosItShouldSendThemSerializedIntoAStream() {
     kinesisService.sendData(STREAM_NAME, dmsDtoList);
 
     ArgumentCaptor<PutRecordsRequest> captor = ArgumentCaptor.forClass(PutRecordsRequest.class);
@@ -118,18 +123,14 @@ public class KinesisServiceTest {
     byte[] entry2 = putRecordsRequestEntry2.getData().array();
     String actualRecord2 = new String(entry2, StandardCharsets.ISO_8859_1);
 
-    Map<String, String> actualRecordMap1 = objectMapper.readValue(actualRecord1, Map.class);
-
-    Map<String, String> actualRecordMap2 = objectMapper.readValue(actualRecord2, Map.class);
-
     String expectedRecord1 = "{\n" +
         "\"data\":\t{\n" +
-        "\"id\":\t44381,\n" +
+        "\"id\":\t\"44381\",\n" +
         "\"nationalPostNumber\":\t\"EAN/8EJ83/094/SPR/001\",\n" +
         "\"status\":\t\"CURRENT\",\n" +
-        "\"employingBodyId\":\t287,\n" +
-        "\"trainingBodyId\":\t1464,\n" +
-        "\"newPostId\":\t184668,\n" +
+        "\"employingBodyId\":\t\"287\",\n" +
+        "\"trainingBodyId\":\t\"1464\",\n" +
+        "\"newPostId\":\t\"184668\",\n" +
         "\"owner\":\t\"Health Education England North West London\",\n" +
         "\"intrepidId\":\t\"128374444\"\n" +
         "},\n" +
@@ -153,7 +154,7 @@ public class KinesisServiceTest {
         "\"trustName\":\t\"trustName\",\n" +
         "\"trustNumber\":\t\"000\",\n" +
         "\"intrepidId\":\t\"3\",\n" +
-        "\"id\":\t1\n" +
+        "\"id\":\t\"1\"\n" +
         "},\n" +
         "\"metadata\":\t{\n" +
         "\"timestamp\":\t\"" + timestamp + "\",\n" +
@@ -162,16 +163,20 @@ public class KinesisServiceTest {
         "\"partition-key-type\":\t\"schema-table\",\n" +
         "\"schema-name\":\t\"reference\",\n" +
         "\"table-name\":\t\"Trust\",\n" +
-        "\"transaction-id\":\t111\n" +
+        "\"transaction-id\":\t\"111\"\n" +
         "}\n" +
         "}";
 
-    Map<String, String> expectedRecordMap1 = objectMapper.readValue(expectedRecord1, Map.class);
+    JSONObject actualJsonRecord1 = new JSONObject(actualRecord1);
 
-    Map<String, String> expectedRecordMap2 = objectMapper.readValue(expectedRecord2, Map.class);
+    JSONObject actualJsonRecord2 = new JSONObject(actualRecord2);
 
-    assertEquals(expectedRecordMap1.toString(), actualRecordMap1.toString());
-    assertEquals(expectedRecordMap2.toString(), actualRecordMap2.toString());
+    JSONObject expectedJsonRecord1 = new JSONObject(expectedRecord1);
+
+    JSONObject expectedJsonRecord2 = new JSONObject(expectedRecord2);
+
+    JSONAssert.assertEquals(expectedJsonRecord1, actualJsonRecord1, false);
+    JSONAssert.assertEquals(expectedJsonRecord2, actualJsonRecord2, false);
   }
 
   @Test
