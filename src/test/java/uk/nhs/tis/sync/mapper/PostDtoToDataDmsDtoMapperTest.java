@@ -1,12 +1,14 @@
 package uk.nhs.tis.sync.mapper;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
-import com.transformuk.hee.tis.tcs.api.enumeration.PostSuffix;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
-import com.transformuk.hee.tis.tcs.service.model.Post;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
+import org.mapstruct.factory.Mappers;
+import org.springframework.util.ReflectionUtils;
 import uk.nhs.tis.sync.dto.PostDataDmsDto;
+import uk.nhs.tis.sync.mapper.util.PostDataDmsDtoUtil;
+
+import java.lang.reflect.Field;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -18,7 +20,11 @@ public class PostDtoToDataDmsDtoMapperTest {
 
   @Before
   public void setUp() {
-    mapper = new PostDtoToDataDmsDtoMapper();
+    mapper = new PostDtoToDataDmsDtoMapperImpl();
+    Field field = ReflectionUtils.findField(PostDtoToDataDmsDtoMapperImpl.class,
+        "postDataDmsDtoUtil");
+    field.setAccessible(true);
+    ReflectionUtils.setField(field, mapper, new PostDataDmsDtoUtil());
 
     PostDTO newPost = new PostDTO();
     newPost.setId(184668L);
@@ -29,18 +35,18 @@ public class PostDtoToDataDmsDtoMapperTest {
     postDto = new PostDTO();
     postDto.setId(44381L);
     postDto.setNationalPostNumber("EAN/8EJ83/094/SPR/001");
-    postDto.status(Status.CURRENT);
-    postDto.employingBodyId(287L);
-    postDto.trainingBodyId(1464L);
-    postDto.newPost(newPost);
-    postDto.oldPost(oldPost);
-    postDto.owner("Health Education England North West London");
-    postDto.intrepidId("128374444");
+    postDto.setStatus(Status.CURRENT);
+    postDto.setEmployingBodyId(287L);
+    postDto.setTrainingBodyId(1464L);
+    postDto.setNewPost(newPost);
+    postDto.setOldPost(oldPost);
+    postDto.setOwner("Health Education England North West London");
+    postDto.setIntrepidId("128374444");
   }
 
   @Test
   public void shouldMapAPostDtoToADataDmsDto() {
-    PostDataDmsDto postDataDmsDto = mapper.postDtoToDataDmsDto(postDto);
+    PostDataDmsDto postDataDmsDto = mapper.postDtoToPostDataDmsDto(postDto);
 
     assertEquals("44381", postDataDmsDto.getId());
     assertEquals("EAN/8EJ83/094/SPR/001", postDataDmsDto.getNationalPostNumber());

@@ -1,27 +1,23 @@
 package uk.nhs.tis.sync.mapper;
 
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import uk.nhs.tis.sync.dto.TrustDataDmsDto;
+import uk.nhs.tis.sync.mapper.util.TrustDataDmsDtoUtil;
+import uk.nhs.tis.sync.mapper.util.TrustDataDmsDtoUtil.Id;
+import uk.nhs.tis.sync.mapper.util.TrustDataDmsDtoUtil.Status;
 
-@Component
-public class TrustDtoToDataDmsDtoMapper {
+@Mapper(componentModel = "spring", uses = TrustDataDmsDtoUtil.class)
+public interface TrustDtoToDataDmsDtoMapper {
 
-  /**
-   * Method to map a TrustDto to a TrustDataDmsDto.
-   * @param trustDto The original TrustDto
-   * @return        The TrustDataDmsDto mapped from the TrustDto
-   */
-  public TrustDataDmsDto trustDtoToDataDmsDto(TrustDTO trustDto) {
-    return new TrustDataDmsDto(
-        trustDto.getCode(),
-        trustDto.getLocalOffice(),
-        trustDto.getStatus().toString(),
-        trustDto.getTrustKnownAs(),
-        trustDto.getTrustName(),
-        trustDto.getTrustNumber(),
-        trustDto.getIntrepidId(),
-        String.valueOf(trustDto.getId())
-    );
-  }
+  @Mapping(target="code", source = "trustDto.code")
+  @Mapping(target="localOffice", source = "trustDto.localOffice")
+  @Mapping(target="status", source = "trustDto.status", qualifiedBy = Status.class)
+  @Mapping(target="trustKnownAs", source = "trustDto.trustKnownAs")
+  @Mapping(target="trustName", source = "trustDto.trustName")
+  @Mapping(target="trustNumber", source = "trustDto.trustNumber")
+  @Mapping(target="intrepidId", source = "trustDto.intrepidId")
+  @Mapping(target="id", source = "trustDto.id", qualifiedBy = Id.class)
+  public TrustDataDmsDto trustDtoToTrustDataDmsDto(TrustDTO trustDto);
 }

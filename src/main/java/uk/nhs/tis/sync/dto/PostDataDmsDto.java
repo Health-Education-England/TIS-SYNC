@@ -3,10 +3,13 @@ package uk.nhs.tis.sync.dto;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 import lombok.Value;
 
+import java.beans.ConstructorProperties;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Value
+@Data
 public class PostDataDmsDto {
 
   String id;
@@ -33,24 +36,9 @@ public class PostDataDmsDto {
    * @param owner              The owner as in the PostDto, but in String form
    * @param intrepidId         The intrepidId as in the PostDto, but in String form
    */
+  @ConstructorProperties({ "id", "nationalPostNumber", "status", "employingBodyId",
+      "trainingBodyId", "oldPostId", "newPostId", "owner", "intrepidId" })
   @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-  public PostDataDmsDto(@JsonProperty("id") String id,
-                        @JsonProperty("nationalPostNumber") String nationalPostNumber,
-                        @JsonProperty ("status") String status,
-                        @JsonProperty("employingBodyId") String employingBodyId,
-                        @JsonProperty("trainingBodyId") String trainingBodyId,
-                        @JsonProperty("oldPostId") String oldPostId,
-                        @JsonProperty("newPostId") String newPostId,
-                        @JsonProperty("owner") String owner,
-                        @JsonProperty("intrepidId") String intrepidId) {
-    this.id = id;
-    this.nationalPostNumber = nationalPostNumber;
-    this.status = status;
-    this.employingBodyId = employingBodyId;
-    this.trainingBodyId = trainingBodyId;
-    this.oldPostId = oldPostId;
-    this.newPostId = newPostId;
-    this.owner = owner;
-    this.intrepidId = intrepidId;
+  public PostDataDmsDto() {
   }
 }

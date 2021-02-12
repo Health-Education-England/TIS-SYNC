@@ -87,16 +87,16 @@ class RecordResendingJobTest {
     postDto.owner("Health Education England North West London");
     postDto.intrepidId("128374444");
 
-    PostDataDmsDto postDataDmsDto = new PostDataDmsDto("44381",
-        "EAN/8EJ83/094/SPR/001",
-        "CURRENT",
-        "287",
-        "1464",
-        null,
-        "184668",
-        "Health Education England North West London",
-        "128374444"
-    );
+    PostDataDmsDto postDataDmsDto = new PostDataDmsDto();
+    postDataDmsDto.setId("44381");
+    postDataDmsDto.setNationalPostNumber("EAN/8EJ83/094/SPR/001");
+    postDataDmsDto.setStatus("CURRENT");
+    postDataDmsDto.setEmployingBodyId("287");
+    postDataDmsDto.setTrainingBodyId("1464");
+    postDataDmsDto.setOldPostId(null);
+    postDataDmsDto.setNewPostId("184668");
+    postDataDmsDto.setOwner("Health Education England North West London");
+    postDataDmsDto.setIntrepidId("128374444");
 
     MetadataDto metadataDto = new MetadataDto("timestamp",
         "data",

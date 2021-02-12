@@ -2,11 +2,10 @@ package uk.nhs.tis.sync.service;
 
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
+
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
@@ -24,10 +23,8 @@ public class DmsRecordAssembler {
 
   public static final String PARTITION_KEY_TYPE = "schema-table";
 
-  @Autowired
   private PostDtoToDataDmsDtoMapper postDtoToDataDmsDtoMapper;
 
-  @Autowired
   private TrustDtoToDataDmsDtoMapper trustDtoToDataDmsDtoMapper;
 
   /**
@@ -39,7 +36,6 @@ public class DmsRecordAssembler {
     this.trustDtoToDataDmsDtoMapper = trustDtoToDataDmsDtoMapper;
   }
 
-
   /**
    * The method that assembles a complete DmsDto starting from a dto (e.g. a PostDto or a TrustDto)
    * @param dto The dto which will be mapped to a -DataDmsDto (e.g. a PostDataDmsDto, or a
@@ -50,9 +46,9 @@ public class DmsRecordAssembler {
     DmsDto dmsDto = null;
 
     if (dto instanceof PostDTO) {
-      PostDataDmsDto postDataDmsDto = postDtoToDataDmsDtoMapper.postDtoToDataDmsDto((PostDTO) dto);
+      PostDataDmsDto postDataDmsDto = postDtoToDataDmsDtoMapper.postDtoToPostDataDmsDto((PostDTO) dto);
       MetadataDto metadataDto = new MetadataDto(
-          LocalDateTime.now().toString(),
+          Instant.now().toString(),
           DATA,
           LOAD,
           PARTITION_KEY_TYPE,
@@ -66,7 +62,7 @@ public class DmsRecordAssembler {
 
     if (dto instanceof TrustDTO) {
       TrustDataDmsDto trustDataDmsDto = trustDtoToDataDmsDtoMapper
-          .trustDtoToDataDmsDto((TrustDTO) dto);
+          .trustDtoToTrustDataDmsDto((TrustDTO) dto);
       MetadataDto metadataDto = new MetadataDto(
           Instant.now().toString(),
           DATA,

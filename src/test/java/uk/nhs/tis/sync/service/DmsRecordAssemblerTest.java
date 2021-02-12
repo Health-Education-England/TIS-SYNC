@@ -5,17 +5,26 @@ import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.util.ReflectionUtils;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PostDataDmsDto;
 import uk.nhs.tis.sync.dto.TrustDataDmsDto;
-import uk.nhs.tis.sync.mapper.PostDtoToDataDmsDtoMapper;
-import uk.nhs.tis.sync.mapper.TrustDtoToDataDmsDtoMapper;
+import uk.nhs.tis.sync.mapper.PostDtoToDataDmsDtoMapperImpl;
+import uk.nhs.tis.sync.mapper.TrustDtoToDataDmsDtoMapperImpl;
+import uk.nhs.tis.sync.mapper.util.PostDataDmsDtoUtil;
+import uk.nhs.tis.sync.mapper.util.TrustDataDmsDtoUtil;
+
+import java.lang.reflect.Field;
 
 import static com.transformuk.hee.tis.reference.api.enums.Status.CURRENT;
 import static org.junit.Assert.assertEquals;
 
 public class DmsRecordAssemblerTest {
+
+  private PostDtoToDataDmsDtoMapperImpl postDtoToDataDmsDtoMapperImpl;
+
+  private TrustDtoToDataDmsDtoMapperImpl trustDtoToDataDmsDtoMapperImpl;
 
   private DmsRecordAssembler dmsRecordAssembler;
 
@@ -25,8 +34,20 @@ public class DmsRecordAssemblerTest {
 
   @Before
   public void setUp() {
-    dmsRecordAssembler = new DmsRecordAssembler(new PostDtoToDataDmsDtoMapper(),
-        new TrustDtoToDataDmsDtoMapper());
+    postDtoToDataDmsDtoMapperImpl = new PostDtoToDataDmsDtoMapperImpl();
+    Field fieldPost = ReflectionUtils.findField(PostDtoToDataDmsDtoMapperImpl.class,
+        "postDataDmsDtoUtil");
+    fieldPost.setAccessible(true);
+    ReflectionUtils.setField(fieldPost, postDtoToDataDmsDtoMapperImpl, new PostDataDmsDtoUtil());
+
+    trustDtoToDataDmsDtoMapperImpl = new TrustDtoToDataDmsDtoMapperImpl();
+    Field fieldTrust = ReflectionUtils.findField(TrustDtoToDataDmsDtoMapperImpl.class,
+        "trustDataDmsDtoUtil");
+    fieldTrust.setAccessible(true);
+    ReflectionUtils.setField(fieldTrust, trustDtoToDataDmsDtoMapperImpl, new TrustDataDmsDtoUtil());
+
+    dmsRecordAssembler = new DmsRecordAssembler(postDtoToDataDmsDtoMapperImpl,
+        trustDtoToDataDmsDtoMapperImpl);
 
     PostDTO newPost = new PostDTO();
     newPost.setId(184668L);
@@ -57,16 +78,16 @@ public class DmsRecordAssemblerTest {
   public void shouldAssembleADmsDtoWhenGivenAPostDto() {
     DmsDto actualDmsDto = dmsRecordAssembler.assembleDmsDto(postDto);
 
-    PostDataDmsDto expectedPostDataDmsDto = new PostDataDmsDto("44381",
-        "EAN/8EJ83/094/SPR/001",
-        "CURRENT",
-        "287",
-        "1464",
-        null,
-        "184668",
-        "Health Education England North West London",
-        "128374444"
-    );
+    PostDataDmsDto expectedPostDataDmsDto = new PostDataDmsDto();
+    expectedPostDataDmsDto.setId("44381");
+    expectedPostDataDmsDto.setNationalPostNumber("EAN/8EJ83/094/SPR/001");
+    expectedPostDataDmsDto.setStatus("CURRENT");
+    expectedPostDataDmsDto.setEmployingBodyId("287");
+    expectedPostDataDmsDto.setTrainingBodyId("1464");
+    expectedPostDataDmsDto.setOldPostId(null);
+    expectedPostDataDmsDto.setNewPostId("184668");
+    expectedPostDataDmsDto.setOwner("Health Education England North West London");
+    expectedPostDataDmsDto.setIntrepidId("128374444");
 
     //inject the timestamp from the actualDmsDto into the expectedDmsDto
     String timestamp = actualDmsDto.getMetadata().getTimestamp();
@@ -91,14 +112,15 @@ public class DmsRecordAssemblerTest {
   public void shouldAssembleADmsDtoWhenGivenATrustDto() {
     DmsDto actualDmsDto = dmsRecordAssembler.assembleDmsDto(trustDto);
 
-    TrustDataDmsDto expectedTrustDataDmsDto = new TrustDataDmsDto("000",
-        "someLocalOffice",
-        "CURRENT",
-        "trustKnownAs",
-        "trustName",
-        "111",
-        "222",
-        "333");
+    TrustDataDmsDto expectedTrustDataDmsDto = new TrustDataDmsDto();
+    expectedTrustDataDmsDto.setCode("000");
+    expectedTrustDataDmsDto.setLocalOffice("someLocalOffice");
+    expectedTrustDataDmsDto.setStatus("CURRENT");
+    expectedTrustDataDmsDto.setTrustKnownAs("trustKnownAs");
+    expectedTrustDataDmsDto.setTrustName("trustName");
+    expectedTrustDataDmsDto.setTrustNumber("111");
+    expectedTrustDataDmsDto.setIntrepidId("222");
+    expectedTrustDataDmsDto.setId("333");
 
     //inject the timestamp from the actualDmsDto into the expectedDmsDto
     String timestamp = actualDmsDto.getMetadata().getTimestamp();

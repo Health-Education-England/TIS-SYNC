@@ -21,7 +21,7 @@
     <spring-boot-admin.version>2.1.4</spring-boot-admin.version>
 
     <!-- Lazy TCS imports -->
-    <mapstruct.version>1.1.0.Final</mapstruct.version>
+    <mapstruct.version>1.3.1.Final</mapstruct.version>
     <maven-compiler-plugin.version>3.6.0</maven-compiler-plugin.version>
     <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
     <maven-resources-plugin.version>3.0.1</maven-resources-plugin.version>
@@ -63,6 +63,12 @@
       <groupId>com.transformuk.hee</groupId>
       <artifactId>reference-client</artifactId>
       <version>4.10.0</version>
+      <exclusions>
+        <exclusion>  <!-- declare the exclusion here -->
+          <groupId>org.mapstruct</groupId>
+          <artifactId>mapstruct</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.transformuk.hee</groupId>
@@ -201,6 +207,11 @@
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
       <version>1.11.844</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct</artifactId>
+      <version>1.3.1.Final</version>
     </dependency>
   </dependencies>
 

@@ -5,7 +5,13 @@ import com.transformuk.hee.tis.reference.api.enums.Status;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.mapstruct.factory.Mappers;
+import org.springframework.util.ReflectionUtils;
 import uk.nhs.tis.sync.dto.TrustDataDmsDto;
+import uk.nhs.tis.sync.mapper.util.PostDataDmsDtoUtil;
+import uk.nhs.tis.sync.mapper.util.TrustDataDmsDtoUtil;
+
+import java.lang.reflect.Field;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -17,7 +23,11 @@ public class TrustDtoToDataDmsDtoMapperTest {
 
   @Before
   public void setUp() {
-    mapper = new TrustDtoToDataDmsDtoMapper();
+    mapper = Mappers.getMapper(TrustDtoToDataDmsDtoMapper.class);
+    Field field = ReflectionUtils.findField(TrustDtoToDataDmsDtoMapperImpl.class,
+        "trustDataDmsDtoUtil");
+    field.setAccessible(true);
+    ReflectionUtils.setField(field, mapper, new TrustDataDmsDtoUtil());
 
     trustDto = new TrustDTO();
     trustDto.setId(1L);
@@ -32,7 +42,7 @@ public class TrustDtoToDataDmsDtoMapperTest {
 
   @Test
   public void shouldMapTrustDtoInATrustDataDmsDto() {
-    TrustDataDmsDto trustDataDmsDto = mapper.trustDtoToDataDmsDto(trustDto);
+    TrustDataDmsDto trustDataDmsDto = mapper.trustDtoToTrustDataDmsDto(trustDto);
 
     assertEquals("22", trustDataDmsDto.getCode());
     assertEquals("1", trustDataDmsDto.getId());
