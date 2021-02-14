@@ -10,8 +10,8 @@ import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PostDataDmsDto;
 import uk.nhs.tis.sync.dto.TrustDataDmsDto;
-import uk.nhs.tis.sync.mapper.PostDtoToDataDmsDtoMapperImpl;
-import uk.nhs.tis.sync.mapper.TrustDtoToDataDmsDtoMapperImpl;
+import uk.nhs.tis.sync.mapper.PostDtoToPostDataDmsDtoMapperImpl;
+import uk.nhs.tis.sync.mapper.TrustDtoToTrustDataDmsDtoMapperImpl;
 import uk.nhs.tis.sync.mapper.util.PostDataDmsDtoUtil;
 import uk.nhs.tis.sync.mapper.util.TrustDataDmsDtoUtil;
 
@@ -22,9 +22,9 @@ import static org.junit.Assert.assertEquals;
 
 public class DmsRecordAssemblerTest {
 
-  private PostDtoToDataDmsDtoMapperImpl postDtoToDataDmsDtoMapperImpl;
+  private PostDtoToPostDataDmsDtoMapperImpl postDtoToDataDmsDtoMapperImpl;
 
-  private TrustDtoToDataDmsDtoMapperImpl trustDtoToDataDmsDtoMapperImpl;
+  private TrustDtoToTrustDataDmsDtoMapperImpl trustDtoToDataDmsDtoMapperImpl;
 
   private DmsRecordAssembler dmsRecordAssembler;
 
@@ -34,14 +34,14 @@ public class DmsRecordAssemblerTest {
 
   @Before
   public void setUp() {
-    postDtoToDataDmsDtoMapperImpl = new PostDtoToDataDmsDtoMapperImpl();
-    Field fieldPost = ReflectionUtils.findField(PostDtoToDataDmsDtoMapperImpl.class,
+    postDtoToDataDmsDtoMapperImpl = new PostDtoToPostDataDmsDtoMapperImpl();
+    Field fieldPost = ReflectionUtils.findField(PostDtoToPostDataDmsDtoMapperImpl.class,
         "postDataDmsDtoUtil");
     fieldPost.setAccessible(true);
     ReflectionUtils.setField(fieldPost, postDtoToDataDmsDtoMapperImpl, new PostDataDmsDtoUtil());
 
-    trustDtoToDataDmsDtoMapperImpl = new TrustDtoToDataDmsDtoMapperImpl();
-    Field fieldTrust = ReflectionUtils.findField(TrustDtoToDataDmsDtoMapperImpl.class,
+    trustDtoToDataDmsDtoMapperImpl = new TrustDtoToTrustDataDmsDtoMapperImpl();
+    Field fieldTrust = ReflectionUtils.findField(TrustDtoToTrustDataDmsDtoMapperImpl.class,
         "trustDataDmsDtoUtil");
     fieldTrust.setAccessible(true);
     ReflectionUtils.setField(fieldTrust, trustDtoToDataDmsDtoMapperImpl, new TrustDataDmsDtoUtil());

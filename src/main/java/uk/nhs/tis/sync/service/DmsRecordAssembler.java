@@ -11,8 +11,8 @@ import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PostDataDmsDto;
 import uk.nhs.tis.sync.dto.TrustDataDmsDto;
-import uk.nhs.tis.sync.mapper.PostDtoToDataDmsDtoMapper;
-import uk.nhs.tis.sync.mapper.TrustDtoToDataDmsDtoMapper;
+import uk.nhs.tis.sync.mapper.PostDtoToPostDataDmsDtoMapper;
+import uk.nhs.tis.sync.mapper.TrustDtoToTrustDataDmsDtoMapper;
 
 @Component
 public class DmsRecordAssembler {
@@ -23,17 +23,17 @@ public class DmsRecordAssembler {
 
   public static final String PARTITION_KEY_TYPE = "schema-table";
 
-  private PostDtoToDataDmsDtoMapper postDtoToDataDmsDtoMapper;
+  private PostDtoToPostDataDmsDtoMapper postDtoToPostDataDmsDtoMapper;
 
-  private TrustDtoToDataDmsDtoMapper trustDtoToDataDmsDtoMapper;
+  private TrustDtoToTrustDataDmsDtoMapper trustDtoToTrustDataDmsDtoMapper;
 
   /**
    * Constructor for a DmsRecordAssembler, which instantiates the relevant mappers.
    */
-  public DmsRecordAssembler(PostDtoToDataDmsDtoMapper postDtoToDataDmsDtoMapper,
-                            TrustDtoToDataDmsDtoMapper trustDtoToDataDmsDtoMapper) {
-    this.postDtoToDataDmsDtoMapper = postDtoToDataDmsDtoMapper;
-    this.trustDtoToDataDmsDtoMapper = trustDtoToDataDmsDtoMapper;
+  public DmsRecordAssembler(PostDtoToPostDataDmsDtoMapper postDtoToPostDataDmsDtoMapper,
+                            TrustDtoToTrustDataDmsDtoMapper trustDtoToTrustDataDmsDtoMapper) {
+    this.postDtoToPostDataDmsDtoMapper = postDtoToPostDataDmsDtoMapper;
+    this.trustDtoToTrustDataDmsDtoMapper = trustDtoToTrustDataDmsDtoMapper;
   }
 
   /**
@@ -46,7 +46,8 @@ public class DmsRecordAssembler {
     DmsDto dmsDto = null;
 
     if (dto instanceof PostDTO) {
-      PostDataDmsDto postDataDmsDto = postDtoToDataDmsDtoMapper.postDtoToPostDataDmsDto((PostDTO) dto);
+      PostDataDmsDto postDataDmsDto = postDtoToPostDataDmsDtoMapper
+          .postDtoToPostDataDmsDto((PostDTO) dto);
       MetadataDto metadataDto = new MetadataDto(
           Instant.now().toString(),
           DATA,
@@ -61,7 +62,7 @@ public class DmsRecordAssembler {
     }
 
     if (dto instanceof TrustDTO) {
-      TrustDataDmsDto trustDataDmsDto = trustDtoToDataDmsDtoMapper
+      TrustDataDmsDto trustDataDmsDto = trustDtoToTrustDataDmsDtoMapper
           .trustDtoToTrustDataDmsDto((TrustDTO) dto);
       MetadataDto metadataDto = new MetadataDto(
           Instant.now().toString(),

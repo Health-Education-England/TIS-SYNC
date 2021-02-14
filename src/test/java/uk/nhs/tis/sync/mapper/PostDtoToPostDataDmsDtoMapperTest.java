@@ -3,7 +3,6 @@ import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import org.junit.Before;
 import org.junit.Test;
-import org.mapstruct.factory.Mappers;
 import org.springframework.util.ReflectionUtils;
 import uk.nhs.tis.sync.dto.PostDataDmsDto;
 import uk.nhs.tis.sync.mapper.util.PostDataDmsDtoUtil;
@@ -12,16 +11,16 @@ import java.lang.reflect.Field;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class PostDtoToDataDmsDtoMapperTest {
+public class PostDtoToPostDataDmsDtoMapperTest {
 
-  private PostDtoToDataDmsDtoMapper mapper;
+  private PostDtoToPostDataDmsDtoMapper mapper;
 
   private PostDTO postDto;
 
   @Before
   public void setUp() {
-    mapper = new PostDtoToDataDmsDtoMapperImpl();
-    Field field = ReflectionUtils.findField(PostDtoToDataDmsDtoMapperImpl.class,
+    mapper = new PostDtoToPostDataDmsDtoMapperImpl();
+    Field field = ReflectionUtils.findField(PostDtoToPostDataDmsDtoMapperImpl.class,
         "postDataDmsDtoUtil");
     field.setAccessible(true);
     ReflectionUtils.setField(field, mapper, new PostDataDmsDtoUtil());

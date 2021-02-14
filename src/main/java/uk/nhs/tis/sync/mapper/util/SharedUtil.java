@@ -8,17 +8,17 @@ import javax.inject.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component
-public class TrustDataDmsDtoUtil {
+public class SharedUtil {
 
   @Qualifier
   @Target(ElementType.METHOD)
   @Retention(RetentionPolicy.SOURCE)
-  public @interface Status {
+  public @interface Id {
 
   }
 
-  @Status
-  public String status(com.transformuk.hee.tis.reference.api.enums.Status status) {
-    return status.toString().toUpperCase();
+  @Id
+  public String id(Long id) {
+    return String.valueOf(id);
   }
 }
