@@ -16,10 +16,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 public class PersonOwnerRebuildJobTest {
 
-  // Mock the sync handler as it requires an SQS queue to be accessible.
-  @MockBean
-  private RecordResendingJob recordResendingJob;
-
   @Autowired
   private PersonOwnerRebuildJob job;
 

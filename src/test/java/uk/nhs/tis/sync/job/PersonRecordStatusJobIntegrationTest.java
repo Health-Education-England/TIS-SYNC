@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
@@ -15,10 +14,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 //TODO Write scripts so we can see some records are being updated.@Sql(scripts = {"/scripts/programmes.sql","/scripts/personRows.sql","/scripts/programmeMemberships.sql"})
 //TODO @Sql(scripts = {"/scripts/deleteProgrammeMemberships.sql","/scripts/deletePersonRows.sql","/scripts/deleteProgrammes.sql"}, executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 public class PersonRecordStatusJobIntegrationTest {
-
-  // Mock the sync handler as it requires an SQS queue to be accessible.
-  @MockBean
-  private RecordResendingJob recordResendingJob;
 
   @Autowired
   PersonRecordStatusJob job;

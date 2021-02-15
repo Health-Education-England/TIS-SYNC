@@ -48,6 +48,7 @@ public class DmsRecordAssembler {
     if (dto instanceof PostDTO) {
       PostDataDmsDto postDataDmsDto = postDtoToPostDataDmsDtoMapper
           .postDtoToPostDataDmsDto((PostDTO) dto);
+
       MetadataDto metadataDto = new MetadataDto(
           Instant.now().toString(),
           DATA,

@@ -7,16 +7,15 @@ import uk.nhs.tis.sync.dto.PostDataDmsDto;
 import uk.nhs.tis.sync.mapper.util.PostDataDmsDtoUtil;
 import uk.nhs.tis.sync.mapper.util.PostDataDmsDtoUtil.PostId;
 import uk.nhs.tis.sync.mapper.util.PostDataDmsDtoUtil.Status;
-import uk.nhs.tis.sync.mapper.util.SharedUtil.Id;
 
 @Mapper(componentModel = "spring", uses = PostDataDmsDtoUtil.class)
 public interface PostDtoToPostDataDmsDtoMapper {
 
-  @Mapping(target = "id", source = "postDto.id", qualifiedBy = Id.class)
+  @Mapping(target = "id", source = "postDto.id")
   @Mapping(target = "nationalPostNumber", source = "postDto.nationalPostNumber")
   @Mapping(target = "status", source = "postDto.status", qualifiedBy = Status.class)
-  @Mapping(target = "employingBodyId", source = "postDto.employingBodyId", qualifiedBy = Id.class)
-  @Mapping(target = "trainingBodyId", source = "postDto.trainingBodyId", qualifiedBy = Id.class)
+  @Mapping(target = "employingBodyId", source = "postDto.employingBodyId")
+  @Mapping(target = "trainingBodyId", source = "postDto.trainingBodyId")
   @Mapping(target = "oldPostId", source = "postDto.oldPost", qualifiedBy = PostId.class)
   @Mapping(target = "newPostId", source = "postDto.newPost", qualifiedBy = PostId.class)
   @Mapping(target = "owner", source = "postDto.owner")

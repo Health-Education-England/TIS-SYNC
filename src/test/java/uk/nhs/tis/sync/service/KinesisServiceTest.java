@@ -73,13 +73,14 @@ public class KinesisServiceTest {
 
     timestamp = Instant.now().toString();
 
-    MetadataDto metadataDto1 = new MetadataDto(timestamp,
-        "data",
-        "load",
-        "schema-table",
-        "tcs",
-        "Post",
-        "000");
+    MetadataDto metadataDto1 = new MetadataDto();
+    metadataDto1.setTimestamp(timestamp);
+    metadataDto1.setRecordType("data");
+    metadataDto1.setOperation("load");
+    metadataDto1.setPartitionKeyType("schema-table");
+    metadataDto1.setSchemaName("tcs");
+    metadataDto1.setTableName("Post");
+    metadataDto1.setTransactionId("000");
 
     DmsDto dmsDto1 = new DmsDto(postDataDmsDto, metadataDto1);
 
@@ -93,13 +94,14 @@ public class KinesisServiceTest {
     trustDataDmsDto.setIntrepidId("3");
     trustDataDmsDto.setId("1");
 
-    MetadataDto metadataDto2 = new MetadataDto(timestamp,
-        "data",
-        "load",
-        "schema-table",
-        "reference",
-        "Trust",
-        "111");
+    MetadataDto metadataDto2 = new MetadataDto();
+    metadataDto2.setTimestamp(timestamp);
+    metadataDto2.setRecordType("data");
+    metadataDto2.setOperation("load");
+    metadataDto2.setPartitionKeyType("schema-table");
+    metadataDto2.setSchemaName("reference");
+    metadataDto2.setTableName("Trust");
+    metadataDto2.setTransactionId("111");
 
     DmsDto dmsDto2 = new DmsDto(trustDataDmsDto, metadataDto2);
 

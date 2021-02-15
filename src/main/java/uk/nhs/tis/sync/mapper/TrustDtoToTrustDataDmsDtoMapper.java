@@ -4,7 +4,6 @@ import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import uk.nhs.tis.sync.dto.TrustDataDmsDto;
-import uk.nhs.tis.sync.mapper.util.SharedUtil.Id;
 import uk.nhs.tis.sync.mapper.util.TrustDataDmsDtoUtil;
 import uk.nhs.tis.sync.mapper.util.TrustDataDmsDtoUtil.Status;
 
@@ -18,6 +17,6 @@ public interface TrustDtoToTrustDataDmsDtoMapper {
   @Mapping(target = "trustName", source = "trustDto.trustName")
   @Mapping(target = "trustNumber", source = "trustDto.trustNumber")
   @Mapping(target = "intrepidId", source = "trustDto.intrepidId")
-  @Mapping(target = "id", source = "trustDto.id", qualifiedBy = Id.class)
+  @Mapping(target = "id", source = "trustDto.id")
   public TrustDataDmsDto trustDtoToTrustDataDmsDto(TrustDTO trustDto);
 }

@@ -92,16 +92,17 @@ public class DmsRecordAssemblerTest {
     //inject the timestamp from the actualDmsDto into the expectedDmsDto
     String timestamp = actualDmsDto.getMetadata().getTimestamp();
 
-    //ingect the transaction-id from the actualDmsDto into the expectedDmsDto
+    //inject the transaction-id from the actualDmsDto into the expectedDmsDto
     String transactionId = actualDmsDto.getMetadata().getTransactionId();
 
-    MetadataDto expectedMetadataDto = new MetadataDto(timestamp,
-        "data",
-        "load",
-        "schema-table",
-        "tcs",
-        "Post",
-        transactionId);
+    MetadataDto expectedMetadataDto = new MetadataDto();
+    expectedMetadataDto.setTimestamp(timestamp);
+    expectedMetadataDto.setRecordType("data");
+    expectedMetadataDto.setOperation("load");
+    expectedMetadataDto.setPartitionKeyType("schema-table");
+    expectedMetadataDto.setSchemaName("tcs");
+    expectedMetadataDto.setTableName("Post");
+    expectedMetadataDto.setTransactionId(transactionId);
 
     DmsDto expectedDmsDto = new DmsDto(expectedPostDataDmsDto, expectedMetadataDto);
 
@@ -125,16 +126,17 @@ public class DmsRecordAssemblerTest {
     //inject the timestamp from the actualDmsDto into the expectedDmsDto
     String timestamp = actualDmsDto.getMetadata().getTimestamp();
 
-    //ingect the transaction-id from the actualDmsDto into the expectedDmsDto
+    //inject the transaction-id from the actualDmsDto into the expectedDmsDto
     String transactionId = actualDmsDto.getMetadata().getTransactionId();
 
-    MetadataDto expectedMetadataDto = new MetadataDto(timestamp,
-        "data",
-        "load",
-        "schema-table",
-        "reference",
-        "Trust",
-        transactionId);
+    MetadataDto expectedMetadataDto = new MetadataDto();
+    expectedMetadataDto.setTimestamp(timestamp);
+    expectedMetadataDto.setRecordType("data");
+    expectedMetadataDto.setOperation("load");
+    expectedMetadataDto.setPartitionKeyType("schema-table");
+    expectedMetadataDto.setSchemaName("reference");
+    expectedMetadataDto.setTableName("Trust");
+    expectedMetadataDto.setTransactionId(transactionId);
 
     DmsDto expectedDmsDto = new DmsDto(expectedTrustDataDmsDto, expectedMetadataDto);
 

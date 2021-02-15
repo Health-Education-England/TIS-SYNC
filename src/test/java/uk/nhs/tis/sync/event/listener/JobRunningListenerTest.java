@@ -24,8 +24,8 @@ public class JobRunningListenerTest {
   private PersonElasticSearchSyncJob personElasticSearchSyncJob;
   @MockBean
   private PersonOwnerRebuildJob personOwnerRebuildJob;
-  @MockBean
-  private RecordResendingJob recordResendingJob;
+//  @MockBean
+//  private RecordResendingJob recordResendingJob;
 
   @Autowired
   JobRunningListener testClass;

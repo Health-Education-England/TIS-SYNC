@@ -98,13 +98,14 @@ class RecordResendingJobTest {
     postDataDmsDto.setOwner("Health Education England North West London");
     postDataDmsDto.setIntrepidId("128374444");
 
-    MetadataDto metadataDto = new MetadataDto("timestamp",
-        "data",
-        "load",
-        "schema-table",
-        "tcs",
-        "Post",
-        "transactionId");
+    MetadataDto metadataDto = new MetadataDto();
+    metadataDto.setTimestamp("timestamp");
+    metadataDto.setRecordType("data");
+    metadataDto.setOperation("load");
+    metadataDto.setPartitionKeyType("schema-table");
+    metadataDto.setSchemaName("tcs");
+    metadataDto.setTableName("Post");
+    metadataDto.setTransactionId("transaction-id");
 
     dmsDto = new DmsDto(postDataDmsDto, metadataDto);
 
