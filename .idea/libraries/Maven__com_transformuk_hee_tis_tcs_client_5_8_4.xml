@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.transformuk.hee.tis:tcs-client:5.8.4">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/transformuk/hee/tis/tcs-client/5.8.4/tcs-client-5.8.4.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/transformuk/hee/tis/tcs-client/5.8.4/tcs-client-5.8.4-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/transformuk/hee/tis/tcs-client/5.8.4/tcs-client-5.8.4-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

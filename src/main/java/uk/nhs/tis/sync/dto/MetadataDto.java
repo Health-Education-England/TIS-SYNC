@@ -5,8 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"timestamp", "record-type", "operation", "partition-key-type", "schema-name",
@@ -19,8 +21,4 @@ public class MetadataDto {
   @JsonProperty("schema-name") String schemaName;
   @JsonProperty("table-name") String tableName;
   @JsonProperty("transaction-id") String transactionId;
-
-  public MetadataDto() {
-    //empty constructor for tests
-  }
 }
