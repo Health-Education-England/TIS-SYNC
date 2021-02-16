@@ -50,7 +50,7 @@ node {
             sh "'${mvn}' clean package"
             env.IMAGE_REGISTRY_URL = "430723991443.dkr.ecr.eu-west-2.amazonaws.com"
             sh "'${mvn}' spring-boot:build-image -DskipTests"
-            sh "docker tag ${env.IMAGE_REGISTRY_URL}/${service}:latest ${env.IMAGE_REGISTRY_URL}/${dockerImageName}:${env.GIT_COMMIT}"
+            sh "docker tag ${env.IMAGE_REGISTRY_URL}/${service}:latest ${env.IMAGE_REGISTRY_URL}/${service}:${env.GIT_COMMIT}"
           } finally {
             junit '**/target/surefire-reports/TEST-*.xml'
           }
@@ -68,10 +68,10 @@ node {
           sh "aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 430723991443.dkr.ecr.eu-west-2.amazonaws.com"
 
           sh "'${mvn}' spring-boot:build-image -DskipTests"
-          sh "docker tag ${env.IMAGE_REGISTRY_URL}/${service}:latest ${env.IMAGE_REGISTRY_URL}/${dockerImageName}:${env.GIT_COMMIT}"
-          sh "docker push --all-tags ${env.IMAGE_REGISTRY_URL}/${dockerImageName}"
+          sh "docker tag ${env.IMAGE_REGISTRY_URL}/${service}:latest ${env.IMAGE_REGISTRY_URL}/${service}:${env.GIT_COMMIT}"
+          sh "docker push --all-tags ${env.IMAGE_REGISTRY_URL}/${service}"
 
-          sh "docker rmi ${env.IMAGE_REGISTRY_URL}/${dockerImageName}:latest ${env.IMAGE_REGISTRY_URL}/${dockerImageName}:${env.GIT_COMMIT}"
+          sh "docker rmi ${env.IMAGE_REGISTRY_URL}/${service}:latest ${env.IMAGE_REGISTRY_URL}/${service}:${env.GIT_COMMIT}"
 
           println "[Jenkinsfile INFO] Stage Dockerize completed..."
         }
