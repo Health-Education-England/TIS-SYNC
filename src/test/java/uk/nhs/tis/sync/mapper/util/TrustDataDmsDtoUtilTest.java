@@ -17,7 +17,6 @@ public class TrustDataDmsDtoUtilTest {
 
   @Test
   public void shouldReturnStringValueOfStatus() {
-    Status currentStatus = Status.CURRENT;
-    assertEquals("CURRENT", util.status(currentStatus));
+    assertEquals("CURRENT", util.status(Status.CURRENT));
   }
 }

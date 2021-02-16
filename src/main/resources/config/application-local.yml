@@ -44,4 +44,4 @@ application:
     kinesis:
       streamName: ${AWS_KINESIS_STREAM_NAME:azure-stage-db-to-aws-kinesis-continuous}
     sqs:
-      queueName: ${AWS_SQS_QUEUE_NAME:tis-trainee-sync-queue-preprod}
+      queueUrl: ${AWS_SQS_QUEUE_URL:https://sqs.eu-west-2.amazonaws.com/430723991443/tis-trainee-sync-queue-preprod}
