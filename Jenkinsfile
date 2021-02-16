@@ -47,8 +47,7 @@ node {
 
         stage('Unit Tests') {
           try {
-            sh "'${mvn}' clean package"
-            sh "docker build -t ${containerRegistryLocaltion}/${dockerImageName}:$buildVersion -t ${containerRegistryLocaltion}/${dockerImageName}:latest ."
+            sh "'${mvn}' clean test"
           } finally {
             junit '**/target/surefire-reports/TEST-*.xml'
           }
@@ -59,28 +58,16 @@ node {
         milestone 2
 
         stage('Dockerise') {
-          env.VERSION = utils.getMvnToPom(workspace, 'version')
-          env.GROUP_ID = utils.getMvnToPom(workspace, 'groupId')
-          env.ARTIFACT_ID = utils.getMvnToPom(workspace, 'artifactId')
-          env.PACKAGING = utils.getMvnToPom(workspace, 'packaging')
-          imageName = env.ARTIFACT_ID
-          imageVersionTag = env.GIT_COMMIT
-
-          if (isService) {
-              imageName = service
-              env.IMAGE_NAME = imageName
-          }
-
-          def dockerImageName = "sync"
-          def containerRegistryLocaltion = "430723991443.dkr.ecr.eu-west-2.amazonaws.com"
+          env.IMAGE_REGISTRY_URL = "430723991443.dkr.ecr.eu-west-2.amazonaws.com"
 
           // log into aws docker
           sh "aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 430723991443.dkr.ecr.eu-west-2.amazonaws.com"
 
-          sh "docker build -t ${containerRegistryLocaltion}/${dockerImageName}:$buildVersion -t ${containerRegistryLocaltion}/${dockerImageName}:latest ."
-          sh "docker push --all-tags ${containerRegistryLocaltion}/${dockerImageName}"
+          sh "'${mvn}' spring-boot:build-image -DskipTests"
+          sh "docker tag ${env.IMAGE_REGISTRY_URL}/${service}:latest ${env.IMAGE_REGISTRY_URL}/${service}:${env.GIT_COMMIT}"
+          sh "docker push --all-tags ${env.IMAGE_REGISTRY_URL}/${service}"
 
-          sh "docker rmi ${containerRegistryLocaltion}/${dockerImageName}:latest ${containerRegistryLocaltion}/${dockerImageName}:$buildVersion"
+          sh "docker rmi ${env.IMAGE_REGISTRY_URL}/${service}:latest ${env.IMAGE_REGISTRY_URL}/${service}:${env.GIT_COMMIT}"
 
           println "[Jenkinsfile INFO] Stage Dockerize completed..."
         }
