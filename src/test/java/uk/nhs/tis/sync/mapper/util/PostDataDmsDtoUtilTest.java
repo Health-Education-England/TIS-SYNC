@@ -21,12 +21,4 @@ public class PostDataDmsDtoUtilTest {
     Status currentStatus = Status.CURRENT;
     assertEquals("CURRENT", util.status(currentStatus));
   }
-
-  @Test
-  public void givenAPostDtoShouldExtractItsEmployingBodyIdOrTrainingBodyId() {
-    PostDTO postDto = new PostDTO();
-    postDto.setId(10L);
-
-    assertEquals("10", util.postId(postDto));
-  }
 }
