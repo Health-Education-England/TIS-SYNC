@@ -3,9 +3,8 @@
 def utils = new hee.tis.utils()
 
 node {
-
-    if (env.BRANCH_NAME != "master") {
-        // PR and branch builds are done by GitHub Actions.
+    if (env.BRANCH_NAME.startsWith('PR-')) {
+        // PR builds are done by GitHub Actions.
         return
     }
 
@@ -48,7 +47,8 @@ node {
 
         stage('Unit Tests') {
           try {
-            sh "'${mvn}' clean test"
+            sh "'${mvn}' clean package"
+            sh "docker build -t ${containerRegistryLocaltion}/${dockerImageName}:$buildVersion -t ${containerRegistryLocaltion}/${dockerImageName}:latest ."
           } finally {
             junit '**/target/surefire-reports/TEST-*.xml'
           }
@@ -77,14 +77,10 @@ node {
           // log into aws docker
           sh "aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 430723991443.dkr.ecr.eu-west-2.amazonaws.com"
 
-          sh "docker build -t ${containerRegistryLocaltion}/${dockerImageName}:$buildVersion -f ./sync-service/Dockerfile ./sync-service"
-          sh "docker push ${containerRegistryLocaltion}/${dockerImageName}:$buildVersion"
+          sh "docker build -t ${containerRegistryLocaltion}/${dockerImageName}:$buildVersion -t ${containerRegistryLocaltion}/${dockerImageName}:latest ."
+          sh "docker push --all-tags ${containerRegistryLocaltion}/${dockerImageName}"
 
-          sh "docker tag ${containerRegistryLocaltion}/${dockerImageName}:$buildVersion ${containerRegistryLocaltion}/sync:latest"
-          sh "docker push ${containerRegistryLocaltion}/${dockerImageName}:latest"
-
-          sh "docker rmi ${containerRegistryLocaltion}/${dockerImageName}:latest"
-          sh "docker rmi ${containerRegistryLocaltion}/${dockerImageName}:$buildVersion"
+          sh "docker rmi ${containerRegistryLocaltion}/${dockerImageName}:latest ${containerRegistryLocaltion}/${dockerImageName}:$buildVersion"
 
           println "[Jenkinsfile INFO] Stage Dockerize completed..."
         }
