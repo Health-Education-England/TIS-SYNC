@@ -48,6 +48,7 @@ node {
         stage('Unit Tests') {
           try {
             sh "'${mvn}' clean package"
+            env.IMAGE_REGISTRY_URL = "430723991443.dkr.ecr.eu-west-2.amazonaws.com"
             sh "'${mvn}' spring-boot:build-image -DskipTests"
             sh "docker tag ${env.IMAGE_REGISTRY_URL}/${service}:latest ${env.IMAGE_REGISTRY_URL}/${dockerImageName}:${env.GIT_COMMIT}"
           } finally {
@@ -63,6 +64,7 @@ node {
           env.IMAGE_REGISTRY_URL = "430723991443.dkr.ecr.eu-west-2.amazonaws.com"
 
           // log into aws docker
+
           sh "aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 430723991443.dkr.ecr.eu-west-2.amazonaws.com"
 
           sh "'${mvn}' spring-boot:build-image -DskipTests"
