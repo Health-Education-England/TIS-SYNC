@@ -198,12 +198,18 @@ application:
     postTrainingBodyTrustJob: ${APPLICATION_CRON_POSTTRAININGBODYTRUSTJOB:0 19 1 * * *}
     personElasticSearchJob: ${APPLICATION_CRON_PERSONELASTICSEARCHJOB:0 29 1 * * *}
     personRecordStatusJob: ${APPLICATION_CRON_PERSONRECORDSTATUSJOB:0 0 1 * * *}
+    recordResendingJob: ${APPLICATION_CRON_SYNCHANDLINGJOB:0 * * * * *}
   jobs:
     runOnStartup:
       earliest: ${APPLICATION_JOBS_RUNONSTARTUP_EARLIEST:00:00}
       latest: ${APPLICATION_JOBS_RUNONSTARTUP_LATEST:05:00}
     personRecordStatusJob:
       dateOfChangeOverride: ${APPLICATION_JOBS_PERSONRECORDSTATUSJOB_DATEOFCHANGEOVERRIDE:}
+  aws:
+    kinesis:
+      streamName: ${AWS_KINESIS_STREAM_NAME}
+    sqs:
+      queueUrl: ${AWS_SQS_QUEUE_URL}
 
 azure:
   accountName: ${CLOUD_BLOB_ACCOUNT_NAME}

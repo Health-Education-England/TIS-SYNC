@@ -1,7 +1,6 @@
 package uk.nhs.tis.sync.job;
 
 import com.transformuk.hee.tis.tcs.service.repository.PostTrustRepository;
-import uk.nhs.tis.sync.Application;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Assert;

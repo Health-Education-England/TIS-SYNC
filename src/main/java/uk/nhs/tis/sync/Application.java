@@ -17,13 +17,14 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"com.transformuk.hee.tis.tcs.service",
+@ComponentScan(basePackages = {"com.transformuk.hee.tis.tcs",
     "uk.nhs.tis.sync", "com.transformuk.hee.tis.reference.client"})
 @EnableWebMvc
 @EnableSpringDataWebSupport
 @PropertySource({"classpath:/config/application.properties",
     "classpath:/config/referenceclientapplication.properties",
-    "classpath:/config/profileclientapplication.properties"
+    "classpath:/config/profileclientapplication.properties",
+    "classpath:/config/tcsclientapplication.properties"
 })
 @EnableConfigurationProperties({ApplicationProperties.class})
 @EnableAutoConfiguration()

@@ -24,6 +24,4 @@ slack:
   job:
     notification-channel: dev-monitoring
 
-application:
-
 enable.es.search: ${ENABLE_ES_SEARCH}
