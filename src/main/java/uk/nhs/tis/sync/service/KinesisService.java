@@ -24,6 +24,8 @@ public class KinesisService {
 
   private ObjectMapper objectMapper;
 
+  public static final String PARTITION_KEY = "0";
+
   /**
    * An object to send data into a Kinesis data stream.
    * @param amazonKinesis Object needed to a PutRecordsRequest object into the stream.
@@ -64,7 +66,7 @@ public class KinesisService {
         PutRecordsRequestEntry putRecordsRequestEntry  = new PutRecordsRequestEntry();
         putRecordsRequestEntry.setData(ByteBuffer.wrap(jsonString.getBytes()));
         putRecordsRequestEntryList.add(putRecordsRequestEntry);
-        putRecordsRequestEntry.setPartitionKey("partition-key");
+        putRecordsRequestEntry.setPartitionKey(PARTITION_KEY);
       }
 
       putRecordsRequest.setRecords(putRecordsRequestEntryList);
