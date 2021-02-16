@@ -1,5 +1,6 @@
 package uk.nhs.tis.sync.event.listener;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ public class SlackMessagingEventListener {
   private static final Logger LOG = LoggerFactory.getLogger(SlackMessagingEventListener.class);
 
   @Value("${slack.job.notification-channel}")
-  private String CHANNEL_ID = "";
+  private String channelId = "";
 
   SlackClient slackClient;
 
@@ -27,10 +28,12 @@ public class SlackMessagingEventListener {
 
   @EventListener
   public void handleJobExecutionEvent(JobExecutionEvent event) {
-    LOG.debug("Received job completion event with message [" + event.getMessage() + "]");
-    ChatPostMessageParams params = ChatPostMessageParams.builder().setChannelId(CHANNEL_ID)
-        .setText(event.getMessage()).build();
-    slackClient.postMessage(params);
+    if(StringUtils.isBlank(channelId)) {
+      LOG.debug("Received job completion event with message [{}]",event.getMessage());
+      ChatPostMessageParams params = ChatPostMessageParams.builder().setChannelId(channelId)
+          .setText(event.getMessage()).build();
+      slackClient.postMessage(params);
+    }
   }
 
 }
