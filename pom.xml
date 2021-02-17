@@ -339,6 +339,9 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
+          <image>
+            <name>${IMAGE_REGISTRY_URL}/sync</name>
+          </image>
           <executable>true</executable>
           <fork>true</fork>
           <!-- Enable the line below to have remote debugging of your application
