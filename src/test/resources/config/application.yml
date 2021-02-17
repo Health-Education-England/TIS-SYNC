@@ -96,7 +96,7 @@ application:
     recordResendingJob: ${APPLICATION_CRON_SYNCHANDLINGJOB:0 * * * * *}
   jobs:
     runOnStartup:
-      earliest: ${APPLICATION_JOBS_RUNONSTARTUP_EARLIEST:00:00}
+      earliest: ${APPLICATION_JOBS_RUNONSTARTUP_EARLIEST:05:01}
       latest: ${APPLICATION_JOBS_RUNONSTARTUP_LATEST:05:00}
     personRecordStatusJob:
       dateOfChangeOverride: ${APPLICATION_JOBS_PERSONRECORDSTATUSJOB_DATEOFCHANGEOVERRIDE:}
