@@ -198,7 +198,7 @@ application:
     postTrainingBodyTrustJob: ${APPLICATION_CRON_POSTTRAININGBODYTRUSTJOB:0 19 1 * * *}
     personElasticSearchJob: ${APPLICATION_CRON_PERSONELASTICSEARCHJOB:0 29 1 * * *}
     personRecordStatusJob: ${APPLICATION_CRON_PERSONRECORDSTATUSJOB:0 0 1 * * *}
-    recordResendingJob: ${APPLICATION_CRON_SYNCHANDLINGJOB:0 * * * * *}
+    recordResendingJob: ${APPLICATION_CRON_RECORDRESENDINGJOB:0 * * * * *}
   jobs:
     runOnStartup:
       earliest: ${APPLICATION_JOBS_RUNONSTARTUP_EARLIEST:00:00}
