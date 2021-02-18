@@ -1,24 +1,29 @@
 package uk.nhs.tis.sync.job;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.model.DeleteMessageBatchRequest;
+import com.amazonaws.services.sqs.model.DeleteMessageBatchRequestEntry;
 import com.amazonaws.services.sqs.model.Message;
+import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,15 +38,12 @@ import uk.nhs.tis.sync.service.DataRequestService;
 import uk.nhs.tis.sync.service.DmsRecordAssembler;
 import uk.nhs.tis.sync.service.KinesisService;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @ExtendWith(MockitoExtension.class)
 class RecordResendingJobTest {
 
   private static final String QUEUE_URL = "mock-queue-url";
 
-  public static final String STREAM_NAME = "streamName";
+  private static final String STREAM_NAME = "streamName";
 
   private RecordResendingJob job;
 
@@ -50,18 +52,21 @@ class RecordResendingJobTest {
   private RecordResendingJob jobSpy;
 
   @Mock
-  KinesisService kinesisServiceMock;
+  private KinesisService kinesisServiceMock;
 
   @Mock
-  DataRequestService dataRequestServiceMock;
+  private DataRequestService dataRequestServiceMock;
 
   @Mock
-  AmazonSQS amazonSqsMock;
+  private AmazonSQS amazonSqsMock;
 
   @Mock
-  DmsRecordAssembler dmsRecordAssemblerMock;
+  private DmsRecordAssembler dmsRecordAssemblerMock;
 
-  DmsDto dmsDto;
+  private DmsDto dmsDto;
+
+  private Message message1;
+  private Message message2;
 
   @BeforeEach
   void setUp() {
@@ -109,30 +114,73 @@ class RecordResendingJobTest {
 
     dmsDto = new DmsDto(postDataDmsDto, metadataDto);
 
-    Message message = new Message();
-    message.setBody("{" +
+    message1 = new Message();
+    message1.setReceiptHandle("message1");
+    message1.setBody("{" +
         "\"table\": \"Post\"," +
         "\"id\": \"44381\"" +
         "}"
     );
-    ReceiveMessageResult receiveMessageResult = new ReceiveMessageResult().withMessages(message);
-    when(amazonSqsMock.receiveMessage(QUEUE_URL)).thenReturn(receiveMessageResult);
+    message2 = new Message();
+    message2.setReceiptHandle("message2");
+    message2.setBody("{" +
+        "\"table\": \"Post\"," +
+        "\"id\": \"44382\"" +
+        "}"
+    );
+
+    ReceiveMessageResult receiveMessageResult = new ReceiveMessageResult()
+        .withMessages(message1, message2);
+
+    ReceiveMessageRequest request = new ReceiveMessageRequest()
+        .withQueueUrl(QUEUE_URL)
+        .withMaxNumberOfMessages(10);
+    when(amazonSqsMock.receiveMessage(request)).thenReturn(receiveMessageResult);
   }
 
   @Test
   void shouldSendDataToKinesisStream() {
-
     when(dataRequestServiceMock.retrieveDto(any(AmazonSqsMessageDto.class))).thenReturn(postDto);
     when(dmsRecordAssemblerMock.assembleDmsDto(postDto)).thenReturn(dmsDto);
 
     job.run();
 
-    verify(dataRequestServiceMock).retrieveDto(any(AmazonSqsMessageDto.class));
-    verify(dmsRecordAssemblerMock).assembleDmsDto(postDto);
+    verify(dataRequestServiceMock, times(2)).retrieveDto(any(AmazonSqsMessageDto.class));
+    verify(dmsRecordAssemblerMock, times(2)).assembleDmsDto(postDto);
 
     ArgumentCaptor<List<DmsDto>> captor = ArgumentCaptor.forClass(List.class);
     verify(kinesisServiceMock).sendData(eq(STREAM_NAME), captor.capture());
-    assertThat(captor.getValue().get(0)).isInstanceOf(DmsDto.class);
+
+    List<DmsDto> dmsDtos = captor.getValue();
+    assertThat(dmsDtos.size(), is(2));
+    assertThat(dmsDtos.get(0), instanceOf(DmsDto.class));
+    assertThat(dmsDtos.get(1), instanceOf(DmsDto.class));
+  }
+
+  @Test
+  void shouldDeleteProcessedMessages() {
+    when(dataRequestServiceMock.retrieveDto(any(AmazonSqsMessageDto.class))).thenReturn(postDto);
+    when(dmsRecordAssemblerMock.assembleDmsDto(postDto)).thenReturn(dmsDto);
+
+    job.run();
+
+    ArgumentCaptor<DeleteMessageBatchRequest> captor = ArgumentCaptor.forClass(
+        DeleteMessageBatchRequest.class);
+    verify(amazonSqsMock).deleteMessageBatch(captor.capture());
+
+    DeleteMessageBatchRequest deleteRequest = captor.getValue();
+    assertThat("Unexpected queue.", deleteRequest.getQueueUrl(), is(QUEUE_URL));
+
+    List<DeleteMessageBatchRequestEntry> entries = deleteRequest.getEntries();
+    assertThat("Unexpected number of entries.", entries.size(), is(2));
+
+    DeleteMessageBatchRequestEntry entry = entries.get(0);
+    assertThat("Unexpected id.", entry.getId(), is("0"));
+    assertThat("Unexpected receipt handle.", entry.getReceiptHandle(), is("message1"));
+
+    entry = entries.get(1);
+    assertThat("Unexpected id.", entry.getId(), is("1"));
+    assertThat("Unexpected receipt handle.", entry.getReceiptHandle(), is("message2"));
   }
 
   @Test
@@ -144,18 +192,17 @@ class RecordResendingJobTest {
   }
 
   @Test
-  void shouldCatchExceptionsWhenRunMethodIsCalled() throws JsonProcessingException {
+  void shouldProcessRemainingMessagesWhenExceptionThrown() throws JsonProcessingException {
     ObjectMapper objectMapperMock = mock(ObjectMapper.class);
-    when(objectMapperMock.readValue(anyString(), eq(AmazonSqsMessageDto.class))).thenThrow(JsonProcessingException.class);
+    when(objectMapperMock.readValue(message1.getBody(), AmazonSqsMessageDto.class))
+        .thenThrow(JsonProcessingException.class);
+    when(objectMapperMock.readValue(message2.getBody(), AmazonSqsMessageDto.class))
+        .thenReturn(new AmazonSqsMessageDto("Post", "44382"));
 
-    //mock a list of messages (1 message in the list)
-    ReceiveMessageResult receiveMessageResultMock = mock(ReceiveMessageResult.class);
-    when(amazonSqsMock.receiveMessage(QUEUE_URL)).thenReturn(receiveMessageResultMock);
-    List<Message> messages = new ArrayList<>();
-    messages.add(new Message());
-    when(receiveMessageResultMock.getMessages()).thenReturn(messages);
+    when(dataRequestServiceMock.retrieveDto(any(AmazonSqsMessageDto.class))).thenReturn(postDto);
+    when(dmsRecordAssemblerMock.assembleDmsDto(postDto)).thenReturn(dmsDto);
 
-    job = new RecordResendingJob(kinesisServiceMock,
+    RecordResendingJob job = new RecordResendingJob(kinesisServiceMock,
         dataRequestServiceMock,
         objectMapperMock,
         amazonSqsMock,
@@ -165,8 +212,15 @@ class RecordResendingJobTest {
 
     job.run();
 
-    Throwable throwable = catchThrowable(() -> job.run());
-    assertThat(throwable).isNull();
+    verify(dataRequestServiceMock).retrieveDto(any(AmazonSqsMessageDto.class));
+    verify(dmsRecordAssemblerMock).assembleDmsDto(postDto);
+
+    ArgumentCaptor<List<DmsDto>> captor = ArgumentCaptor.forClass(List.class);
+    verify(kinesisServiceMock).sendData(eq(STREAM_NAME), captor.capture());
+
+    List<DmsDto> dmsDtos = captor.getValue();
+    assertThat(dmsDtos.size(), is(1));
+    assertThat(dmsDtos.get(0), instanceOf(DmsDto.class));
   }
 
   @Test
