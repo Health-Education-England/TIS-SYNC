@@ -7,7 +7,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @Profile("local")
-public class ReferenceClientLocalConfig extends com.transformuk.hee.tis.reference.client.config.ReferenceClientConfig {
+public class TisClientLocalConfig extends com.transformuk.hee.tis.reference.client.config.ReferenceClientConfig {
 
   @Bean
   public RestTemplate referenceRestTemplate() {
