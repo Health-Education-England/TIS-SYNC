@@ -2,9 +2,8 @@ package uk.nhs.tis.sync.service;
 
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
+import java.util.Collections;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 
@@ -12,47 +11,40 @@ import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 @Service
 public class DataRequestService {
 
-  public static final String TABLE_POST = "Post";
-  public static final String TABLE_TRUST = "Trust";
-
-  private static final Logger LOG = LoggerFactory.getLogger(DataRequestService.class);
+  private static final String TABLE_POST = "Post";
+  private static final String TABLE_SITE = "Site";
+  private static final String TABLE_TRUST = "Trust";
 
   private TcsServiceImpl tcsServiceImpl;
 
   private ReferenceServiceImpl referenceServiceImpl;
 
-  public DataRequestService(TcsServiceImpl tcsServiceImpl,
-                            ReferenceServiceImpl referenceServiceImpl) {
+  DataRequestService(TcsServiceImpl tcsServiceImpl, ReferenceServiceImpl referenceServiceImpl) {
     this.tcsServiceImpl = tcsServiceImpl;
     this.referenceServiceImpl = referenceServiceImpl;
   }
 
   /**
    * Retrieve a DTO using TcsServiceImpl according to the info contained in an Amazon SQS message.
+   *
    * @param amazonSqsMessageDto The amazonSqsMessageDto to get info from for DTO retrieval.
    */
   public Object retrieveDto(AmazonSqsMessageDto amazonSqsMessageDto) {
-    String table = amazonSqsMessageDto.getTable();
-    String id = amazonSqsMessageDto.getId();
+    try {
+      long id = Long.parseLong(amazonSqsMessageDto.getId());
 
-    Object dto = null;
-
-    if (table.equals(TABLE_POST)) {
-      try {
-        dto = tcsServiceImpl.getPostById(Long.parseLong(id));
-      } catch (Exception e) {
-        LOG.error(e.getMessage(), e);
+      switch (amazonSqsMessageDto.getTable()) {
+        case TABLE_POST:
+          return tcsServiceImpl.getPostById(id);
+        case TABLE_SITE:
+          return referenceServiceImpl.findSitesIdIn(Collections.singleton(id)).get(0);
+        case TABLE_TRUST:
+          return referenceServiceImpl.findTrustById(id);
       }
+    } catch (Exception e) {
+      log.error(e.getMessage(), e);
     }
 
-    if (table.equals(TABLE_TRUST)) {
-      try {
-        dto = referenceServiceImpl.findTrustById(Long.parseLong(id));
-      } catch (Exception e) {
-        LOG.error(e.getMessage(), e);
-      }
-    }
-
-    return dto;
+    return null;
   }
 }

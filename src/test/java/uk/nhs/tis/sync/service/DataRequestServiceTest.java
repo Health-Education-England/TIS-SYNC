@@ -1,97 +1,113 @@
 package uk.nhs.tis.sync.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import java.util.Collections;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 
-@ExtendWith(MockitoExtension.class)
-public class DataRequestServiceTest {
+class DataRequestServiceTest {
 
-  @Mock
-  private TcsServiceImpl tcsServiceImplMock;
+  private DataRequestService service;
 
-  @Mock
-  private ReferenceServiceImpl referenceServiceImplMock;
+  private TcsServiceImpl tcsService;
 
-  private DataRequestService testObj;
+  private ReferenceServiceImpl referenceService;
 
-  private AmazonSqsMessageDto messageForAPost;
-
-  private AmazonSqsMessageDto messageForATrust;
-
-  @Before
-  public void setUp() {
-    tcsServiceImplMock = mock(TcsServiceImpl.class);
-    referenceServiceImplMock = mock(ReferenceServiceImpl.class);
-    testObj = new DataRequestService(tcsServiceImplMock,
-        referenceServiceImplMock);
-    messageForAPost = new AmazonSqsMessageDto("Post", "10");
-    messageForATrust = new AmazonSqsMessageDto("Trust", "20");
+  @BeforeEach
+  void setUp() {
+    tcsService = mock(TcsServiceImpl.class);
+    referenceService = mock(ReferenceServiceImpl.class);
+    service = new DataRequestService(tcsService, referenceService);
   }
 
   @Test
-  public void shouldRetrieveAPostDtoWhenPassedAnAmazonSqsMessageAskingForAPost() {
-    PostDTO expectedPostDto = new PostDTO();
-    expectedPostDto.setId(10L);
-    when(tcsServiceImplMock.getPostById(10L)).thenReturn(expectedPostDto);
+  void shouldReturnPostWhenPostFound() {
+    PostDTO expectedDto = new PostDTO();
+    when(tcsService.getPostById(10L)).thenReturn(expectedDto);
 
-    messageForAPost = new AmazonSqsMessageDto("Post", "10");
-    Object retrievedDto = testObj.retrieveDto(messageForAPost);
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Post", "10");
+    Object retrievedDto = service.retrieveDto(message);
 
-    Assert.assertEquals(expectedPostDto, retrievedDto);
-    verify(tcsServiceImplMock).getPostById(10L);
+    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
   }
 
   @Test
-  public void shouldRetrieveATrustDtoWhenPassedAnAmazonSqsMessageRequestingATrust() {
-    TrustDTO expectedTrustDto = new TrustDTO();
-    expectedTrustDto.setId(20L);
-    when(referenceServiceImplMock.findTrustById(20L)).thenReturn(expectedTrustDto);
-
-    Object retrievedDto = testObj.retrieveDto(messageForATrust);
-
-    verify(referenceServiceImplMock).findTrustById(20L);
-    Assert.assertEquals(expectedTrustDto, retrievedDto);
-  }
-
-
-  @Test
-  public void shouldCatchExceptionWhenAPostDtoIsNotFoundAndDtoWillReturnNull() {
-    when(tcsServiceImplMock.getPostById(10L))
+  void shouldReturnNullWhenPostNotFound() {
+    when(tcsService.getPostById(10L))
         .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 
-    Object post = testObj.retrieveDto(messageForAPost);
-    Assert.assertNull(post);
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Post", "10");
+    Object post = service.retrieveDto(message);
 
-    Throwable throwable1 = catchThrowable(() -> testObj.retrieveDto(messageForAPost));
-    assertThat(throwable1).isNull();
+    assertThat("Unexpected DTO.", post, nullValue());
   }
 
   @Test
-  public void shouldCatchExceptionWhenATrustDtoIsNotFoundAndDtoWillReturnNull() {
-    when(referenceServiceImplMock.findTrustById(20L))
+  void shouldReturnTrustWhenTrustFound() {
+    TrustDTO expectedDto = new TrustDTO();
+    when(referenceService.findTrustById(20L)).thenReturn(expectedDto);
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Trust", "20");
+    Object retrievedDto = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
+  }
+
+  @Test
+  void shouldReturnNullWhenTrustNotFound() {
+    when(referenceService.findTrustById(20L))
         .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 
-    Object trust = testObj.retrieveDto(messageForATrust);
-    Assert.assertNull(trust);
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Trust", "20");
+    Object trust = service.retrieveDto(message);
 
-    Throwable throwable2 = catchThrowable(() -> testObj.retrieveDto(messageForATrust));
-    assertThat(throwable2).isNull();
+    assertThat("Unexpected DTO.", trust, nullValue());
+  }
+
+  @Test
+  void shouldReturnSiteWhenSiteFound() {
+    SiteDTO expectedDto = new SiteDTO();
+    when(referenceService.findSitesIdIn(Collections.singleton(30L)))
+        .thenReturn(Collections.singletonList(expectedDto));
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Site", "30");
+    Object retrievedDto = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
+  }
+
+  @Test
+  void shouldReturnNullWhenSiteNotFound() {
+    when(referenceService.findSitesIdIn(Collections.singleton(30L)))
+        .thenReturn(Collections.emptyList());
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Site", "30");
+    Object site = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", site, nullValue());
+  }
+
+  @Test
+  void shouldReturnNullWhenFindSiteThrowsException() {
+    when(referenceService.findSitesIdIn(Collections.singleton(30L)))
+        .thenThrow(new RuntimeException("Expected exception."));
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Site", "30");
+    Object site = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", site, nullValue());
   }
 }
