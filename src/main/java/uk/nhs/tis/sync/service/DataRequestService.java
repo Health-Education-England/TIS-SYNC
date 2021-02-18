@@ -40,6 +40,8 @@ public class DataRequestService {
           return referenceServiceImpl.findSitesIdIn(Collections.singleton(id)).get(0);
         case TABLE_TRUST:
           return referenceServiceImpl.findTrustById(id);
+        default:
+          break;
       }
     } catch (Exception e) {
       log.error(e.getMessage(), e);
