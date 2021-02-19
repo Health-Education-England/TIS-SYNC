@@ -39,7 +39,7 @@ enable.es.search: false
 
 application:
   cron:
-    syncHandlingJob: ${APPLICATION_CRON_RECORDRESENDINGJOB:0/10 * * * * *}
+    recordResendingJob: ${APPLICATION_CRON_RECORDRESENDINGJOB:0/10 * * * * *}
   aws:
     kinesis:
       streamName: ${AWS_KINESIS_STREAM_NAME:azure-stage-db-to-aws-kinesis-continuous}

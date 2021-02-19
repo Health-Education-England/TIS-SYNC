@@ -14,6 +14,7 @@ import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,6 +26,7 @@ import uk.nhs.tis.sync.service.DmsRecordAssembler;
 import uk.nhs.tis.sync.service.KinesisService;
 
 @Component
+@ConditionalOnProperty("application.cron.recordResendingJob")
 @ManagedResource(objectName = "sync.mbean:name=RecordResendingJob",
     description = "Job that parses an sqs message, sends data accordingly into a Kinesis stream")
 public class RecordResendingJob {

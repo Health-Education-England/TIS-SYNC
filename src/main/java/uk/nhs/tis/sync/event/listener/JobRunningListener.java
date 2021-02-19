@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package uk.nhs.tis.sync.event.listener;
 
@@ -40,10 +40,9 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
 
   @Autowired
   private PostTrainingBodyTrustJob postTrainingBodyTrustJob;
-  
+
   @Autowired
   private PersonRecordStatusJob personRecordStatusJob;
-  
 
   @Autowired
   private PersonElasticSearchSyncJob personElasticSearchSyncJob;
