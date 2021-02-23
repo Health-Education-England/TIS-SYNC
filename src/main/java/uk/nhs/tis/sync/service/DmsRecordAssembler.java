@@ -3,15 +3,16 @@ package uk.nhs.tis.sync.service;
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
+import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import java.time.Instant;
 import java.util.UUID;
-
-import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
-import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
-import uk.nhs.tis.sync.mapper.*;
+import uk.nhs.tis.sync.mapper.PostDtoToPostDataDmsDtoMapper;
+import uk.nhs.tis.sync.mapper.ProgrammeMapper;
+import uk.nhs.tis.sync.mapper.SiteMapper;
+import uk.nhs.tis.sync.mapper.TrustDtoToTrustDataDmsDtoMapper;
 
 @Component
 public class DmsRecordAssembler {
@@ -25,10 +26,9 @@ public class DmsRecordAssembler {
   private static final String SCHEMA_REFERENCE = "reference";
   private static final String SCHEMA_TCS = "tcs";
   private static final String TABLE_POST = "Post";
+  private static final String TABLE_PROGRAMME = "Programme";
   private static final String TABLE_SITE = "Site";
   private static final String TABLE_TRUST = "Trust";
-  private static final String TABLE_PROGRAMME = "Programme";
-  private static final String TABLE_PROGRAMME_MEMBERSHIP = "ProgrammeMembership";
 
   private PostDtoToPostDataDmsDtoMapper postDtoToPostDataDmsDtoMapper;
 
@@ -38,20 +38,16 @@ public class DmsRecordAssembler {
 
   private ProgrammeMapper programmeMapper;
 
-  private ProgrammeMembershipMapper programmeMembershipMapper;
-
   /**
    * Constructor for a DmsRecordAssembler, which instantiates the relevant mappers.
    */
   DmsRecordAssembler(PostDtoToPostDataDmsDtoMapper postDtoToPostDataDmsDtoMapper,
       TrustDtoToTrustDataDmsDtoMapper trustDtoToTrustDataDmsDtoMapper, SiteMapper siteMapper,
-                     ProgrammeMapper programmeMapper,
-                     ProgrammeMembershipMapper programmeMembershipMapper) {
+                     ProgrammeMapper programmeMapper) {
     this.postDtoToPostDataDmsDtoMapper = postDtoToPostDataDmsDtoMapper;
     this.trustDtoToTrustDataDmsDtoMapper = trustDtoToTrustDataDmsDtoMapper;
     this.siteMapper = siteMapper;
     this.programmeMapper = programmeMapper;
-    this.programmeMembershipMapper = programmeMembershipMapper;
   }
 
   /**
@@ -72,6 +68,12 @@ public class DmsRecordAssembler {
       table = TABLE_POST;
     }
 
+    if (dto instanceof ProgrammeDTO) {
+      dmsData = programmeMapper.toDmsDto((ProgrammeDTO) dto);
+      schema = SCHEMA_TCS;
+      table = TABLE_PROGRAMME;
+    }
+
     if (dto instanceof SiteDTO) {
       dmsData = siteMapper.toDmsDto((SiteDTO) dto);
       schema = SCHEMA_REFERENCE;
@@ -82,18 +84,6 @@ public class DmsRecordAssembler {
       dmsData = trustDtoToTrustDataDmsDtoMapper.trustDtoToTrustDataDmsDto((TrustDTO) dto);
       schema = SCHEMA_REFERENCE;
       table = TABLE_TRUST;
-    }
-
-    if (dto instanceof ProgrammeDTO) {
-      dmsData = programmeMapper.toDmsDto((ProgrammeDTO) dto);
-      schema = SCHEMA_TCS;
-      table = TABLE_PROGRAMME;
-    }
-
-    if (dto instanceof ProgrammeMembershipDTO) {
-      dmsData = programmeMembershipMapper.toDmsDto((ProgrammeMembershipDTO) dto);
-      schema = SCHEMA_TCS;
-      table = TABLE_PROGRAMME_MEMBERSHIP;
     }
 
     if (dmsData != null) {

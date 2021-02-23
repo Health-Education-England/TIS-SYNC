@@ -116,7 +116,8 @@ class DataRequestServiceTest {
   @Test
   void shouldReturnProgrammeWhenProgrammeFound() {
     ProgrammeDTO expectedDto = new ProgrammeDTO();
-    when(tcsService.getProgrammeById(40L)).thenReturn(expectedDto);
+    when(tcsService.findProgrammesIn(Collections.singletonList("40")))
+        .thenReturn(Collections.singletonList(expectedDto));
 
     AmazonSqsMessageDto message = new AmazonSqsMessageDto("Programme", "40");
     Object retrievedDto = service.retrieveDto(message);
@@ -126,7 +127,7 @@ class DataRequestServiceTest {
 
   @Test
   void shouldReturnNullWhenProgrammeNotFound() {
-    when(tcsService.getProgrammeById(40L))
+    when(tcsService.findProgrammesIn(Collections.singletonList("40")))
         .thenReturn(null);
 
     AmazonSqsMessageDto message = new AmazonSqsMessageDto("Programme", "40");
@@ -137,7 +138,7 @@ class DataRequestServiceTest {
 
   @Test
   void shouldReturnNullWhenGetProgrammeByIdThrowsException() {
-    when(tcsService.getProgrammeById(40L))
+    when(tcsService.findProgrammesIn(Collections.singletonList("40")))
         .thenThrow(new RuntimeException("Expected exception."));
 
     AmazonSqsMessageDto message = new AmazonSqsMessageDto("Programme", "40");
@@ -147,35 +148,9 @@ class DataRequestServiceTest {
   }
 
   @Test
-  void shouldReturnProgrammeMembershipWhenProgrammeFound() {
-    ProgrammeMembershipDTO expectedDto = new ProgrammeMembershipDTO();
-    when(tcsService.getProgrammeMembershipById(50L)).thenReturn(expectedDto);
+  void shouldReturnNullWhenTableDoesNotMatchAnyCase() {
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Wrong", "0");
+    assertThat(service.retrieveDto(message), nullValue());
 
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("ProgrammeMembership", "50");
-    Object retrievedDto = service.retrieveDto(message);
-
-    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
-  }
-
-  @Test
-  void shouldReturnNullWhenProgrammeMembershipNotFound() {
-    when(tcsService.getProgrammeMembershipById(50L))
-        .thenReturn(null);
-
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("ProgrammeMembership", "50");
-    Object programme = service.retrieveDto(message);
-
-    assertThat("Unexpected DTO.", programme, nullValue());
-  }
-
-  @Test
-  void shouldReturnNullWhenGetProgrammeMembershipByIdThrowsException() {
-    when(tcsService.getProgrammeMembershipById(50L))
-        .thenThrow(new RuntimeException("Expected exception."));
-
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("ProgrammeMembership", "50");
-    Object programmeMembership = service.retrieveDto(message);
-
-    assertThat("Unexpected DTO.", programmeMembership, nullValue());
   }
 }
