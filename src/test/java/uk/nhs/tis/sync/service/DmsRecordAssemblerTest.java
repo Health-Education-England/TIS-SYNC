@@ -10,23 +10,26 @@ import static org.junit.Assert.assertEquals;
 
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
-import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
+import com.transformuk.hee.tis.tcs.api.dto.*;
+import com.transformuk.hee.tis.tcs.api.enumeration.ProgrammeMembershipType;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import java.lang.reflect.Field;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.springframework.util.ReflectionUtils;
-import uk.nhs.tis.sync.dto.DmsDto;
-import uk.nhs.tis.sync.dto.MetadataDto;
-import uk.nhs.tis.sync.dto.PostDataDmsDto;
-import uk.nhs.tis.sync.dto.SiteDmsDto;
-import uk.nhs.tis.sync.dto.TrustDataDmsDto;
-import uk.nhs.tis.sync.mapper.PostDtoToPostDataDmsDtoMapperImpl;
-import uk.nhs.tis.sync.mapper.SiteMapper;
-import uk.nhs.tis.sync.mapper.TrustDtoToTrustDataDmsDtoMapperImpl;
+import uk.nhs.tis.sync.dto.*;
+import uk.nhs.tis.sync.mapper.*;
 import uk.nhs.tis.sync.mapper.util.PostDataDmsDtoUtil;
+import uk.nhs.tis.sync.mapper.util.ProgrammeDmsDtoUtil;
+import uk.nhs.tis.sync.mapper.util.ProgrammeMembershipDmsDtoUtil;
 import uk.nhs.tis.sync.mapper.util.TrustDataDmsDtoUtil;
 
 class DmsRecordAssemblerTest {
@@ -49,7 +52,23 @@ class DmsRecordAssemblerTest {
 
     SiteMapper siteMapper = Mappers.getMapper(SiteMapper.class);
 
-    dmsRecordAssembler = new DmsRecordAssembler(postMapper, trustMapper, siteMapper);
+    ProgrammeMapper programmeMapper = Mappers.getMapper(ProgrammeMapper.class);
+    Field fieldProgramme = ReflectionUtils.findField(ProgrammeMapperImpl.class,
+        "programmeDmsDtoUtil");
+    fieldProgramme.setAccessible(true);
+    ReflectionUtils.setField(fieldProgramme, programmeMapper, new ProgrammeDmsDtoUtil());
+
+    ProgrammeMembershipMapper programmeMembershipMapper =
+        Mappers.getMapper(ProgrammeMembershipMapper.class);
+    Field fieldProgrammeMembership =
+        ReflectionUtils.findField(ProgrammeMembershipMapperImpl.class,
+            "programmeMembershipDmsDtoUtil");
+    fieldProgrammeMembership.setAccessible(true);
+    ReflectionUtils.setField(fieldProgrammeMembership, programmeMembershipMapper,
+        new ProgrammeMembershipDmsDtoUtil());
+
+    dmsRecordAssembler = new DmsRecordAssembler(postMapper, trustMapper, siteMapper,
+        programmeMapper, programmeMembershipMapper);
   }
 
   @Test
@@ -201,5 +220,125 @@ class DmsRecordAssemblerTest {
     DmsDto dmsDto = dmsRecordAssembler.assembleDmsDto(new Object());
     assertThat("Unexpected dms dto.", dmsDto, nullValue());
 
+  }
+
+  @Test
+  void shouldHandleProgramme() {
+    ProgrammeCurriculumDTO programmeCurriculum1 = new ProgrammeCurriculumDTO();
+    programmeCurriculum1.setId(1L);
+    ProgrammeCurriculumDTO programmeCurriculum2 = new ProgrammeCurriculumDTO();
+    programmeCurriculum2.setId(2L);
+
+    ProgrammeDTO programme = new ProgrammeDTO();
+    programme.setId(50L);
+    Set<ProgrammeCurriculumDTO> curricula = Stream.of(programmeCurriculum1, programmeCurriculum2)
+        .collect(Collectors.toCollection(HashSet::new));
+    programme.setCurricula(curricula);
+    programme.setOwner("owner");
+    programme.setIntrepidId("i50");
+    programme.setProgrammeName("programmeName");
+    programme.setProgrammeNumber("500");
+    programme.setStatus(Status.CURRENT);
+
+    DmsDto dmsDto = dmsRecordAssembler.assembleDmsDto(programme);
+
+    MetadataDto metadata = dmsDto.getMetadata();
+    assertThat("Unexpected record type.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
+    assertThat("Unexpected partition key.", metadata.getPartitionKeyType(), is("schema-table"));
+    assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
+    assertThat("Unexpected table.", metadata.getTableName(), is("Programme"));
+    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+
+    Object data = dmsDto.getData();
+    assertThat("Unexpected data.", data, instanceOf(ProgrammeDmsDto.class));
+
+    ProgrammeDmsDto programmeDmsDto = (ProgrammeDmsDto) data;
+    assertThat("Unexpected record type.", programmeDmsDto.getId(), is("50"));
+    assertThat("Unexpected record type.", programmeDmsDto.getCurriculaIds(),
+        is(Stream.of("1", "2").collect(Collectors.toSet())));
+    assertThat("Unexpected record type.", programmeDmsDto.getIntrepidId(), is("i50"));
+    assertThat("Unexpected record type.", programmeDmsDto.getOwner(), is("owner"));
+    assertThat("Unexpected record type.", programmeDmsDto.getProgrammeName(), is("programmeName"));
+    assertThat("Unexpected record type.", programmeDmsDto.getProgrammeNumber(), is(
+        "500"));
+    assertThat("Unexpected record type.", programmeDmsDto.getStatus(), is("CURRENT"));
+  }
+
+  @Test
+  void shouldHandleProgrammeMembership() {
+    ProgrammeMembershipDTO programmeMembership = new ProgrammeMembershipDTO();
+
+    programmeMembership.setId(60L);
+    programmeMembership.setLeavingDestination("leavingDestination");
+
+    PersonDTO person = new PersonDTO();
+    person.setId(1L);
+    programmeMembership.setPerson(person);
+
+    programmeMembership.setLeavingReason("leavingReason");
+    programmeMembership.setProgrammeStartDate(LocalDate.MIN);
+    programmeMembership.setProgrammeEndDate(LocalDate.MAX);
+    programmeMembership.setProgrammeId(50L);
+    programmeMembership.setProgrammeMembershipType(ProgrammeMembershipType.ACADEMIC);
+    programmeMembership.setProgrammeName("programmeName");
+    programmeMembership.setProgrammeNumber("programmeNumber");
+    programmeMembership.setTrainingPathway("trainingPathWay");
+
+    TrainingNumberDTO trainingNumber = new TrainingNumberDTO();
+    trainingNumber.setId(2L);
+    programmeMembership.setTrainingNumber(trainingNumber);
+
+    RotationDTO rotationDTO = new RotationDTO();
+    rotationDTO.setId(3L);
+    programmeMembership.setRotation(rotationDTO);
+
+    CurriculumMembershipDTO curriculumMembership1 = new CurriculumMembershipDTO();
+    curriculumMembership1.setId(3L);
+    CurriculumMembershipDTO curriculumMembership2 = new CurriculumMembershipDTO();
+    curriculumMembership2.setId(4L);
+    List<CurriculumMembershipDTO> curriculumMemberships = Stream.of(curriculumMembership1,
+        curriculumMembership2).collect(Collectors.toList());
+    programmeMembership.setCurriculumMemberships(curriculumMemberships);
+
+    DmsDto dmsDto = dmsRecordAssembler.assembleDmsDto(programmeMembership);
+
+    MetadataDto metadata = dmsDto.getMetadata();
+    assertThat("Unexpected record type.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
+    assertThat("Unexpected partition key.", metadata.getPartitionKeyType(), is("schema-table"));
+    assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
+    assertThat("Unexpected table.", metadata.getTableName(), is("ProgrammeMembership"));
+    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+
+    Object data = dmsDto.getData();
+    assertThat("Unexpected data.", data, instanceOf(ProgrammeMembershipDmsDto.class));
+
+    ProgrammeMembershipDmsDto programmeMembershipDmsDto = (ProgrammeMembershipDmsDto) data;
+    assertThat("Unexpected record type.", programmeMembershipDmsDto.getId(), is("60"));
+    assertThat("Unexpected record type.", programmeMembershipDmsDto.getCurriculumMembershipIds(),
+        is(Stream.of("3", "4").collect(Collectors.toList())));
+    assertThat("Unexpected record type.", programmeMembershipDmsDto.getLeavingDestination(), is(
+        "leavingDestination"));
+    assertThat("Unexpected record type.", programmeMembershipDmsDto.getPersonId(), is("1"));
+    assertThat("Unexpected record type.", programmeMembershipDmsDto.getLeavingReason(), is(
+        "leavingReason"));
+    assertThat("Unexpected record type.", programmeMembershipDmsDto.getProgrammeStartDate(),
+        is(LocalDate.MIN.toString()));
+    assertThat("Unexpected record type.", programmeMembershipDmsDto.getProgrammeEndDate(),
+        is(LocalDate.MAX.toString()));
+    assertThat("Unexpected record type.", programmeMembershipDmsDto.getProgrammeId(), is("50"));
+    assertThat("Unexpected record type.", programmeMembershipDmsDto.getProgrammeName(), is(
+        "programmeName"));
+    assertThat("Unexpected record type.", programmeMembershipDmsDto.getProgrammeNumber(), is(
+        "programmeNumber"));
+    assertThat("Unexpected record type.", programmeMembershipDmsDto.getRotationId(), is("3"));
+    assertThat("Unexpected record type.", programmeMembershipDmsDto.getTrainingPathway(), is(
+        "trainingPathWay"));
+    assertThat("Unexpected record type.", programmeMembershipDmsDto.getTrainingNumberId(), is("2"));
+    assertThat("Unexpected record type.", programmeMembershipDmsDto.getProgrammeMembershipType(),
+        is("ACADEMIC"));
   }
 }

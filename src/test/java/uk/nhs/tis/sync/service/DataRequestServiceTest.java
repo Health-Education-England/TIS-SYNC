@@ -10,6 +10,8 @@ import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
+import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
+import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
@@ -109,5 +111,71 @@ class DataRequestServiceTest {
     Object site = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", site, nullValue());
+  }
+
+  @Test
+  void shouldReturnProgrammeWhenProgrammeFound() {
+    ProgrammeDTO expectedDto = new ProgrammeDTO();
+    when(tcsService.getProgrammeById(40L)).thenReturn(expectedDto);
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Programme", "40");
+    Object retrievedDto = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
+  }
+
+  @Test
+  void shouldReturnNullWhenProgrammeNotFound() {
+    when(tcsService.getProgrammeById(40L))
+        .thenReturn(null);
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Programme", "40");
+    Object programme = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", programme, nullValue());
+  }
+
+  @Test
+  void shouldReturnNullWhenGetProgrammeByIdThrowsException() {
+    when(tcsService.getProgrammeById(40L))
+        .thenThrow(new RuntimeException("Expected exception."));
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Programme", "40");
+    Object programme = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", programme, nullValue());
+  }
+
+  @Test
+  void shouldReturnProgrammeMembershipWhenProgrammeFound() {
+    ProgrammeMembershipDTO expectedDto = new ProgrammeMembershipDTO();
+    when(tcsService.getProgrammeMembershipById(50L)).thenReturn(expectedDto);
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("ProgrammeMembership", "50");
+    Object retrievedDto = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
+  }
+
+  @Test
+  void shouldReturnNullWhenProgrammeMembershipNotFound() {
+    when(tcsService.getProgrammeMembershipById(50L))
+        .thenReturn(null);
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("ProgrammeMembership", "50");
+    Object programme = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", programme, nullValue());
+  }
+
+  @Test
+  void shouldReturnNullWhenGetProgrammeMembershipByIdThrowsException() {
+    when(tcsService.getProgrammeMembershipById(50L))
+        .thenThrow(new RuntimeException("Expected exception."));
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("ProgrammeMembership", "50");
+    Object programmeMembership = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", programmeMembership, nullValue());
   }
 }

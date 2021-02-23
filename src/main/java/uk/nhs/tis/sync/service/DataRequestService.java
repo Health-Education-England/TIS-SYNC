@@ -14,6 +14,8 @@ public class DataRequestService {
   private static final String TABLE_POST = "Post";
   private static final String TABLE_SITE = "Site";
   private static final String TABLE_TRUST = "Trust";
+  private static final String TABLE_PROGRAMME = "Programme";
+  private static final String TABLE_PROGRAMME_MEMBERSHIP = "ProgrammeMembership";
 
   private TcsServiceImpl tcsServiceImpl;
 
@@ -40,6 +42,10 @@ public class DataRequestService {
           return referenceServiceImpl.findSitesIdIn(Collections.singleton(id)).get(0);
         case TABLE_TRUST:
           return referenceServiceImpl.findTrustById(id);
+        case TABLE_PROGRAMME:
+          return tcsServiceImpl.findProgrammesIn(Collections.singletonList(String.valueOf(id))).get(0);
+        case TABLE_PROGRAMME_MEMBERSHIP:
+          return tcsServiceImpl.getProgrammeMembershipById(id);
         default:
           break;
       }
