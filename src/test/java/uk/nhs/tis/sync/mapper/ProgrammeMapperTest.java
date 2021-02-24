@@ -31,20 +31,11 @@ public class ProgrammeMapperTest {
     input.setProgrammeName(PROG_NAME);
     input.setProgrammeNumber(PROG_NUM);
     input.setStatus(STATUS);
-    ProgrammeCurriculumDTO pc1 = new ProgrammeCurriculumDTO();
-    CurriculumDTO curriculum1 = new CurriculumDTO();
-    curriculum1.setId(40L);
-    pc1.setCurriculum(curriculum1);
-    ProgrammeCurriculumDTO pc2 = new ProgrammeCurriculumDTO();
-    CurriculumDTO curriculum2 = new CurriculumDTO();
-    curriculum2.setId(12L);
-    pc2.setCurriculum(curriculum2);
-    input.setCurricula(Stream.of(pc1, pc2).collect(Collectors.toSet()));
 
     ProgrammeDmsDto expected = testObj.toDmsDto(input);
 
     assertEquals("Mapped id doesn't match expectation", ID.toString(), expected.getId());
-    assertEquals("Mapped intrepidId doesn't match expectation", LEGACY_ID,
+    assertEquals("Mapped intrepid id doesn't match expectation", LEGACY_ID,
         input.getIntrepidId());
     assertEquals("Mapped owner doesn't match expectation", OWNER, expected.getOwner());
     assertEquals("Mapped programme name doesn't match expectation",
@@ -52,10 +43,5 @@ public class ProgrammeMapperTest {
     assertEquals("Mapped programme number doesn't match expectation",
         PROG_NUM, expected.getProgrammeNumber());
     assertEquals("Mapped status doesn't match expectation", STATUS.name(), expected.getStatus());
-    assertEquals("Mapped curricula ids don't match expectation", Stream.of(pc1, pc2)
-        .map(ProgrammeCurriculumDTO::getCurriculum)
-        .map(CurriculumDTO::getId)
-        .map(l -> Long.toString(l))
-        .collect(Collectors.toSet()), expected.getCurriculaIds());
   }
 }

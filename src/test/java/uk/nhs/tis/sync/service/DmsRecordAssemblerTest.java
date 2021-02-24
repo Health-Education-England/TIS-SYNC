@@ -210,21 +210,8 @@ class DmsRecordAssemblerTest {
 
   @Test
   void shouldHandleProgramme() {
-    CurriculumDTO curriculum1 = new CurriculumDTO();
-    curriculum1.setId(1L);
-    ProgrammeCurriculumDTO programmeCurriculum1 = new ProgrammeCurriculumDTO();
-    programmeCurriculum1.setCurriculum(curriculum1);
-
-    CurriculumDTO curriculum2 = new CurriculumDTO();
-    curriculum2.setId(2L);
-    ProgrammeCurriculumDTO programmeCurriculum2 = new ProgrammeCurriculumDTO();
-    programmeCurriculum2.setCurriculum(curriculum2);
-
     ProgrammeDTO programme = new ProgrammeDTO();
     programme.setId(50L);
-    Set<ProgrammeCurriculumDTO> curricula = Stream.of(programmeCurriculum1, programmeCurriculum2)
-        .collect(Collectors.toCollection(HashSet::new));
-    programme.setCurricula(curricula);
     programme.setOwner("owner");
     programme.setIntrepidId("i50");
     programme.setProgrammeName("programmeName");
@@ -247,8 +234,6 @@ class DmsRecordAssemblerTest {
 
     ProgrammeDmsDto programmeDmsDto = (ProgrammeDmsDto) data;
     assertThat("Unexpected record type.", programmeDmsDto.getId(), is("50"));
-    assertThat("Unexpected record type.", programmeDmsDto.getCurriculaIds(),
-        is(Stream.of("1", "2").collect(Collectors.toSet())));
     assertThat("Unexpected record type.", programmeDmsDto.getIntrepidId(), is("i50"));
     assertThat("Unexpected record type.", programmeDmsDto.getOwner(), is("owner"));
     assertThat("Unexpected record type.", programmeDmsDto.getProgrammeName(), is("programmeName"));
