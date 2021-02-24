@@ -28,7 +28,6 @@ import org.springframework.util.ReflectionUtils;
 import uk.nhs.tis.sync.dto.*;
 import uk.nhs.tis.sync.mapper.*;
 import uk.nhs.tis.sync.mapper.util.PostDataDmsDtoUtil;
-import uk.nhs.tis.sync.mapper.util.ProgrammeDmsDtoUtil;
 import uk.nhs.tis.sync.mapper.util.TrustDataDmsDtoUtil;
 
 class DmsRecordAssemblerTest {
@@ -52,10 +51,6 @@ class DmsRecordAssemblerTest {
     SiteMapper siteMapper = Mappers.getMapper(SiteMapper.class);
 
     ProgrammeMapper programmeMapper = Mappers.getMapper(ProgrammeMapper.class);
-    Field fieldProgramme = ReflectionUtils.findField(ProgrammeMapperImpl.class,
-        "programmeDmsDtoUtil");
-    fieldProgramme.setAccessible(true);
-    ReflectionUtils.setField(fieldProgramme, programmeMapper, new ProgrammeDmsDtoUtil());
 
     dmsRecordAssembler = new DmsRecordAssembler(postMapper, trustMapper, siteMapper,
         programmeMapper);
