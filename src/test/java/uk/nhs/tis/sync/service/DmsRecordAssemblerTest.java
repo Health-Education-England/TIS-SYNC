@@ -10,6 +10,7 @@ import static org.junit.Assert.assertEquals;
 
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
+import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeCurriculumDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
@@ -28,7 +29,6 @@ import org.springframework.util.ReflectionUtils;
 import uk.nhs.tis.sync.dto.*;
 import uk.nhs.tis.sync.mapper.*;
 import uk.nhs.tis.sync.mapper.util.PostDataDmsDtoUtil;
-import uk.nhs.tis.sync.mapper.util.ProgrammeDmsDtoUtil;
 import uk.nhs.tis.sync.mapper.util.TrustDataDmsDtoUtil;
 
 class DmsRecordAssemblerTest {
@@ -52,10 +52,6 @@ class DmsRecordAssemblerTest {
     SiteMapper siteMapper = Mappers.getMapper(SiteMapper.class);
 
     ProgrammeMapper programmeMapper = Mappers.getMapper(ProgrammeMapper.class);
-    Field fieldProgramme = ReflectionUtils.findField(ProgrammeMapperImpl.class,
-        "programmeDmsDtoUtil");
-    fieldProgramme.setAccessible(true);
-    ReflectionUtils.setField(fieldProgramme, programmeMapper, new ProgrammeDmsDtoUtil());
 
     dmsRecordAssembler = new DmsRecordAssembler(postMapper, trustMapper, siteMapper,
         programmeMapper);
@@ -214,10 +210,15 @@ class DmsRecordAssemblerTest {
 
   @Test
   void shouldHandleProgramme() {
+    CurriculumDTO curriculum1 = new CurriculumDTO();
+    curriculum1.setId(1L);
     ProgrammeCurriculumDTO programmeCurriculum1 = new ProgrammeCurriculumDTO();
-    programmeCurriculum1.setId(1L);
+    programmeCurriculum1.setCurriculum(curriculum1);
+
+    CurriculumDTO curriculum2 = new CurriculumDTO();
+    curriculum2.setId(2L);
     ProgrammeCurriculumDTO programmeCurriculum2 = new ProgrammeCurriculumDTO();
-    programmeCurriculum2.setId(2L);
+    programmeCurriculum2.setCurriculum(curriculum2);
 
     ProgrammeDTO programme = new ProgrammeDTO();
     programme.setId(50L);
