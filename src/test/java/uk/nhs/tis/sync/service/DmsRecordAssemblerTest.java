@@ -10,24 +10,25 @@ import static org.junit.Assert.assertEquals;
 
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
-import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
-import com.transformuk.hee.tis.tcs.api.dto.ProgrammeCurriculumDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import java.lang.reflect.Field;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.springframework.util.ReflectionUtils;
-import uk.nhs.tis.sync.dto.*;
-import uk.nhs.tis.sync.mapper.*;
+import uk.nhs.tis.sync.dto.DmsDto;
+import uk.nhs.tis.sync.dto.MetadataDto;
+import uk.nhs.tis.sync.dto.PostDataDmsDto;
+import uk.nhs.tis.sync.dto.ProgrammeDmsDto;
+import uk.nhs.tis.sync.dto.SiteDmsDto;
+import uk.nhs.tis.sync.dto.TrustDataDmsDto;
+import uk.nhs.tis.sync.mapper.PostDtoToPostDataDmsDtoMapperImpl;
+import uk.nhs.tis.sync.mapper.ProgrammeMapper;
+import uk.nhs.tis.sync.mapper.SiteMapper;
+import uk.nhs.tis.sync.mapper.TrustDtoToTrustDataDmsDtoMapperImpl;
 import uk.nhs.tis.sync.mapper.util.PostDataDmsDtoUtil;
 import uk.nhs.tis.sync.mapper.util.TrustDataDmsDtoUtil;
 

@@ -1,17 +1,16 @@
 package uk.nhs.tis.sync.mapper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.reference.api.enums.Status;
+import java.lang.reflect.Field;
 import org.junit.Before;
 import org.junit.Test;
 import org.mapstruct.factory.Mappers;
 import org.springframework.util.ReflectionUtils;
 import uk.nhs.tis.sync.dto.TrustDataDmsDto;
 import uk.nhs.tis.sync.mapper.util.TrustDataDmsDtoUtil;
-
-import java.lang.reflect.Field;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TrustDtoToTrustDataDmsDtoMapperTest {
 

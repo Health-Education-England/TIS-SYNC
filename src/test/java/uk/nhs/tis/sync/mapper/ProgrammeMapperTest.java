@@ -1,16 +1,11 @@
 package uk.nhs.tis.sync.mapper;
 
-import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
-import com.transformuk.hee.tis.tcs.api.dto.ProgrammeCurriculumDTO;
+import static org.junit.Assert.assertEquals;
+
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import org.junit.Test;
 import uk.nhs.tis.sync.dto.ProgrammeDmsDto;
-
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.junit.Assert.assertEquals;
 
 public class ProgrammeMapperTest {
 
@@ -20,7 +15,7 @@ public class ProgrammeMapperTest {
   private static final String PROG_NAME = "Devin";
   private static final String PROG_NUM = "-64";
   private static final Status STATUS = Status.DELETE;
-  private ProgrammeMapper testObj = new ProgrammeMapperImpl();
+  private final ProgrammeMapper testObj = new ProgrammeMapperImpl();
 
   @Test
   public void toDmsDtoShouldMapProgramme() {

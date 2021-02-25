@@ -16,9 +16,9 @@ public class DataRequestService {
   private static final String TABLE_SITE = "Site";
   private static final String TABLE_TRUST = "Trust";
 
-  private TcsServiceImpl tcsServiceImpl;
+  private final TcsServiceImpl tcsServiceImpl;
 
-  private ReferenceServiceImpl referenceServiceImpl;
+  private final ReferenceServiceImpl referenceServiceImpl;
 
   DataRequestService(TcsServiceImpl tcsServiceImpl, ReferenceServiceImpl referenceServiceImpl) {
     this.tcsServiceImpl = tcsServiceImpl;

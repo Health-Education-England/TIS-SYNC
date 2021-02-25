@@ -12,6 +12,10 @@ import com.amazonaws.services.kinesis.model.PutRecordsRequest;
 import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,21 +31,12 @@ import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PostDataDmsDto;
 import uk.nhs.tis.sync.dto.TrustDataDmsDto;
 
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 @RunWith(MockitoJUnitRunner.class)
 public class KinesisServiceTest {
 
-  private PostDataDmsDto postDataDmsDto;
-
-  private TrustDataDmsDto trustDataDmsDto;
-
   public static final String STREAM_NAME = "streamName";
-
+  private PostDataDmsDto postDataDmsDto;
+  private TrustDataDmsDto trustDataDmsDto;
   private List<DmsDto> dmsDtoList;
 
   private ObjectMapper objectMapper;
@@ -182,10 +177,12 @@ public class KinesisServiceTest {
   }
 
   @Test
-  public void shouldCatchAJsonProcessingExceptionIfThrownByObjectMapper() throws JsonProcessingException {
+  public void shouldCatchAJsonProcessingExceptionIfThrownByObjectMapper()
+      throws JsonProcessingException {
     ObjectMapper mObjectMapper = mock(ObjectMapper.class);
     kinesisService.setObjectMapper(mObjectMapper);
-    when(mObjectMapper.writeValueAsString(any(DmsDto.class))).thenThrow(JsonProcessingException.class);
+    when(mObjectMapper.writeValueAsString(any(DmsDto.class)))
+        .thenThrow(JsonProcessingException.class);
 
     assertDoesNotThrow(() -> kinesisService.sendData(STREAM_NAME, dmsDtoList));
   }

@@ -18,5 +18,5 @@ public interface TrustDtoToTrustDataDmsDtoMapper {
   @Mapping(target = "trustNumber", source = "trustDto.trustNumber")
   @Mapping(target = "intrepidId", source = "trustDto.intrepidId")
   @Mapping(target = "id", source = "trustDto.id")
-  public TrustDataDmsDto trustDtoToTrustDataDmsDto(TrustDTO trustDto);
+  TrustDataDmsDto trustDtoToTrustDataDmsDto(TrustDTO trustDto);
 }

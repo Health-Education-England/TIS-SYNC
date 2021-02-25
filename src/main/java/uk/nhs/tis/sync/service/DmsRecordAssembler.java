@@ -30,20 +30,20 @@ public class DmsRecordAssembler {
   private static final String TABLE_SITE = "Site";
   private static final String TABLE_TRUST = "Trust";
 
-  private PostDtoToPostDataDmsDtoMapper postDtoToPostDataDmsDtoMapper;
+  private final PostDtoToPostDataDmsDtoMapper postDtoToPostDataDmsDtoMapper;
 
-  private TrustDtoToTrustDataDmsDtoMapper trustDtoToTrustDataDmsDtoMapper;
+  private final TrustDtoToTrustDataDmsDtoMapper trustDtoToTrustDataDmsDtoMapper;
 
-  private SiteMapper siteMapper;
+  private final SiteMapper siteMapper;
 
-  private ProgrammeMapper programmeMapper;
+  private final ProgrammeMapper programmeMapper;
 
   /**
    * Constructor for a DmsRecordAssembler, which instantiates the relevant mappers.
    */
   DmsRecordAssembler(PostDtoToPostDataDmsDtoMapper postDtoToPostDataDmsDtoMapper,
       TrustDtoToTrustDataDmsDtoMapper trustDtoToTrustDataDmsDtoMapper, SiteMapper siteMapper,
-                     ProgrammeMapper programmeMapper) {
+      ProgrammeMapper programmeMapper) {
     this.postDtoToPostDataDmsDtoMapper = postDtoToPostDataDmsDtoMapper;
     this.trustDtoToTrustDataDmsDtoMapper = trustDtoToTrustDataDmsDtoMapper;
     this.siteMapper = siteMapper;
