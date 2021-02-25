@@ -10,6 +10,7 @@ import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
+import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
@@ -109,5 +110,46 @@ class DataRequestServiceTest {
     Object site = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", site, nullValue());
+  }
+
+  @Test
+  void shouldReturnProgrammeWhenProgrammeFound() {
+    ProgrammeDTO expectedDto = new ProgrammeDTO();
+    when(tcsService.findProgrammesIn(Collections.singletonList("40")))
+        .thenReturn(Collections.singletonList(expectedDto));
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Programme", "40");
+    Object retrievedDto = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
+  }
+
+  @Test
+  void shouldReturnNullWhenProgrammeNotFound() {
+    when(tcsService.findProgrammesIn(Collections.singletonList("40")))
+        .thenReturn(null);
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Programme", "40");
+    Object programme = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", programme, nullValue());
+  }
+
+  @Test
+  void shouldReturnNullWhenGetProgrammeByIdThrowsException() {
+    when(tcsService.findProgrammesIn(Collections.singletonList("40")))
+        .thenThrow(new RuntimeException("Expected exception."));
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Programme", "40");
+    Object programme = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", programme, nullValue());
+  }
+
+  @Test
+  void shouldReturnNullWhenTableDoesNotMatchAnyCase() {
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Wrong", "0");
+    assertThat(service.retrieveDto(message), nullValue());
+
   }
 }

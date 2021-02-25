@@ -19,5 +19,5 @@ public interface PostDtoToPostDataDmsDtoMapper {
   @Mapping(target = "newPostId", source = "postDto.newPost.id")
   @Mapping(target = "owner", source = "postDto.owner")
   @Mapping(target = "intrepidId", source = "postDto.intrepidId")
-  public PostDataDmsDto postDtoToPostDataDmsDto(PostDTO postDto);
+  PostDataDmsDto postDtoToPostDataDmsDto(PostDTO postDto);
 }

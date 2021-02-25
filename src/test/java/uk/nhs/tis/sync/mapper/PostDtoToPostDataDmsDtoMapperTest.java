@@ -1,15 +1,15 @@
 package uk.nhs.tis.sync.mapper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
+import java.lang.reflect.Field;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.util.ReflectionUtils;
 import uk.nhs.tis.sync.dto.PostDataDmsDto;
 import uk.nhs.tis.sync.mapper.util.PostDataDmsDtoUtil;
-
-import java.lang.reflect.Field;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PostDtoToPostDataDmsDtoMapperTest {
 

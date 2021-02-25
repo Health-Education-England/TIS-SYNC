@@ -11,6 +11,7 @@ import static org.junit.Assert.assertEquals;
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
+import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import java.lang.reflect.Field;
 import java.time.LocalDate;
@@ -21,9 +22,11 @@ import org.springframework.util.ReflectionUtils;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PostDataDmsDto;
+import uk.nhs.tis.sync.dto.ProgrammeDmsDto;
 import uk.nhs.tis.sync.dto.SiteDmsDto;
 import uk.nhs.tis.sync.dto.TrustDataDmsDto;
 import uk.nhs.tis.sync.mapper.PostDtoToPostDataDmsDtoMapperImpl;
+import uk.nhs.tis.sync.mapper.ProgrammeMapper;
 import uk.nhs.tis.sync.mapper.SiteMapper;
 import uk.nhs.tis.sync.mapper.TrustDtoToTrustDataDmsDtoMapperImpl;
 import uk.nhs.tis.sync.mapper.util.PostDataDmsDtoUtil;
@@ -49,7 +52,10 @@ class DmsRecordAssemblerTest {
 
     SiteMapper siteMapper = Mappers.getMapper(SiteMapper.class);
 
-    dmsRecordAssembler = new DmsRecordAssembler(postMapper, trustMapper, siteMapper);
+    ProgrammeMapper programmeMapper = Mappers.getMapper(ProgrammeMapper.class);
+
+    dmsRecordAssembler = new DmsRecordAssembler(postMapper, trustMapper, siteMapper,
+        programmeMapper);
   }
 
   @Test
@@ -201,5 +207,39 @@ class DmsRecordAssemblerTest {
     DmsDto dmsDto = dmsRecordAssembler.assembleDmsDto(new Object());
     assertThat("Unexpected dms dto.", dmsDto, nullValue());
 
+  }
+
+  @Test
+  void shouldHandleProgramme() {
+    ProgrammeDTO programme = new ProgrammeDTO();
+    programme.setId(50L);
+    programme.setOwner("owner");
+    programme.setIntrepidId("i50");
+    programme.setProgrammeName("programmeName");
+    programme.setProgrammeNumber("500");
+    programme.setStatus(Status.CURRENT);
+
+    DmsDto dmsDto = dmsRecordAssembler.assembleDmsDto(programme);
+
+    MetadataDto metadata = dmsDto.getMetadata();
+    assertThat("Unexpected record type.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
+    assertThat("Unexpected partition key.", metadata.getPartitionKeyType(), is("schema-table"));
+    assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
+    assertThat("Unexpected table.", metadata.getTableName(), is("Programme"));
+    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+
+    Object data = dmsDto.getData();
+    assertThat("Unexpected data.", data, instanceOf(ProgrammeDmsDto.class));
+
+    ProgrammeDmsDto programmeDmsDto = (ProgrammeDmsDto) data;
+    assertThat("Unexpected record type.", programmeDmsDto.getId(), is("50"));
+    assertThat("Unexpected record type.", programmeDmsDto.getIntrepidId(), is("i50"));
+    assertThat("Unexpected record type.", programmeDmsDto.getOwner(), is("owner"));
+    assertThat("Unexpected record type.", programmeDmsDto.getProgrammeName(), is("programmeName"));
+    assertThat("Unexpected record type.", programmeDmsDto.getProgrammeNumber(), is(
+        "500"));
+    assertThat("Unexpected record type.", programmeDmsDto.getStatus(), is("CURRENT"));
   }
 }
