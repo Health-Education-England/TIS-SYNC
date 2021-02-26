@@ -11,6 +11,7 @@ import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 @Service
 public class DataRequestService {
 
+  private static final String TABLE_CURRICULUM = "Curriculum";
   private static final String TABLE_POST = "Post";
   private static final String TABLE_PROGRAMME = "Programme";
   private static final String TABLE_SITE = "Site";
@@ -35,6 +36,8 @@ public class DataRequestService {
       long id = Long.parseLong(amazonSqsMessageDto.getId());
 
       switch (amazonSqsMessageDto.getTable()) {
+        case TABLE_CURRICULUM:
+          return tcsServiceImpl.getCurriculumById(id);
         case TABLE_POST:
           return tcsServiceImpl.getPostById(id);
         case TABLE_PROGRAMME:

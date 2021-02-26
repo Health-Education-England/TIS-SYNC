@@ -2,6 +2,7 @@ package uk.nhs.tis.sync.service;
 
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
+import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import java.time.Instant;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.mapper.PostMapper;
+import uk.nhs.tis.sync.mapper.CurriculumMapper;
 import uk.nhs.tis.sync.mapper.ProgrammeMapper;
 import uk.nhs.tis.sync.mapper.SiteMapper;
 import uk.nhs.tis.sync.mapper.TrustMapper;
@@ -25,6 +27,7 @@ public class DmsRecordAssembler {
 
   private static final String SCHEMA_REFERENCE = "reference";
   private static final String SCHEMA_TCS = "tcs";
+  private static final String TABLE_CURRICULUM = "Curriculum";
   private static final String TABLE_POST = "Post";
   private static final String TABLE_PROGRAMME = "Programme";
   private static final String TABLE_SITE = "Site";
@@ -38,6 +41,8 @@ public class DmsRecordAssembler {
 
   private final ProgrammeMapper programmeMapper;
 
+  private final CurriculumMapper curriculumMapper;
+
   /**
    * Constructor for a DmsRecordAssembler, which instantiates the relevant mappers.
    */
@@ -48,6 +53,7 @@ public class DmsRecordAssembler {
     this.trustMapper = trustMapper;
     this.siteMapper = siteMapper;
     this.programmeMapper = programmeMapper;
+    this.curriculumMapper = curriculumMapper;
   }
 
   /**
@@ -61,6 +67,12 @@ public class DmsRecordAssembler {
     Object dmsData = null;
     String schema = null;
     String table = null;
+
+    if (dto instanceof CurriculumDTO) {
+      dmsData = curriculumMapper.toDmsDto((CurriculumDTO) dto);
+      schema = SCHEMA_TCS;
+      table = TABLE_CURRICULUM;
+    }
 
     if (dto instanceof PostDTO) {
       dmsData = postMapper.toDmsDto((PostDTO) dto);

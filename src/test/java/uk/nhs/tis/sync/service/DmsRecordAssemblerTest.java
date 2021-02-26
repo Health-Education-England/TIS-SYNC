@@ -10,18 +10,24 @@ import static org.junit.Assert.assertEquals;
 
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
+import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
+import com.transformuk.hee.tis.tcs.api.dto.SpecialtyDTO;
+import com.transformuk.hee.tis.tcs.api.enumeration.AssessmentType;
+import com.transformuk.hee.tis.tcs.api.enumeration.CurriculumSubType;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
+import uk.nhs.tis.sync.dto.CurriculumDmsDto;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PostDmsDto;
 import uk.nhs.tis.sync.dto.ProgrammeDmsDto;
 import uk.nhs.tis.sync.dto.SiteDmsDto;
+import uk.nhs.tis.sync.mapper.CurriculumMapper;
 import uk.nhs.tis.sync.dto.TrustDmsDto;
 import uk.nhs.tis.sync.mapper.PostMapperImpl;
 import uk.nhs.tis.sync.mapper.ProgrammeMapper;
@@ -39,8 +45,10 @@ class DmsRecordAssemblerTest {
     SiteMapper siteMapper = Mappers.getMapper(SiteMapper.class);
     ProgrammeMapper programmeMapper = Mappers.getMapper(ProgrammeMapper.class);
 
+    CurriculumMapper curriculumMapper = Mappers.getMapper(CurriculumMapper.class);
+
     dmsRecordAssembler = new DmsRecordAssembler(postMapper, trustMapper, siteMapper,
-        programmeMapper);
+        programmeMapper, curriculumMapper);
   }
 
   @Test
@@ -226,5 +234,54 @@ class DmsRecordAssemblerTest {
     assertThat("Unexpected record type.", programmeDmsDto.getProgrammeNumber(), is(
         "500"));
     assertThat("Unexpected record type.", programmeDmsDto.getStatus(), is("CURRENT"));
+  }
+
+  @Test
+  void shouldHandleCurriculum() {
+    CurriculumDTO curriculum = new CurriculumDTO();
+    curriculum.setId(60L);
+    curriculum.setName("name");
+    curriculum.setCurriculumSubType(CurriculumSubType.DENTAL_CURRICULUM);
+    curriculum.setAssessmentType(AssessmentType.ACADEMIC);
+    curriculum.setDoesThisCurriculumLeadToCct(true);
+    curriculum.setPeriodOfGrace(10);
+    curriculum.setIntrepidId("i60");
+
+    SpecialtyDTO specialty = new SpecialtyDTO();
+    specialty.setId(2L);
+    curriculum.setSpecialty(specialty);
+
+    curriculum.setStatus(Status.CURRENT);
+    curriculum.setLength(12);
+
+    DmsDto dmsDto = dmsRecordAssembler.assembleDmsDto(curriculum);
+
+    MetadataDto metadata = dmsDto.getMetadata();
+    assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
+    assertThat("Unexpected partition key.", metadata.getPartitionKeyType(), is("schema-table"));
+    assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
+    assertThat("Unexpected table.", metadata.getTableName(), is("Curriculum"));
+    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+
+    Object data = dmsDto.getData();
+    assertThat("Unexpected data.", data, instanceOf(CurriculumDmsDto.class));
+
+    CurriculumDmsDto curriculumDmsDto = (CurriculumDmsDto) data;
+    assertThat("Unexpected id.", curriculumDmsDto.getId(), is("60"));
+    assertThat("Unexpected name.", curriculumDmsDto.getName(), is("name"));
+    assertThat("Unexpected curriculumSubType.", curriculumDmsDto.getCurriculumSubType(),
+        is(CurriculumSubType.DENTAL_CURRICULUM.name()));
+    assertThat("Unexpected assessmentType.", curriculumDmsDto.getAssessmentType(),
+        is(AssessmentType.ACADEMIC.name()));
+    assertThat("Unexpected doesThisCurriculumLeadToCct.",
+        curriculumDmsDto.getDoesThisCurriculumLeadToCct(),
+        is("true"));
+    assertThat("Unexpected periodOfGrace.", curriculumDmsDto.getPeriodOfGrace(), is("10"));
+    assertThat("Unexpected intrepidId.", curriculumDmsDto.getIntrepidId(), is("i60"));
+    assertThat("Unexpected specialtyId.", curriculumDmsDto.getSpecialtyId(), is("2"));
+    assertThat("Unexpected status.", curriculumDmsDto.getStatus(), is("CURRENT"));
+    assertThat("Unexpected length.", curriculumDmsDto.getLength(), is("12"));
   }
 }
