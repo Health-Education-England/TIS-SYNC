@@ -87,8 +87,8 @@ public class PersonElasticSearchService {
     }
 
     Page<PersonView> result = personElasticSearchRepository.search(query, pageable);
-    List<PersonViewDTO> personViewDTOS = convertPersonViewToDTO(result.getContent(), null);
-    List<PersonViewDTO> decoratedPersonViews = personViewDecorator.decorate(personViewDTOS);
+    List<PersonViewDTO> personViewDtos = convertPersonViewToDto(result.getContent(), null);
+    List<PersonViewDTO> decoratedPersonViews = personViewDecorator.decorate(personViewDtos);
     return new PageImpl<>(decoratedPersonViews, pageable, result.getTotalElements());
   }
 
@@ -232,7 +232,7 @@ public class PersonElasticSearchService {
     List<ProgrammeMembershipDto> programmeMembershipDtos =
         namedParameterJdbcTemplate
             .query(programmeMembershipQuery, paramSource, new ProgrammeMembershipRowMapper());
-    if (programmeMembershipDtos.size() == 0) {
+    if (programmeMembershipDtos.isEmpty()) {
       return;
     }
 
@@ -345,7 +345,7 @@ public class PersonElasticSearchService {
     }
   }
 
-  private List<PersonViewDTO> convertPersonViewToDTO(List<PersonView> content,
+  private List<PersonViewDTO> convertPersonViewToDto(List<PersonView> content,
       ProgrammeMembershipStatus programmeMembershipStatus) {
     if (programmeMembershipStatus == null) {
       programmeMembershipStatus = ProgrammeMembershipStatus.CURRENT;
