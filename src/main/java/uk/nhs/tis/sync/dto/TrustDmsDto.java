@@ -7,15 +7,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
-public class PostDataDmsDto {
+public class TrustDmsDto {
 
-  String id;
-  String nationalPostNumber;
+  String code;
+  String localOffice;
   String status;
-  String employingBodyId;
-  String trainingBodyId;
-  String oldPostId;
-  String newPostId;
-  String owner;
+  String trustKnownAs;
+  String trustName;
+  String trustNumber;
   String intrepidId;
+  String id;
 }
