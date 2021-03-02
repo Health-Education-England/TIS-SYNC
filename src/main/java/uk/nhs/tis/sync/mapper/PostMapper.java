@@ -8,7 +8,7 @@ import uk.nhs.tis.sync.dto.PostDmsDto;
 @Mapper(componentModel = "spring")
 public interface PostMapper {
 
-  @Mapping(target = "oldPostId", source = "postDto.oldPost.id")
-  @Mapping(target = "newPostId", source = "postDto.newPost.id")
+  @Mapping(target = "oldPostId", source = "oldPost.id")
+  @Mapping(target = "newPostId", source = "newPost.id")
   PostDmsDto toDmsDto(PostDTO postDto);
 }
