@@ -13,24 +13,20 @@ import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
-import java.lang.reflect.Field;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
-import org.springframework.util.ReflectionUtils;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
-import uk.nhs.tis.sync.dto.PostDataDmsDto;
+import uk.nhs.tis.sync.dto.PostDmsDto;
 import uk.nhs.tis.sync.dto.ProgrammeDmsDto;
 import uk.nhs.tis.sync.dto.SiteDmsDto;
-import uk.nhs.tis.sync.dto.TrustDataDmsDto;
-import uk.nhs.tis.sync.mapper.PostDtoToPostDataDmsDtoMapperImpl;
+import uk.nhs.tis.sync.dto.TrustDmsDto;
+import uk.nhs.tis.sync.mapper.PostMapperImpl;
 import uk.nhs.tis.sync.mapper.ProgrammeMapper;
 import uk.nhs.tis.sync.mapper.SiteMapper;
-import uk.nhs.tis.sync.mapper.TrustDtoToTrustDataDmsDtoMapperImpl;
-import uk.nhs.tis.sync.mapper.util.PostDataDmsDtoUtil;
-import uk.nhs.tis.sync.mapper.util.TrustDataDmsDtoUtil;
+import uk.nhs.tis.sync.mapper.TrustMapperImpl;
 
 class DmsRecordAssemblerTest {
 
@@ -38,20 +34,9 @@ class DmsRecordAssemblerTest {
 
   @BeforeEach
   void setUp() {
-    PostDtoToPostDataDmsDtoMapperImpl postMapper = new PostDtoToPostDataDmsDtoMapperImpl();
-    Field fieldPost = ReflectionUtils
-        .findField(PostDtoToPostDataDmsDtoMapperImpl.class, "postDataDmsDtoUtil");
-    fieldPost.setAccessible(true);
-    ReflectionUtils.setField(fieldPost, postMapper, new PostDataDmsDtoUtil());
-
-    TrustDtoToTrustDataDmsDtoMapperImpl trustMapper = new TrustDtoToTrustDataDmsDtoMapperImpl();
-    Field fieldTrust = ReflectionUtils
-        .findField(TrustDtoToTrustDataDmsDtoMapperImpl.class, "trustDataDmsDtoUtil");
-    fieldTrust.setAccessible(true);
-    ReflectionUtils.setField(fieldTrust, trustMapper, new TrustDataDmsDtoUtil());
-
+    PostMapperImpl postMapper = new PostMapperImpl();
+    TrustMapperImpl trustMapper = new TrustMapperImpl();
     SiteMapper siteMapper = Mappers.getMapper(SiteMapper.class);
-
     ProgrammeMapper programmeMapper = Mappers.getMapper(ProgrammeMapper.class);
 
     dmsRecordAssembler = new DmsRecordAssembler(postMapper, trustMapper, siteMapper,
@@ -76,16 +61,16 @@ class DmsRecordAssemblerTest {
 
     DmsDto actualDmsDto = dmsRecordAssembler.assembleDmsDto(postDto);
 
-    PostDataDmsDto expectedPostDataDmsDto = new PostDataDmsDto();
-    expectedPostDataDmsDto.setId("44381");
-    expectedPostDataDmsDto.setNationalPostNumber("EAN/8EJ83/094/SPR/001");
-    expectedPostDataDmsDto.setStatus("CURRENT");
-    expectedPostDataDmsDto.setEmployingBodyId("287");
-    expectedPostDataDmsDto.setTrainingBodyId("1464");
-    expectedPostDataDmsDto.setOldPostId(null);
-    expectedPostDataDmsDto.setNewPostId("184668");
-    expectedPostDataDmsDto.setOwner("Health Education England North West London");
-    expectedPostDataDmsDto.setIntrepidId("128374444");
+    PostDmsDto expectedPostDmsDto = new PostDmsDto();
+    expectedPostDmsDto.setId("44381");
+    expectedPostDmsDto.setNationalPostNumber("EAN/8EJ83/094/SPR/001");
+    expectedPostDmsDto.setStatus("CURRENT");
+    expectedPostDmsDto.setEmployingBodyId("287");
+    expectedPostDmsDto.setTrainingBodyId("1464");
+    expectedPostDmsDto.setOldPostId(null);
+    expectedPostDmsDto.setNewPostId("184668");
+    expectedPostDmsDto.setOwner("Health Education England North West London");
+    expectedPostDmsDto.setIntrepidId("128374444");
 
     //inject the timestamp from the actualDmsDto into the expectedDmsDto
     String timestamp = actualDmsDto.getMetadata().getTimestamp();
@@ -102,7 +87,7 @@ class DmsRecordAssemblerTest {
     expectedMetadataDto.setTableName("Post");
     expectedMetadataDto.setTransactionId(transactionId);
 
-    DmsDto expectedDmsDto = new DmsDto(expectedPostDataDmsDto, expectedMetadataDto);
+    DmsDto expectedDmsDto = new DmsDto(expectedPostDmsDto, expectedMetadataDto);
 
     assertEquals(expectedDmsDto, actualDmsDto);
   }
@@ -121,15 +106,15 @@ class DmsRecordAssemblerTest {
 
     DmsDto actualDmsDto = dmsRecordAssembler.assembleDmsDto(trustDto);
 
-    TrustDataDmsDto expectedTrustDataDmsDto = new TrustDataDmsDto();
-    expectedTrustDataDmsDto.setCode("000");
-    expectedTrustDataDmsDto.setLocalOffice("someLocalOffice");
-    expectedTrustDataDmsDto.setStatus("CURRENT");
-    expectedTrustDataDmsDto.setTrustKnownAs("trustKnownAs");
-    expectedTrustDataDmsDto.setTrustName("trustName");
-    expectedTrustDataDmsDto.setTrustNumber("111");
-    expectedTrustDataDmsDto.setIntrepidId("222");
-    expectedTrustDataDmsDto.setId("333");
+    TrustDmsDto expectedTrustDmsDto = new TrustDmsDto();
+    expectedTrustDmsDto.setCode("000");
+    expectedTrustDmsDto.setLocalOffice("someLocalOffice");
+    expectedTrustDmsDto.setStatus("CURRENT");
+    expectedTrustDmsDto.setTrustKnownAs("trustKnownAs");
+    expectedTrustDmsDto.setTrustName("trustName");
+    expectedTrustDmsDto.setTrustNumber("111");
+    expectedTrustDmsDto.setIntrepidId("222");
+    expectedTrustDmsDto.setId("333");
 
     //inject the timestamp from the actualDmsDto into the expectedDmsDto
     String timestamp = actualDmsDto.getMetadata().getTimestamp();
@@ -146,7 +131,7 @@ class DmsRecordAssemblerTest {
     expectedMetadataDto.setTableName("Trust");
     expectedMetadataDto.setTransactionId(transactionId);
 
-    DmsDto expectedDmsDto = new DmsDto(expectedTrustDataDmsDto, expectedMetadataDto);
+    DmsDto expectedDmsDto = new DmsDto(expectedTrustDmsDto, expectedMetadataDto);
 
     assertEquals(expectedDmsDto, actualDmsDto);
   }

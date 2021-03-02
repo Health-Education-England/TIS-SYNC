@@ -9,10 +9,10 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
-import uk.nhs.tis.sync.mapper.PostDtoToPostDataDmsDtoMapper;
+import uk.nhs.tis.sync.mapper.PostMapper;
 import uk.nhs.tis.sync.mapper.ProgrammeMapper;
 import uk.nhs.tis.sync.mapper.SiteMapper;
-import uk.nhs.tis.sync.mapper.TrustDtoToTrustDataDmsDtoMapper;
+import uk.nhs.tis.sync.mapper.TrustMapper;
 
 @Component
 public class DmsRecordAssembler {
@@ -30,9 +30,9 @@ public class DmsRecordAssembler {
   private static final String TABLE_SITE = "Site";
   private static final String TABLE_TRUST = "Trust";
 
-  private final PostDtoToPostDataDmsDtoMapper postDtoToPostDataDmsDtoMapper;
+  private final PostMapper postMapper;
 
-  private final TrustDtoToTrustDataDmsDtoMapper trustDtoToTrustDataDmsDtoMapper;
+  private final TrustMapper trustMapper;
 
   private final SiteMapper siteMapper;
 
@@ -41,11 +41,11 @@ public class DmsRecordAssembler {
   /**
    * Constructor for a DmsRecordAssembler, which instantiates the relevant mappers.
    */
-  DmsRecordAssembler(PostDtoToPostDataDmsDtoMapper postDtoToPostDataDmsDtoMapper,
-      TrustDtoToTrustDataDmsDtoMapper trustDtoToTrustDataDmsDtoMapper, SiteMapper siteMapper,
+  DmsRecordAssembler(PostMapper postMapper,
+      TrustMapper trustMapper, SiteMapper siteMapper,
       ProgrammeMapper programmeMapper) {
-    this.postDtoToPostDataDmsDtoMapper = postDtoToPostDataDmsDtoMapper;
-    this.trustDtoToTrustDataDmsDtoMapper = trustDtoToTrustDataDmsDtoMapper;
+    this.postMapper = postMapper;
+    this.trustMapper = trustMapper;
     this.siteMapper = siteMapper;
     this.programmeMapper = programmeMapper;
   }
@@ -63,7 +63,7 @@ public class DmsRecordAssembler {
     String table = null;
 
     if (dto instanceof PostDTO) {
-      dmsData = postDtoToPostDataDmsDtoMapper.postDtoToPostDataDmsDto((PostDTO) dto);
+      dmsData = postMapper.toDmsDto((PostDTO) dto);
       schema = SCHEMA_TCS;
       table = TABLE_POST;
     }
@@ -81,7 +81,7 @@ public class DmsRecordAssembler {
     }
 
     if (dto instanceof TrustDTO) {
-      dmsData = trustDtoToTrustDataDmsDtoMapper.trustDtoToTrustDataDmsDto((TrustDTO) dto);
+      dmsData = trustMapper.toDmsDto((TrustDTO) dto);
       schema = SCHEMA_REFERENCE;
       table = TABLE_TRUST;
     }

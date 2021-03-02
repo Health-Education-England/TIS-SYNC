@@ -35,19 +35,19 @@ public class RecordResendingJob {
 
   private static final String JOB_NAME = "Record Resending job";
 
-  private KinesisService kinesisService;
+  private final KinesisService kinesisService;
 
-  private ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper;
 
-  private AmazonSQS sqs;
+  private final AmazonSQS sqs;
 
-  private DataRequestService dataRequestService;
+  private final DataRequestService dataRequestService;
 
-  private String queueUrl;
+  private final String queueUrl;
 
-  private DmsRecordAssembler dmsRecordAssembler;
+  private final DmsRecordAssembler dmsRecordAssembler;
 
-  private String streamName;
+  private final String streamName;
 
   /**
    * A job that reads queue messages, interprets what dto is being requested, fetches it, and sends

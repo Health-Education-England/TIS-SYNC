@@ -28,15 +28,15 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.skyscreamer.jsonassert.JSONAssert;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
-import uk.nhs.tis.sync.dto.PostDataDmsDto;
-import uk.nhs.tis.sync.dto.TrustDataDmsDto;
+import uk.nhs.tis.sync.dto.PostDmsDto;
+import uk.nhs.tis.sync.dto.TrustDmsDto;
 
 @RunWith(MockitoJUnitRunner.class)
 public class KinesisServiceTest {
 
   public static final String STREAM_NAME = "streamName";
-  private PostDataDmsDto postDataDmsDto;
-  private TrustDataDmsDto trustDataDmsDto;
+  private PostDmsDto postDmsDto;
+  private TrustDmsDto trustDmsDto;
   private List<DmsDto> dmsDtoList;
 
   private ObjectMapper objectMapper;
@@ -54,16 +54,16 @@ public class KinesisServiceTest {
   public void setUp() {
     objectMapper = new ObjectMapper();
 
-    postDataDmsDto = new PostDataDmsDto();
-    postDataDmsDto.setId("44381");
-    postDataDmsDto.setNationalPostNumber("EAN/8EJ83/094/SPR/001");
-    postDataDmsDto.setStatus("CURRENT");
-    postDataDmsDto.setEmployingBodyId("287");
-    postDataDmsDto.setTrainingBodyId("1464");
-    postDataDmsDto.setOldPostId(null);
-    postDataDmsDto.setNewPostId("184668");
-    postDataDmsDto.setOwner("Health Education England North West London");
-    postDataDmsDto.setIntrepidId("128374444");
+    postDmsDto = new PostDmsDto();
+    postDmsDto.setId("44381");
+    postDmsDto.setNationalPostNumber("EAN/8EJ83/094/SPR/001");
+    postDmsDto.setStatus("CURRENT");
+    postDmsDto.setEmployingBodyId("287");
+    postDmsDto.setTrainingBodyId("1464");
+    postDmsDto.setOldPostId(null);
+    postDmsDto.setNewPostId("184668");
+    postDmsDto.setOwner("Health Education England North West London");
+    postDmsDto.setIntrepidId("128374444");
 
     timestamp = Instant.now().toString();
 
@@ -76,17 +76,17 @@ public class KinesisServiceTest {
     metadataDto1.setTableName("Post");
     metadataDto1.setTransactionId("000");
 
-    DmsDto dmsDto1 = new DmsDto(postDataDmsDto, metadataDto1);
+    DmsDto dmsDto1 = new DmsDto(postDmsDto, metadataDto1);
 
-    trustDataDmsDto = new TrustDataDmsDto();
-    trustDataDmsDto.setCode("222");
-    trustDataDmsDto.setLocalOffice("someLocalOffice");
-    trustDataDmsDto.setStatus("CURRENT");
-    trustDataDmsDto.setTrustKnownAs("trustKnownAs");
-    trustDataDmsDto.setTrustName("trustName");
-    trustDataDmsDto.setTrustNumber("000");
-    trustDataDmsDto.setIntrepidId("3");
-    trustDataDmsDto.setId("1");
+    trustDmsDto = new TrustDmsDto();
+    trustDmsDto.setCode("222");
+    trustDmsDto.setLocalOffice("someLocalOffice");
+    trustDmsDto.setStatus("CURRENT");
+    trustDmsDto.setTrustKnownAs("trustKnownAs");
+    trustDmsDto.setTrustName("trustName");
+    trustDmsDto.setTrustNumber("000");
+    trustDmsDto.setIntrepidId("3");
+    trustDmsDto.setId("1");
 
     MetadataDto metadataDto2 = new MetadataDto();
     metadataDto2.setTimestamp(timestamp);
@@ -97,7 +97,7 @@ public class KinesisServiceTest {
     metadataDto2.setTableName("Trust");
     metadataDto2.setTransactionId("111");
 
-    DmsDto dmsDto2 = new DmsDto(trustDataDmsDto, metadataDto2);
+    DmsDto dmsDto2 = new DmsDto(trustDmsDto, metadataDto2);
 
     dmsDtoList = new ArrayList<>();
     dmsDtoList.add(dmsDto1);

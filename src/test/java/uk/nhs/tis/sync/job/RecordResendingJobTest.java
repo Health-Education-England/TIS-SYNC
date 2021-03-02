@@ -33,7 +33,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
-import uk.nhs.tis.sync.dto.PostDataDmsDto;
+import uk.nhs.tis.sync.dto.PostDmsDto;
 import uk.nhs.tis.sync.service.DataRequestService;
 import uk.nhs.tis.sync.service.DmsRecordAssembler;
 import uk.nhs.tis.sync.service.KinesisService;
@@ -92,16 +92,16 @@ class RecordResendingJobTest {
     postDto.owner("Health Education England North West London");
     postDto.intrepidId("128374444");
 
-    PostDataDmsDto postDataDmsDto = new PostDataDmsDto();
-    postDataDmsDto.setId("44381");
-    postDataDmsDto.setNationalPostNumber("EAN/8EJ83/094/SPR/001");
-    postDataDmsDto.setStatus("CURRENT");
-    postDataDmsDto.setEmployingBodyId("287");
-    postDataDmsDto.setTrainingBodyId("1464");
-    postDataDmsDto.setOldPostId(null);
-    postDataDmsDto.setNewPostId("184668");
-    postDataDmsDto.setOwner("Health Education England North West London");
-    postDataDmsDto.setIntrepidId("128374444");
+    PostDmsDto postDmsDto = new PostDmsDto();
+    postDmsDto.setId("44381");
+    postDmsDto.setNationalPostNumber("EAN/8EJ83/094/SPR/001");
+    postDmsDto.setStatus("CURRENT");
+    postDmsDto.setEmployingBodyId("287");
+    postDmsDto.setTrainingBodyId("1464");
+    postDmsDto.setOldPostId(null);
+    postDmsDto.setNewPostId("184668");
+    postDmsDto.setOwner("Health Education England North West London");
+    postDmsDto.setIntrepidId("128374444");
 
     MetadataDto metadataDto = new MetadataDto();
     metadataDto.setTimestamp("timestamp");
@@ -112,7 +112,7 @@ class RecordResendingJobTest {
     metadataDto.setTableName("Post");
     metadataDto.setTransactionId("transaction-id");
 
-    dmsDto = new DmsDto(postDataDmsDto, metadataDto);
+    dmsDto = new DmsDto(postDmsDto, metadataDto);
 
     message1 = new Message();
     message1.setReceiptHandle("message1");
