@@ -2,16 +2,16 @@ package uk.nhs.tis.sync.job.person;
 
 import com.google.common.base.Stopwatch;
 import com.transformuk.hee.tis.tcs.service.job.person.PersonView;
-import uk.nhs.tis.sync.event.JobExecutionEvent;
-import uk.nhs.tis.sync.service.PersonElasticSearchService;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
-import uk.nhs.tis.sync.service.impl.PersonViewRowMapper;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.collections4.CollectionUtils;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -20,8 +20,9 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import uk.nhs.tis.sync.event.JobExecutionEvent;
+import uk.nhs.tis.sync.service.PersonElasticSearchService;
+import uk.nhs.tis.sync.service.impl.PersonViewRowMapper;
 
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonElasticSearchJob",
@@ -34,7 +35,8 @@ public class PersonElasticSearchSyncJob {
 
   private Stopwatch mainStopWatch;
 
-  protected static final int DEFAULT_PAGE_SIZE = 8_000;
+  @Value("${application.jobs.personElasticSearchJob.pageSize:8000}")
+  protected int pageSize = 8_000;
 
   @Autowired
   private SqlQuerySupplier sqlQuerySupplier;
@@ -82,7 +84,7 @@ public class PersonElasticSearchSyncJob {
   }
 
   private int getPageSize() {
-    return DEFAULT_PAGE_SIZE;
+    return pageSize;
   }
 
   private void deleteIndex() {
@@ -146,7 +148,7 @@ public class PersonElasticSearchSyncJob {
 
         LOG.info("Time taken to save chunk : [{}]", stopwatch.toString());
       }
-      elasticSearchOperations.refresh(PersonView.class);
+      elasticSearchOperations.indexOps(PersonView.class).refresh();
       stopwatch.reset().start();
       LOG.info("Sync job [{}] finished. Total time taken {} for processing [{}] records",
           getJobName(), mainStopWatch.stop().toString(), totalRecords);
