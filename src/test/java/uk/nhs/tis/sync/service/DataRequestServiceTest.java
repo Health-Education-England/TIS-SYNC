@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
+import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
@@ -147,9 +148,42 @@ class DataRequestServiceTest {
   }
 
   @Test
+  void shouldReturnCurriculumWhenCurriculumFound() {
+    CurriculumDTO expectedDto = new CurriculumDTO();
+    when(tcsService.getCurriculumById(50L))
+        .thenReturn(expectedDto);
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Curriculum", "50");
+    Object retrievedDto = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
+  }
+
+  @Test
+  void shouldReturnNullWhenCurriculumNotFound() {
+    when(tcsService.getCurriculumById(50L))
+        .thenReturn(null);
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Curriculum", "50");
+    Object curriculum = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", curriculum, nullValue());
+  }
+
+  @Test
+  void shouldReturnNullWhenGetCurriculumByIdThrowsException() {
+    when(tcsService.getCurriculumById(50L))
+        .thenThrow(new RuntimeException("Expected exception."));
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Curriculum", "50");
+    Object curriculum = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", curriculum, nullValue());
+  }
+
+  @Test
   void shouldReturnNullWhenTableDoesNotMatchAnyCase() {
     AmazonSqsMessageDto message = new AmazonSqsMessageDto("Wrong", "0");
     assertThat(service.retrieveDto(message), nullValue());
-
   }
 }
