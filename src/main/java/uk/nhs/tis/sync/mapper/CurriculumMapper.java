@@ -8,6 +8,6 @@ import uk.nhs.tis.sync.dto.CurriculumDmsDto;
 @Mapper(componentModel = "spring")
 public interface CurriculumMapper {
 
-  @Mapping(target = "specialtyId", source = "curriculumDto.specialty.id")
+  @Mapping(target = "specialtyId", source = "specialty.id")
   CurriculumDmsDto toDmsDto(CurriculumDTO curriculumDto);
 }

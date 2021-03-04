@@ -10,8 +10,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
-import uk.nhs.tis.sync.mapper.PostMapper;
 import uk.nhs.tis.sync.mapper.CurriculumMapper;
+import uk.nhs.tis.sync.mapper.PostMapper;
 import uk.nhs.tis.sync.mapper.ProgrammeMapper;
 import uk.nhs.tis.sync.mapper.SiteMapper;
 import uk.nhs.tis.sync.mapper.TrustMapper;
@@ -48,7 +48,7 @@ public class DmsRecordAssembler {
    */
   DmsRecordAssembler(PostMapper postMapper,
       TrustMapper trustMapper, SiteMapper siteMapper,
-      ProgrammeMapper programmeMapper) {
+      ProgrammeMapper programmeMapper, CurriculumMapper curriculumMapper) {
     this.postMapper = postMapper;
     this.trustMapper = trustMapper;
     this.siteMapper = siteMapper;
