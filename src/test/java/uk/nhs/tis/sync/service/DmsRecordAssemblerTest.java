@@ -14,6 +14,7 @@ import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import com.transformuk.hee.tis.tcs.api.dto.SpecialtyDTO;
+import com.transformuk.hee.tis.tcs.api.dto.SpecialtyGroupDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.AssessmentType;
 import com.transformuk.hee.tis.tcs.api.enumeration.CurriculumSubType;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
@@ -27,11 +28,13 @@ import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PostDmsDto;
 import uk.nhs.tis.sync.dto.ProgrammeDmsDto;
 import uk.nhs.tis.sync.dto.SiteDmsDto;
+import uk.nhs.tis.sync.dto.SpecialtyDmsDto;
 import uk.nhs.tis.sync.dto.TrustDmsDto;
 import uk.nhs.tis.sync.mapper.CurriculumMapper;
 import uk.nhs.tis.sync.mapper.PostMapperImpl;
 import uk.nhs.tis.sync.mapper.ProgrammeMapper;
 import uk.nhs.tis.sync.mapper.SiteMapper;
+import uk.nhs.tis.sync.mapper.SpecialtyMapper;
 import uk.nhs.tis.sync.mapper.TrustMapperImpl;
 
 class DmsRecordAssemblerTest {
@@ -44,11 +47,11 @@ class DmsRecordAssemblerTest {
     TrustMapperImpl trustMapper = new TrustMapperImpl();
     SiteMapper siteMapper = Mappers.getMapper(SiteMapper.class);
     ProgrammeMapper programmeMapper = Mappers.getMapper(ProgrammeMapper.class);
-
     CurriculumMapper curriculumMapper = Mappers.getMapper(CurriculumMapper.class);
+    SpecialtyMapper specialtyMapper = Mappers.getMapper(SpecialtyMapper.class);
 
     dmsRecordAssembler = new DmsRecordAssembler(postMapper, trustMapper, siteMapper,
-        programmeMapper, curriculumMapper);
+        programmeMapper, curriculumMapper, specialtyMapper);
   }
 
   @Test
@@ -283,5 +286,44 @@ class DmsRecordAssemblerTest {
     assertThat("Unexpected specialtyId.", curriculumDmsDto.getSpecialtyId(), is("2"));
     assertThat("Unexpected status.", curriculumDmsDto.getStatus(), is("CURRENT"));
     assertThat("Unexpected length.", curriculumDmsDto.getLength(), is("12"));
+  }
+
+  @Test
+  void shouldHandleSpecialty() {
+    SpecialtyDTO specialty = new SpecialtyDTO();
+    specialty.setId(70L);
+    specialty.setCollege("college");
+    specialty.setIntrepidId("i70");
+    specialty.setName("specialtyName");
+    specialty.setSpecialtyCode("specialtyCode");
+    specialty.setStatus(Status.CURRENT);
+
+    SpecialtyGroupDTO specialtyGroupDto = new SpecialtyGroupDTO();
+    specialtyGroupDto.setId(75L);
+    specialty.setSpecialtyGroup(specialtyGroupDto);
+
+    DmsDto dmsDto = dmsRecordAssembler.assembleDmsDto(specialty);
+
+    MetadataDto metadata = dmsDto.getMetadata();
+    assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
+    assertThat("Unexpected partition key.", metadata.getPartitionKeyType(), is("schema-table"));
+    assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
+    assertThat("Unexpected table.", metadata.getTableName(), is("Specialty"));
+    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+
+    Object data = dmsDto.getData();
+    assertThat("Unexpected data.", data, instanceOf(SpecialtyDmsDto.class));
+
+    SpecialtyDmsDto specialtyDmsDto = (SpecialtyDmsDto) data;
+    assertThat("Unexpected id.", specialtyDmsDto.getId(), is("70"));
+    assertThat("Unexpected intrepid id.", specialtyDmsDto.getIntrepidId(), is("i70"));
+    assertThat("Unexpected specialty name.", specialtyDmsDto.getName(), is("specialtyName"));
+    assertThat("Unexpected college.", specialtyDmsDto.getCollege(), is("college"));
+    assertThat("Unexpected specialty code.", specialtyDmsDto.getSpecialtyCode(),
+        is("specialtyCode"));
+    assertThat("Unexpected status.", specialtyDmsDto.getStatus(), is("CURRENT"));
+    assertThat("Unexpected specialty group id.", specialtyDmsDto.getSpecialtyGroupId(), is("75"));
   }
 }
