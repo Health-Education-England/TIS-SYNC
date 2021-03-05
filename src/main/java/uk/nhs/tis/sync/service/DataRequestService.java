@@ -47,7 +47,7 @@ public class DataRequestService {
         case TABLE_SITE:
           return referenceServiceImpl.findSitesIdIn(Collections.singleton(id)).get(0);
         case TABLE_SPECIALTY:
-//          return tcsServiceImpl.getSpecialtyById(id);
+          return tcsServiceImpl.getSpecialtyById(id);
         case TABLE_TRUST:
           return referenceServiceImpl.findTrustById(id);
         default:
