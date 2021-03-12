@@ -5,6 +5,7 @@ import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
+import com.transformuk.hee.tis.tcs.api.dto.SpecialtyDTO;
 import java.time.Instant;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,7 @@ import uk.nhs.tis.sync.mapper.CurriculumMapper;
 import uk.nhs.tis.sync.mapper.PostMapper;
 import uk.nhs.tis.sync.mapper.ProgrammeMapper;
 import uk.nhs.tis.sync.mapper.SiteMapper;
+import uk.nhs.tis.sync.mapper.SpecialtyMapper;
 import uk.nhs.tis.sync.mapper.TrustMapper;
 
 @Component
@@ -31,6 +33,7 @@ public class DmsRecordAssembler {
   private static final String TABLE_POST = "Post";
   private static final String TABLE_PROGRAMME = "Programme";
   private static final String TABLE_SITE = "Site";
+  private static final String TABLE_SPECIALTY = "Specialty";
   private static final String TABLE_TRUST = "Trust";
 
   private final PostMapper postMapper;
@@ -43,24 +46,28 @@ public class DmsRecordAssembler {
 
   private final CurriculumMapper curriculumMapper;
 
+  private final SpecialtyMapper specialtyMapper;
+
   /**
    * Constructor for a DmsRecordAssembler, which instantiates the relevant mappers.
    */
   DmsRecordAssembler(PostMapper postMapper,
       TrustMapper trustMapper, SiteMapper siteMapper,
-      ProgrammeMapper programmeMapper, CurriculumMapper curriculumMapper) {
+      ProgrammeMapper programmeMapper, CurriculumMapper curriculumMapper,
+      SpecialtyMapper specialtyMapper) {
     this.postMapper = postMapper;
     this.trustMapper = trustMapper;
     this.siteMapper = siteMapper;
     this.programmeMapper = programmeMapper;
     this.curriculumMapper = curriculumMapper;
+    this.specialtyMapper = specialtyMapper;
   }
 
   /**
    * The method that assembles a complete DmsDto starting from a dto (e.g. a PostDto or a TrustDto)
    *
-   * @param dto The dto which will be mapped to a -DataDmsDto (e.g. a PostDataDmsDto, or a
-   *            TrustDataDmsDto)
+   * @param dto The dto which will be mapped to another dto representative of the "data" portion of
+   *            a DmsDto (e.g. PostDmsDto).
    * @return The DmsDto, complete with data and metadata.
    */
   public DmsDto assembleDmsDto(Object dto) {
@@ -90,6 +97,12 @@ public class DmsRecordAssembler {
       dmsData = siteMapper.toDmsDto((SiteDTO) dto);
       schema = SCHEMA_REFERENCE;
       table = TABLE_SITE;
+    }
+
+    if (dto instanceof SpecialtyDTO) {
+      dmsData = specialtyMapper.toDmsDto((SpecialtyDTO) dto);
+      schema = SCHEMA_TCS;
+      table = TABLE_SPECIALTY;
     }
 
     if (dto instanceof TrustDTO) {

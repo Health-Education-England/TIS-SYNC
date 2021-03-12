@@ -12,6 +12,7 @@ import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
 import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
+import com.transformuk.hee.tis.tcs.api.dto.SpecialtyDTO;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
@@ -179,6 +180,40 @@ class DataRequestServiceTest {
     Object curriculum = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", curriculum, nullValue());
+  }
+
+  @Test
+  void shouldReturnSpecialtyWhenSpecialtyFound() {
+    SpecialtyDTO expectedDto = new SpecialtyDTO();
+    when(tcsService.getSpecialtyById(60L))
+        .thenReturn(expectedDto);
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Specialty", "60");
+    Object retrievedDto = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
+  }
+
+  @Test
+  void shouldReturnNullWhenSpecialtyNotFound() {
+    when(tcsService.getSpecialtyById(60L))
+        .thenReturn(null);
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Specialty", "60");
+    Object specialty = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", specialty, nullValue());
+  }
+
+  @Test
+  void shouldReturnNullWhenGetSpecialtyByIdThrowsException() {
+    when(tcsService.getSpecialtyById(60L))
+        .thenThrow(new RuntimeException("Expected exception."));
+
+    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Specialty", "60");
+    Object specialty = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", specialty, nullValue());
   }
 
   @Test
