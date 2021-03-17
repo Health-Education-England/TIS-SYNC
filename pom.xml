@@ -11,7 +11,7 @@
   </parent>
   <groupId>uk.nhs.tis</groupId>
   <artifactId>sync</artifactId>
-  <version>1.12.1</version>
+  <version>1.12.2</version>
   <packaging>jar</packaging>
   <name>sync</name>
   <description>Separate Microservice for synchronisation</description>
@@ -208,16 +208,6 @@
       <version>${mapstruct.version}</version>
     </dependency>
   </dependencies>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.flywaydb</groupId>
-        <artifactId>flyway-core</artifactId>
-        <version>5.2.4</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
 
   <build>
     <defaultGoal>spring-boot:run</defaultGoal>
