@@ -206,7 +206,7 @@ application:
     personRecordStatusJob:
       dateOfChangeOverride: ${APPLICATION_JOBS_PERSONRECORDSTATUSJOB_DATEOFCHANGEOVERRIDE:}
     personElasticSearchJob:
-      pageSize: ${APPLICATION_JOBS_PERSONELASTICSEARCHJOB_PAGESIZE:10000}
+      pageSize: ${APPLICATION_JOBS_PERSONELASTICSEARCHJOB_PAGESIZE}
   aws:
     kinesis:
       streamName: ${AWS_KINESIS_STREAM_NAME}

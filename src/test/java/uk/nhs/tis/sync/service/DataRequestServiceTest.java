@@ -270,12 +270,13 @@ class DataRequestServiceTest {
   }
 
   @Test
-  void shouldReturnPlacementSpecialtyWhenSpecialtyFound() {
-    PlacementSpecialtyDTO expectedDto = new PlacementSpecialtyDTO();
-    expectedDto.setPlacementSpecialtyType(PostSpecialtyType.PRIMARY);
+  void shouldReturnPlacementSpecialtyWhenPrimarySpecialtyFound() {
+    PlacementSpecialtyDTO expectedPrimaryDto = new PlacementSpecialtyDTO();
+    expectedPrimaryDto.setPlacementSpecialtyType(PostSpecialtyType.PRIMARY);
+
     PlacementDetailsDTO expectedPlacementDetailsDto = new PlacementDetailsDTO();
     expectedPlacementDetailsDto
-        .setSpecialties(new HashSet<>(Collections.singletonList(expectedDto)));
+        .setSpecialties(new HashSet<>(Collections.singletonList(expectedPrimaryDto)));
     when(tcsService.getPlacementById(70L))
         .thenReturn(expectedPlacementDetailsDto);
 
@@ -286,7 +287,28 @@ class DataRequestServiceTest {
     }};
     Object retrievedDto = service.retrieveDto(message);
 
-    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
+    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedPrimaryDto));
+  }
+
+  @Test
+  void shouldReturnNullWhenOnlyNonPrimaryPlacementSpecialtyFound() {
+    PlacementSpecialtyDTO expectedNonPrimaryDto = new PlacementSpecialtyDTO();
+    expectedNonPrimaryDto.setPlacementSpecialtyType(PostSpecialtyType.SUB_SPECIALTY);
+
+    PlacementDetailsDTO expectedPlacementDetailsDto = new PlacementDetailsDTO();
+    expectedPlacementDetailsDto
+        .setSpecialties(new HashSet<>(Collections.singletonList(expectedNonPrimaryDto)));
+    when(tcsService.getPlacementById(70L))
+        .thenReturn(expectedPlacementDetailsDto);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "PlacementSpecialty");
+      put("placementId", "70");
+      put("placementSpecialtyType", "PRIMARY");
+    }};
+    Object retrievedDto = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", retrievedDto, nullValue());
   }
 
   @Test
@@ -301,9 +323,9 @@ class DataRequestServiceTest {
       put("placementId", "70");
       put("placementSpecialtyType", "PRIMARY");
     }};
-    Object specialty = service.retrieveDto(message);
+    Object placementSpecialty = service.retrieveDto(message);
 
-    assertThat("Unexpected DTO.", specialty, nullValue());
+    assertThat("Unexpected DTO.", placementSpecialty, nullValue());
   }
 
   @Test
@@ -316,9 +338,9 @@ class DataRequestServiceTest {
       put("placementId", "70");
       put("placementSpecialtyType", "PRIMARY");
     }};
-    Object specialty = service.retrieveDto(message);
+    Object placementSpecialty = service.retrieveDto(message);
 
-    assertThat("Unexpected DTO.", specialty, nullValue());
+    assertThat("Unexpected DTO.", placementSpecialty, nullValue());
   }
 
   @Test
