@@ -1,11 +1,15 @@
 package uk.nhs.tis.sync.service;
 
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
+import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
+import com.transformuk.hee.tis.tcs.api.enumeration.PostSpecialtyType;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
 import java.util.Collections;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
+import uk.nhs.tis.sync.dto.PlacementSpecialtyMessageDto;
 
 @Slf4j
 @Service
@@ -58,5 +62,19 @@ public class DataRequestService {
     }
 
     return null;
+  }
+
+  public PlacementSpecialtyDTO retrievePlacementSpecialtyDto(PlacementSpecialtyMessageDto message) {
+    long placementId = Long.parseLong(message.getPlacementId());
+
+    PlacementDetailsDTO placementDetails = tcsServiceImpl.getPlacementById(placementId);
+    return placementDetails.getSpecialties().stream()
+        .filter(this::isPrimary)
+        .findFirst()
+        .get();
+  }
+
+  private boolean isPrimary(PlacementSpecialtyDTO placementSpecialty) {
+    return placementSpecialty.getPlacementSpecialtyType() == PostSpecialtyType.PRIMARY;
   }
 }

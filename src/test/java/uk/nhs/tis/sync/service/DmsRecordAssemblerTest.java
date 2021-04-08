@@ -31,6 +31,7 @@ import uk.nhs.tis.sync.dto.SiteDmsDto;
 import uk.nhs.tis.sync.dto.SpecialtyDmsDto;
 import uk.nhs.tis.sync.dto.TrustDmsDto;
 import uk.nhs.tis.sync.mapper.CurriculumMapper;
+import uk.nhs.tis.sync.mapper.PlacementSpecialtyMapper;
 import uk.nhs.tis.sync.mapper.PostMapperImpl;
 import uk.nhs.tis.sync.mapper.ProgrammeMapper;
 import uk.nhs.tis.sync.mapper.SiteMapper;
@@ -49,9 +50,11 @@ class DmsRecordAssemblerTest {
     ProgrammeMapper programmeMapper = Mappers.getMapper(ProgrammeMapper.class);
     CurriculumMapper curriculumMapper = Mappers.getMapper(CurriculumMapper.class);
     SpecialtyMapper specialtyMapper = Mappers.getMapper(SpecialtyMapper.class);
+    PlacementSpecialtyMapper placementSpecialtyMapper = Mappers
+        .getMapper(PlacementSpecialtyMapper.class);
 
     dmsRecordAssembler = new DmsRecordAssembler(postMapper, trustMapper, siteMapper,
-        programmeMapper, curriculumMapper, specialtyMapper);
+        programmeMapper, curriculumMapper, specialtyMapper, placementSpecialtyMapper);
   }
 
   @Test

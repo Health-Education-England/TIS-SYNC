@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 import uk.nhs.tis.sync.dto.DmsDto;
+import uk.nhs.tis.sync.dto.PlacementSpecialtyMessageDto;
 import uk.nhs.tis.sync.service.DataRequestService;
 import uk.nhs.tis.sync.service.DmsRecordAssembler;
 import uk.nhs.tis.sync.service.KinesisService;
@@ -117,15 +119,35 @@ public class RecordResendingJob {
   private DmsDto processMessage(Message message) {
     try {
       String messageBody = message.getBody();
-      AmazonSqsMessageDto messageDto = objectMapper
-          .readValue(messageBody, AmazonSqsMessageDto.class);
       LOG.info(messageBody);
 
-      Object retrievedDto = dataRequestService.retrieveDto(messageDto);
+      Object retrievedDto;
+
+      if (typeOfMessage(messageBody).equals("PlacementSpecialty")) {
+        PlacementSpecialtyMessageDto messageDto = objectMapper
+            .readValue(messageBody, PlacementSpecialtyMessageDto.class);
+        retrievedDto = dataRequestService.retrievePlacementSpecialtyDto(messageDto);
+      } else {
+        AmazonSqsMessageDto messageDto = objectMapper
+            .readValue(messageBody, AmazonSqsMessageDto.class);
+        retrievedDto = dataRequestService.retrieveDto(messageDto);
+      }
+
 
       if (retrievedDto != null) {
         return dmsRecordAssembler.assembleDmsDto(retrievedDto);
       }
+    } catch (JsonProcessingException e) {
+      LOG.error(e.getMessage(), e);
+    }
+
+    return null;
+  }
+
+  private String typeOfMessage(String messageBody) throws JsonProcessingException {
+    try{
+      Map mapMessage = objectMapper.readValue(messageBody, Map.class);
+      return (String) mapMessage.get("table");
     } catch (JsonProcessingException e) {
       LOG.error(e.getMessage(), e);
     }
