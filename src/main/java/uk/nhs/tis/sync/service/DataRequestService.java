@@ -37,7 +37,7 @@ public class DataRequestService {
    *
    * @param message The message to get info from for DTO retrieval.
    */
-  public Object retrieveDto(Map message) {
+  public Object retrieveDto(Map<String, String> message) {
     try {
       String table = (String) message.get("table");
 
