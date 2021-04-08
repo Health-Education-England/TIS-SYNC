@@ -197,7 +197,7 @@ class RecordResendingJobTest {
     when(objectMapperMock.readValue(message1.getBody(), AmazonSqsMessageDto.class))
         .thenThrow(JsonProcessingException.class);
     when(objectMapperMock.readValue(message2.getBody(), AmazonSqsMessageDto.class))
-        .thenReturn(new AmazonSqsMessageDto("Post", "44382"));
+        .thenReturn(new AmazonSqsMessageDto("Post", "44382", null, null));
 
     when(dataRequestServiceMock.retrieveDto(any(AmazonSqsMessageDto.class))).thenReturn(postDto);
     when(dmsRecordAssemblerMock.assembleDmsDto(postDto)).thenReturn(dmsDto);

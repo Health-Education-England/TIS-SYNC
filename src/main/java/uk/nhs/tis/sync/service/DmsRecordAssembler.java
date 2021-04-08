@@ -3,6 +3,7 @@ package uk.nhs.tis.sync.service;
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import com.transformuk.hee.tis.tcs.api.dto.SpecialtyDTO;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.mapper.CurriculumMapper;
+import uk.nhs.tis.sync.mapper.PlacementSpecialtyMapper;
 import uk.nhs.tis.sync.mapper.PostMapper;
 import uk.nhs.tis.sync.mapper.ProgrammeMapper;
 import uk.nhs.tis.sync.mapper.SiteMapper;
@@ -30,6 +32,7 @@ public class DmsRecordAssembler {
   private static final String SCHEMA_REFERENCE = "reference";
   private static final String SCHEMA_TCS = "tcs";
   private static final String TABLE_CURRICULUM = "Curriculum";
+  private static final String TABLE_PLACEMENT_SPECIALTY = "PlacementSpecialty";
   private static final String TABLE_POST = "Post";
   private static final String TABLE_PROGRAMME = "Programme";
   private static final String TABLE_SITE = "Site";
@@ -48,19 +51,22 @@ public class DmsRecordAssembler {
 
   private final SpecialtyMapper specialtyMapper;
 
+  private final PlacementSpecialtyMapper placementSpecialtyMapper;
+
   /**
    * Constructor for a DmsRecordAssembler, which instantiates the relevant mappers.
    */
   DmsRecordAssembler(PostMapper postMapper,
       TrustMapper trustMapper, SiteMapper siteMapper,
       ProgrammeMapper programmeMapper, CurriculumMapper curriculumMapper,
-      SpecialtyMapper specialtyMapper) {
+      SpecialtyMapper specialtyMapper, PlacementSpecialtyMapper placementSpecialtyMapper) {
     this.postMapper = postMapper;
     this.trustMapper = trustMapper;
     this.siteMapper = siteMapper;
     this.programmeMapper = programmeMapper;
     this.curriculumMapper = curriculumMapper;
     this.specialtyMapper = specialtyMapper;
+    this.placementSpecialtyMapper = placementSpecialtyMapper;
   }
 
   /**
@@ -79,6 +85,12 @@ public class DmsRecordAssembler {
       dmsData = curriculumMapper.toDmsDto((CurriculumDTO) dto);
       schema = SCHEMA_TCS;
       table = TABLE_CURRICULUM;
+    }
+
+    if (dto instanceof PlacementSpecialtyDTO) {
+      dmsData = placementSpecialtyMapper.toDmsDto((PlacementSpecialtyDTO) dto);
+      schema = SCHEMA_TCS;
+      table = TABLE_PLACEMENT_SPECIALTY;
     }
 
     if (dto instanceof PostDTO) {

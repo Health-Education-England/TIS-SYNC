@@ -31,11 +31,12 @@ import uk.nhs.tis.sync.dto.SiteDmsDto;
 import uk.nhs.tis.sync.dto.SpecialtyDmsDto;
 import uk.nhs.tis.sync.dto.TrustDmsDto;
 import uk.nhs.tis.sync.mapper.CurriculumMapper;
-import uk.nhs.tis.sync.mapper.PostMapperImpl;
+import uk.nhs.tis.sync.mapper.PlacementSpecialtyMapper;
+import uk.nhs.tis.sync.mapper.PostMapper;
 import uk.nhs.tis.sync.mapper.ProgrammeMapper;
 import uk.nhs.tis.sync.mapper.SiteMapper;
 import uk.nhs.tis.sync.mapper.SpecialtyMapper;
-import uk.nhs.tis.sync.mapper.TrustMapperImpl;
+import uk.nhs.tis.sync.mapper.TrustMapper;
 
 class DmsRecordAssemblerTest {
 
@@ -43,15 +44,16 @@ class DmsRecordAssemblerTest {
 
   @BeforeEach
   void setUp() {
-    PostMapperImpl postMapper = new PostMapperImpl();
-    TrustMapperImpl trustMapper = new TrustMapperImpl();
+    PostMapper postMapper = Mappers.getMapper(PostMapper.class);
+    TrustMapper trustMapper = Mappers.getMapper(TrustMapper.class);
     SiteMapper siteMapper = Mappers.getMapper(SiteMapper.class);
     ProgrammeMapper programmeMapper = Mappers.getMapper(ProgrammeMapper.class);
     CurriculumMapper curriculumMapper = Mappers.getMapper(CurriculumMapper.class);
     SpecialtyMapper specialtyMapper = Mappers.getMapper(SpecialtyMapper.class);
+    PlacementSpecialtyMapper placementSpecialtyMapper = Mappers.getMapper(PlacementSpecialtyMapper.class);
 
     dmsRecordAssembler = new DmsRecordAssembler(postMapper, trustMapper, siteMapper,
-        programmeMapper, curriculumMapper, specialtyMapper);
+        programmeMapper, curriculumMapper, specialtyMapper, placementSpecialtyMapper);
   }
 
   @Test

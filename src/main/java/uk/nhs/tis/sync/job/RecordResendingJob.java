@@ -95,6 +95,11 @@ public class RecordResendingJob {
           .withQueueUrl(queueUrl)
           .withMaxNumberOfMessages(10);
       List<Message> messages = sqs.receiveMessage(request).getMessages();
+//
+//      String findPost = "{\n\r  \"table\" : \"Post\",\n\r  \"id\" : \"5\"\n\r}";
+//      Message postMessage = new Message();
+//      postMessage.setBody(findPost);
+//      messages.add(postMessage);
 
       for (Message message : messages) {
         DmsDto dmsDto = processMessage(message);
