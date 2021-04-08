@@ -23,14 +23,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PostDmsDto;
@@ -140,12 +141,12 @@ class RecordResendingJobTest {
 
   @Test
   void shouldSendDataToKinesisStream() {
-    when(dataRequestServiceMock.retrieveDto(any(AmazonSqsMessageDto.class))).thenReturn(postDto);
+    when(dataRequestServiceMock.retrieveDto(any(Map.class))).thenReturn(postDto);
     when(dmsRecordAssemblerMock.assembleDmsDto(postDto)).thenReturn(dmsDto);
 
     job.run();
 
-    verify(dataRequestServiceMock, times(2)).retrieveDto(any(AmazonSqsMessageDto.class));
+    verify(dataRequestServiceMock, times(2)).retrieveDto(any(Map.class));
     verify(dmsRecordAssemblerMock, times(2)).assembleDmsDto(postDto);
 
     ArgumentCaptor<List<DmsDto>> captor = ArgumentCaptor.forClass(List.class);
@@ -159,7 +160,7 @@ class RecordResendingJobTest {
 
   @Test
   void shouldDeleteProcessedMessages() {
-    when(dataRequestServiceMock.retrieveDto(any(AmazonSqsMessageDto.class))).thenReturn(postDto);
+    when(dataRequestServiceMock.retrieveDto(any(Map.class))).thenReturn(postDto);
     when(dmsRecordAssemblerMock.assembleDmsDto(postDto)).thenReturn(dmsDto);
 
     job.run();
@@ -194,12 +195,12 @@ class RecordResendingJobTest {
   @Test
   void shouldProcessRemainingMessagesWhenExceptionThrown() throws JsonProcessingException {
     ObjectMapper objectMapperMock = mock(ObjectMapper.class);
-    when(objectMapperMock.readValue(message1.getBody(), AmazonSqsMessageDto.class))
+    when(objectMapperMock.readValue(message1.getBody(), Map.class))
         .thenThrow(JsonProcessingException.class);
-    when(objectMapperMock.readValue(message2.getBody(), AmazonSqsMessageDto.class))
-        .thenReturn(new AmazonSqsMessageDto("Post", "44382"));
+    when(objectMapperMock.readValue(message2.getBody(), Map.class))
+        .thenReturn(new HashMap<String, String>(){{ put("Post", "44382"); }});
 
-    when(dataRequestServiceMock.retrieveDto(any(AmazonSqsMessageDto.class))).thenReturn(postDto);
+    when(dataRequestServiceMock.retrieveDto(any(Map.class))).thenReturn(postDto);
     when(dmsRecordAssemblerMock.assembleDmsDto(postDto)).thenReturn(dmsDto);
 
     RecordResendingJob job = new RecordResendingJob(kinesisServiceMock,
@@ -212,7 +213,7 @@ class RecordResendingJobTest {
 
     job.run();
 
-    verify(dataRequestServiceMock).retrieveDto(any(AmazonSqsMessageDto.class));
+    verify(dataRequestServiceMock).retrieveDto(any(Map.class));
     verify(dmsRecordAssemblerMock).assembleDmsDto(postDto);
 
     ArgumentCaptor<List<DmsDto>> captor = ArgumentCaptor.forClass(List.class);

@@ -1,17 +1,22 @@
 package uk.nhs.tis.sync.service;
 
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
+import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
+import com.transformuk.hee.tis.tcs.api.enumeration.PostSpecialtyType;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
 import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 
 @Slf4j
 @Service
 public class DataRequestService {
 
   private static final String TABLE_CURRICULUM = "Curriculum";
+  private static final String TABLE_PLACEMENT_SPECIALTY = "PlacementSpecialty";
   private static final String TABLE_POST = "Post";
   private static final String TABLE_PROGRAMME = "Programme";
   private static final String TABLE_SPECIALTY = "Specialty";
@@ -30,13 +35,26 @@ public class DataRequestService {
   /**
    * Retrieve a DTO using TcsServiceImpl according to the info contained in an Amazon SQS message.
    *
-   * @param amazonSqsMessageDto The amazonSqsMessageDto to get info from for DTO retrieval.
+   * @param message The message to get info from for DTO retrieval.
    */
-  public Object retrieveDto(AmazonSqsMessageDto amazonSqsMessageDto) {
+  public Object retrieveDto(Map message) {
     try {
-      long id = Long.parseLong(amazonSqsMessageDto.getId());
+      String table = (String) message.get("table");
 
-      switch (amazonSqsMessageDto.getTable()) {
+      if (table.equals(TABLE_PLACEMENT_SPECIALTY)) {
+        long placementId = Long.parseLong((String) message.get("placementId"));
+        PlacementDetailsDTO placement = tcsServiceImpl.getPlacementById(placementId);
+        Optional<PlacementSpecialtyDTO> placementSpecialtyDto = placement.getSpecialties().stream()
+            .filter(ps -> ps.getPlacementSpecialtyType() == PostSpecialtyType.PRIMARY)
+            .findFirst();
+        if (placementSpecialtyDto.isPresent()) {
+          return placementSpecialtyDto.get();
+        }
+      }
+
+      long id = Long.parseLong((String) message.get("id"));
+
+      switch (table) {
         case TABLE_CURRICULUM:
           return tcsServiceImpl.getCurriculumById(id);
         case TABLE_POST:
@@ -59,4 +77,5 @@ public class DataRequestService {
 
     return null;
   }
+
 }
