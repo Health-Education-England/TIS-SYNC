@@ -117,11 +117,11 @@ public class RecordResendingJob {
   private DmsDto processMessage(Message message) {
     try {
       String messageBody = message.getBody();
-      Map<String, String> messageDto = objectMapper
+      Map<String, String> messageMap = objectMapper
           .readValue(messageBody, Map.class);
       LOG.info(messageBody);
 
-      Object retrievedDto = dataRequestService.retrieveDto(messageDto);
+      Object retrievedDto = dataRequestService.retrieveDto(messageMap);
 
       if (retrievedDto != null) {
         return dmsRecordAssembler.assembleDmsDto(retrievedDto);

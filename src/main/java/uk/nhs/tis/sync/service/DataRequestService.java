@@ -39,10 +39,10 @@ public class DataRequestService {
    */
   public Object retrieveDto(Map<String, String> message) {
     try {
-      String table = (String) message.get("table");
+      String table = message.get("table");
 
       if (table.equals(TABLE_PLACEMENT_SPECIALTY)) {
-        long placementId = Long.parseLong((String) message.get("placementId"));
+        long placementId = Long.parseLong(message.get("placementId"));
         PlacementDetailsDTO placement = tcsServiceImpl.getPlacementById(placementId);
         Optional<PlacementSpecialtyDTO> placementSpecialtyDto = placement.getSpecialties().stream()
             .filter(ps -> ps.getPlacementSpecialtyType() == PostSpecialtyType.PRIMARY)
@@ -52,7 +52,7 @@ public class DataRequestService {
         }
       }
 
-      long id = Long.parseLong((String) message.get("id"));
+      long id = Long.parseLong(message.get("id"));
 
       switch (table) {
         case TABLE_CURRICULUM:

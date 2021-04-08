@@ -10,12 +10,16 @@ import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
 import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import com.transformuk.hee.tis.tcs.api.dto.SpecialtyDTO;
+import com.transformuk.hee.tis.tcs.api.enumeration.PostSpecialtyType;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -259,6 +263,58 @@ class DataRequestServiceTest {
     Map<String, String> message = new HashMap<String, String>() {{
       put("table", "Specialty");
       put("id", "60");
+    }};
+    Object specialty = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", specialty, nullValue());
+  }
+
+  @Test
+  void shouldReturnPlacementSpecialtyWhenSpecialtyFound() {
+    PlacementSpecialtyDTO expectedDto = new PlacementSpecialtyDTO();
+    expectedDto.setPlacementSpecialtyType(PostSpecialtyType.PRIMARY);
+    PlacementDetailsDTO expectedPlacementDetailsDto = new PlacementDetailsDTO();
+    expectedPlacementDetailsDto
+        .setSpecialties(new HashSet<>(Collections.singletonList(expectedDto)));
+    when(tcsService.getPlacementById(70L))
+        .thenReturn(expectedPlacementDetailsDto);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "PlacementSpecialty");
+      put("placementId", "70");
+      put("placementSpecialtyType", "PRIMARY");
+    }};
+    Object retrievedDto = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
+  }
+
+  @Test
+  void shouldReturnNullWhenPlacementSpecialtyNotFound() {
+    PlacementDetailsDTO expectedPlacementDetailsDto = new PlacementDetailsDTO();
+    expectedPlacementDetailsDto.setSpecialties(new HashSet<>());
+    when(tcsService.getPlacementById(70L))
+        .thenReturn(expectedPlacementDetailsDto);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "PlacementSpecialty");
+      put("placementId", "70");
+      put("placementSpecialtyType", "PRIMARY");
+    }};
+    Object specialty = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", specialty, nullValue());
+  }
+
+  @Test
+  void shouldReturnNullWhenGetPlacementByIdThrowsException() {
+    when(tcsService.getPlacementById(70L))
+        .thenThrow(new RuntimeException("Expected exception."));
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "PlacementSpecialty");
+      put("placementId", "70");
+      put("placementSpecialtyType", "PRIMARY");
     }};
     Object specialty = service.retrieveDto(message);
 
