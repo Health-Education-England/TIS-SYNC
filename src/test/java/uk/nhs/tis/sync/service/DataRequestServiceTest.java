@@ -10,16 +10,21 @@ import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
 import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import com.transformuk.hee.tis.tcs.api.dto.SpecialtyDTO;
+import com.transformuk.hee.tis.tcs.api.enumeration.PostSpecialtyType;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
-import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 
 class DataRequestServiceTest {
 
@@ -41,7 +46,10 @@ class DataRequestServiceTest {
     PostDTO expectedDto = new PostDTO();
     when(tcsService.getPostById(10L)).thenReturn(expectedDto);
 
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Post", "10");
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Post");
+      put("id", "10");
+    }};
     Object retrievedDto = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
@@ -52,7 +60,10 @@ class DataRequestServiceTest {
     when(tcsService.getPostById(10L))
         .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Post", "10");
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Post");
+      put("id", "10");
+    }};
     Object post = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", post, nullValue());
@@ -63,7 +74,10 @@ class DataRequestServiceTest {
     TrustDTO expectedDto = new TrustDTO();
     when(referenceService.findTrustById(20L)).thenReturn(expectedDto);
 
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Trust", "20");
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Trust");
+      put("id", "20");
+    }};
     Object retrievedDto = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
@@ -74,7 +88,10 @@ class DataRequestServiceTest {
     when(referenceService.findTrustById(20L))
         .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Trust", "20");
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Trust");
+      put("id", "20");
+    }};
     Object trust = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", trust, nullValue());
@@ -86,7 +103,10 @@ class DataRequestServiceTest {
     when(referenceService.findSitesIdIn(Collections.singleton(30L)))
         .thenReturn(Collections.singletonList(expectedDto));
 
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Site", "30");
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Site");
+      put("id", "30");
+    }};
     Object retrievedDto = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
@@ -97,7 +117,10 @@ class DataRequestServiceTest {
     when(referenceService.findSitesIdIn(Collections.singleton(30L)))
         .thenReturn(Collections.emptyList());
 
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Site", "30");
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Site");
+      put("id", "30");
+    }};
     Object site = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", site, nullValue());
@@ -108,7 +131,10 @@ class DataRequestServiceTest {
     when(referenceService.findSitesIdIn(Collections.singleton(30L)))
         .thenThrow(new RuntimeException("Expected exception."));
 
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Site", "30");
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Site");
+      put("id", "30");
+    }};
     Object site = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", site, nullValue());
@@ -120,7 +146,10 @@ class DataRequestServiceTest {
     when(tcsService.findProgrammesIn(Collections.singletonList("40")))
         .thenReturn(Collections.singletonList(expectedDto));
 
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Programme", "40");
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Programme");
+      put("id", "40");
+    }};
     Object retrievedDto = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
@@ -131,7 +160,10 @@ class DataRequestServiceTest {
     when(tcsService.findProgrammesIn(Collections.singletonList("40")))
         .thenReturn(null);
 
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Programme", "40");
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Programme");
+      put("id", "40");
+    }};
     Object programme = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", programme, nullValue());
@@ -142,7 +174,10 @@ class DataRequestServiceTest {
     when(tcsService.findProgrammesIn(Collections.singletonList("40")))
         .thenThrow(new RuntimeException("Expected exception."));
 
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Programme", "40");
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Programme");
+      put("id", "40");
+    }};
     Object programme = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", programme, nullValue());
@@ -154,7 +189,10 @@ class DataRequestServiceTest {
     when(tcsService.getCurriculumById(50L))
         .thenReturn(expectedDto);
 
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Curriculum", "50");
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Curriculum");
+      put("id", "50");
+    }};
     Object retrievedDto = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
@@ -165,7 +203,10 @@ class DataRequestServiceTest {
     when(tcsService.getCurriculumById(50L))
         .thenReturn(null);
 
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Curriculum", "50");
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Curriculum");
+      put("id", "50");
+    }};
     Object curriculum = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", curriculum, nullValue());
@@ -176,7 +217,10 @@ class DataRequestServiceTest {
     when(tcsService.getCurriculumById(50L))
         .thenThrow(new RuntimeException("Expected exception."));
 
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Curriculum", "50");
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Curriculum");
+      put("id", "50");
+    }};
     Object curriculum = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", curriculum, nullValue());
@@ -188,7 +232,10 @@ class DataRequestServiceTest {
     when(tcsService.getSpecialtyById(60L))
         .thenReturn(expectedDto);
 
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Specialty", "60");
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Specialty");
+      put("id", "60");
+    }};
     Object retrievedDto = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
@@ -199,7 +246,10 @@ class DataRequestServiceTest {
     when(tcsService.getSpecialtyById(60L))
         .thenReturn(null);
 
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Specialty", "60");
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Specialty");
+      put("id", "60");
+    }};
     Object specialty = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", specialty, nullValue());
@@ -210,15 +260,123 @@ class DataRequestServiceTest {
     when(tcsService.getSpecialtyById(60L))
         .thenThrow(new RuntimeException("Expected exception."));
 
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Specialty", "60");
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Specialty");
+      put("id", "60");
+    }};
     Object specialty = service.retrieveDto(message);
 
     assertThat("Unexpected DTO.", specialty, nullValue());
   }
 
   @Test
+  void shouldReturnPlacementSpecialtyWhenPrimarySpecialtyFound() {
+    PlacementSpecialtyDTO expectedPrimaryDto = new PlacementSpecialtyDTO();
+    expectedPrimaryDto.setPlacementSpecialtyType(PostSpecialtyType.PRIMARY);
+
+    PlacementDetailsDTO expectedPlacementDetailsDto = new PlacementDetailsDTO();
+    expectedPlacementDetailsDto
+        .setSpecialties(new HashSet<>(Collections.singletonList(expectedPrimaryDto)));
+    when(tcsService.getPlacementById(70L))
+        .thenReturn(expectedPlacementDetailsDto);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "PlacementSpecialty");
+      put("placementId", "70");
+      put("placementSpecialtyType", "PRIMARY");
+    }};
+    Object retrievedDto = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedPrimaryDto));
+  }
+
+  @Test
+  void shouldReturnNullWhenOnlyNonPrimaryPlacementSpecialtyFound() {
+    PlacementSpecialtyDTO expectedNonPrimaryDto = new PlacementSpecialtyDTO();
+    expectedNonPrimaryDto.setPlacementSpecialtyType(PostSpecialtyType.SUB_SPECIALTY);
+
+    PlacementDetailsDTO expectedPlacementDetailsDto = new PlacementDetailsDTO();
+    expectedPlacementDetailsDto
+        .setSpecialties(new HashSet<>(Collections.singletonList(expectedNonPrimaryDto)));
+    when(tcsService.getPlacementById(70L))
+        .thenReturn(expectedPlacementDetailsDto);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "PlacementSpecialty");
+      put("placementId", "70");
+      put("placementSpecialtyType", "PRIMARY");
+    }};
+    Object retrievedDto = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", retrievedDto, nullValue());
+  }
+
+  @Test
+  void shouldReturnNullWhenPlacementSpecialtyNotFound() {
+    PlacementDetailsDTO expectedPlacementDetailsDto = new PlacementDetailsDTO();
+    expectedPlacementDetailsDto.setSpecialties(new HashSet<>());
+    when(tcsService.getPlacementById(70L))
+        .thenReturn(expectedPlacementDetailsDto);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "PlacementSpecialty");
+      put("placementId", "70");
+      put("placementSpecialtyType", "PRIMARY");
+    }};
+    Object placementSpecialty = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", placementSpecialty, nullValue());
+  }
+
+  @Test
+  void shouldReturnNullWhenGetPlacementByIdThrowsException() {
+    when(tcsService.getPlacementById(70L))
+        .thenThrow(new RuntimeException("Expected exception."));
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "PlacementSpecialty");
+      put("placementId", "70");
+      put("placementSpecialtyType", "PRIMARY");
+    }};
+    Object placementSpecialty = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", placementSpecialty, nullValue());
+  }
+
+  @Test
+  void shouldReturnNullWhenMessageContainsWrongKey() {
+    // Malformed message with no "placementId" key
+    Map<String, String> messageForSpecialty = new HashMap<String, String>() {{
+      put("table", "PlacementSpecialty");
+      put("placementSpecialtyType", "PRIMARY");
+    }};
+    Object placementSpecialty = service.retrieveDto(messageForSpecialty);
+
+    assertThat("Unexpected DTO.", placementSpecialty, nullValue());
+
+    // Malformed message with no "id" key
+    Map<String, String> messageForPost = new HashMap<String, String>() {{
+      put("table", "Post");
+    }};
+    Object post = service.retrieveDto(messageForPost);
+
+    assertThat("Unexpected DTO.", post, nullValue());
+
+    // Malformed message with no "table" key
+    Map<String, String> messageForTrust = new HashMap<String, String>() {{
+      put("id", "4");
+    }};
+    Object trust = service.retrieveDto(messageForTrust);
+
+    assertThat("Unexpected DTO.", trust, nullValue());
+  }
+
+  @Test
   void shouldReturnNullWhenTableDoesNotMatchAnyCase() {
-    AmazonSqsMessageDto message = new AmazonSqsMessageDto("Wrong", "0");
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Wrong");
+      put("id", "0");
+    }};
     assertThat(service.retrieveDto(message), nullValue());
   }
 }

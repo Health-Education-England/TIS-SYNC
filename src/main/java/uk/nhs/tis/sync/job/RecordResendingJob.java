@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,6 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import uk.nhs.tis.sync.dto.AmazonSqsMessageDto;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.service.DataRequestService;
 import uk.nhs.tis.sync.service.DmsRecordAssembler;
@@ -117,11 +117,11 @@ public class RecordResendingJob {
   private DmsDto processMessage(Message message) {
     try {
       String messageBody = message.getBody();
-      AmazonSqsMessageDto messageDto = objectMapper
-          .readValue(messageBody, AmazonSqsMessageDto.class);
+      Map<String, String> messageMap = objectMapper
+          .readValue(messageBody, Map.class);
       LOG.info(messageBody);
 
-      Object retrievedDto = dataRequestService.retrieveDto(messageDto);
+      Object retrievedDto = dataRequestService.retrieveDto(messageMap);
 
       if (retrievedDto != null) {
         return dmsRecordAssembler.assembleDmsDto(retrievedDto);

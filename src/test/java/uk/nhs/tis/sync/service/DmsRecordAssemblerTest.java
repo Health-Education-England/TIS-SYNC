@@ -11,12 +11,14 @@ import static org.junit.Assert.assertEquals;
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import com.transformuk.hee.tis.tcs.api.dto.SpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.dto.SpecialtyGroupDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.AssessmentType;
 import com.transformuk.hee.tis.tcs.api.enumeration.CurriculumSubType;
+import com.transformuk.hee.tis.tcs.api.enumeration.PostSpecialtyType;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,12 +27,14 @@ import org.mapstruct.factory.Mappers;
 import uk.nhs.tis.sync.dto.CurriculumDmsDto;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
+import uk.nhs.tis.sync.dto.PlacementSpecialtyDmsDto;
 import uk.nhs.tis.sync.dto.PostDmsDto;
 import uk.nhs.tis.sync.dto.ProgrammeDmsDto;
 import uk.nhs.tis.sync.dto.SiteDmsDto;
 import uk.nhs.tis.sync.dto.SpecialtyDmsDto;
 import uk.nhs.tis.sync.dto.TrustDmsDto;
 import uk.nhs.tis.sync.mapper.CurriculumMapper;
+import uk.nhs.tis.sync.mapper.PlacementSpecialtyMapper;
 import uk.nhs.tis.sync.mapper.PostMapperImpl;
 import uk.nhs.tis.sync.mapper.ProgrammeMapper;
 import uk.nhs.tis.sync.mapper.SiteMapper;
@@ -49,9 +53,11 @@ class DmsRecordAssemblerTest {
     ProgrammeMapper programmeMapper = Mappers.getMapper(ProgrammeMapper.class);
     CurriculumMapper curriculumMapper = Mappers.getMapper(CurriculumMapper.class);
     SpecialtyMapper specialtyMapper = Mappers.getMapper(SpecialtyMapper.class);
+    PlacementSpecialtyMapper placementSpecialtyMapper = Mappers
+        .getMapper(PlacementSpecialtyMapper.class);
 
     dmsRecordAssembler = new DmsRecordAssembler(postMapper, trustMapper, siteMapper,
-        programmeMapper, curriculumMapper, specialtyMapper);
+        programmeMapper, curriculumMapper, specialtyMapper, placementSpecialtyMapper);
   }
 
   @Test
@@ -325,5 +331,36 @@ class DmsRecordAssemblerTest {
         is("specialtyCode"));
     assertThat("Unexpected status.", specialtyDmsDto.getStatus(), is("CURRENT"));
     assertThat("Unexpected specialty group id.", specialtyDmsDto.getSpecialtyGroupId(), is("75"));
+  }
+
+  @Test
+  void shouldHandlePlacementSpecialty() {
+    PlacementSpecialtyDTO placementSpecialty = new PlacementSpecialtyDTO();
+    placementSpecialty.setPlacementId(80L);
+    placementSpecialty.setSpecialtyId(90L);
+    placementSpecialty.setPlacementSpecialtyType(PostSpecialtyType.PRIMARY);
+    placementSpecialty.setSpecialtyName("specialtyName");
+
+    DmsDto dmsDto = dmsRecordAssembler.assembleDmsDto(placementSpecialty);
+
+    MetadataDto metadata = dmsDto.getMetadata();
+    assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
+    assertThat("Unexpected partition key.", metadata.getPartitionKeyType(), is("schema-table"));
+    assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
+    assertThat("Unexpected table.", metadata.getTableName(), is("PlacementSpecialty"));
+    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+
+    Object data = dmsDto.getData();
+    assertThat("Unexpected data.", data, instanceOf(PlacementSpecialtyDmsDto.class));
+
+    PlacementSpecialtyDmsDto placementSpecialtyDmsDto = (PlacementSpecialtyDmsDto) data;
+    assertThat("Unexpected placement id.", placementSpecialtyDmsDto.getPlacementId(), is("80"));
+    assertThat("Unexpected specialty id.", placementSpecialtyDmsDto.getSpecialtyId(), is("90"));
+    assertThat("Unexpected placement-specialty type.",
+        placementSpecialtyDmsDto.getPlacementSpecialtyType(), is("PRIMARY"));
+    assertThat("Unexpected specialty name.", placementSpecialtyDmsDto.getSpecialtyName(),
+        is("specialtyName"));
   }
 }
