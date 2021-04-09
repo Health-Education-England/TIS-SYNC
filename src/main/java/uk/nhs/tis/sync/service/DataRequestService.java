@@ -41,18 +41,12 @@ public class DataRequestService {
     try {
       String table = message.get("table");
 
-      if (table.equals(TABLE_PLACEMENT_SPECIALTY)) {
+      if (table.equals(TABLE_PLACEMENT_SPECIALTY) && message.containsKey("placementId")) {
         long placementId = Long.parseLong(message.get("placementId"));
-        PlacementDetailsDTO placement = tcsServiceImpl.getPlacementById(placementId);
-        Optional<PlacementSpecialtyDTO> placementSpecialtyDto = placement.getSpecialties().stream()
-            .filter(ps -> ps.getPlacementSpecialtyType() == PostSpecialtyType.PRIMARY)
-            .findFirst();
-        if (placementSpecialtyDto.isPresent()) {
-          return placementSpecialtyDto.get();
-        }
+        return retrievePlacementSpecialty(placementId);
       }
 
-      long id = Long.parseLong(message.get("id"));
+      Long id = message.containsKey("id") ? Long.parseLong(message.get("id")) : null;
 
       switch (table) {
         case TABLE_CURRICULUM:
@@ -76,6 +70,14 @@ public class DataRequestService {
     }
 
     return null;
+  }
+
+  private PlacementSpecialtyDTO retrievePlacementSpecialty(long placementId) {
+    PlacementDetailsDTO placement = tcsServiceImpl.getPlacementById(placementId);
+    Optional<PlacementSpecialtyDTO> placementSpecialtyDto = placement.getSpecialties().stream()
+        .filter(ps -> ps.getPlacementSpecialtyType() == PostSpecialtyType.PRIMARY)
+        .findFirst();
+    return placementSpecialtyDto.orElse(null);
   }
 
 }
