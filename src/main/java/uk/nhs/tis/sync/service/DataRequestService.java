@@ -46,24 +46,26 @@ public class DataRequestService {
         return retrievePlacementSpecialty(placementId);
       }
 
-      Long id = message.containsKey("id") ? Long.parseLong(message.get("id")) : null;
+      if (message.containsKey("id")) {
+        long id = Long.parseLong(message.get("id"));
 
-      switch (table) {
-        case TABLE_CURRICULUM:
-          return tcsServiceImpl.getCurriculumById(id);
-        case TABLE_POST:
-          return tcsServiceImpl.getPostById(id);
-        case TABLE_PROGRAMME:
-          return tcsServiceImpl.findProgrammesIn(Collections.singletonList(String.valueOf(id)))
-              .get(0);
-        case TABLE_SITE:
-          return referenceServiceImpl.findSitesIdIn(Collections.singleton(id)).get(0);
-        case TABLE_SPECIALTY:
-          return tcsServiceImpl.getSpecialtyById(id);
-        case TABLE_TRUST:
-          return referenceServiceImpl.findTrustById(id);
-        default:
-          break;
+        switch (table) {
+          case TABLE_CURRICULUM:
+            return tcsServiceImpl.getCurriculumById(id);
+          case TABLE_POST:
+            return tcsServiceImpl.getPostById(id);
+          case TABLE_PROGRAMME:
+            return tcsServiceImpl.findProgrammesIn(Collections.singletonList(String.valueOf(id)))
+                .get(0);
+          case TABLE_SITE:
+            return referenceServiceImpl.findSitesIdIn(Collections.singleton(id)).get(0);
+          case TABLE_SPECIALTY:
+            return tcsServiceImpl.getSpecialtyById(id);
+          case TABLE_TRUST:
+            return referenceServiceImpl.findTrustById(id);
+          default:
+            break;
+        }
       }
     } catch (Exception e) {
       log.error(e.getMessage(), e);

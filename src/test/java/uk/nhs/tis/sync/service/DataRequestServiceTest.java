@@ -344,6 +344,34 @@ class DataRequestServiceTest {
   }
 
   @Test
+  void shouldReturnNullWhenMessageContainsWrongKey() {
+    // Malformed message with no "placementId" key
+    Map<String, String> messageForSpecialty = new HashMap<String, String>() {{
+      put("table", "PlacementSpecialty");
+      put("placementSpecialtyType", "PRIMARY");
+    }};
+    Object placementSpecialty = service.retrieveDto(messageForSpecialty);
+
+    assertThat("Unexpected DTO.", placementSpecialty, nullValue());
+
+    // Malformed message with no "id" key
+    Map<String, String> messageForPost = new HashMap<String, String>() {{
+      put("table", "Post");
+    }};
+    Object post = service.retrieveDto(messageForPost);
+
+    assertThat("Unexpected DTO.", post, nullValue());
+
+    // Malformed message with no "table" key
+    Map<String, String> messageForTrust = new HashMap<String, String>() {{
+      put("id", "4");
+    }};
+    Object trust = service.retrieveDto(messageForTrust);
+
+    assertThat("Unexpected DTO.", trust, nullValue());
+  }
+
+  @Test
   void shouldReturnNullWhenTableDoesNotMatchAnyCase() {
     Map<String, String> message = new HashMap<String, String>() {{
       put("table", "Wrong");
