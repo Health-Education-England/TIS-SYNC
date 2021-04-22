@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 public class DataRequestService {
 
   private static final String TABLE_CURRICULUM = "Curriculum";
+  private static final String TABLE_PLACEMENT = "Placement";
   private static final String TABLE_PLACEMENT_SPECIALTY = "PlacementSpecialty";
   private static final String TABLE_POST = "Post";
   private static final String TABLE_PROGRAMME = "Programme";
@@ -52,6 +53,8 @@ public class DataRequestService {
         switch (table) {
           case TABLE_CURRICULUM:
             return tcsServiceImpl.getCurriculumById(id);
+          case TABLE_PLACEMENT:
+            return tcsServiceImpl.getPlacementById(id);
           case TABLE_POST:
             return tcsServiceImpl.getPostById(id);
           case TABLE_PROGRAMME:
