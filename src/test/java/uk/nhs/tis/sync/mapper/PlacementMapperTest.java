@@ -2,65 +2,64 @@ package uk.nhs.tis.sync.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.transformuk.hee.tis.tcs.api.dto.PlacementDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.LifecycleState;
 import com.transformuk.hee.tis.tcs.api.enumeration.PlacementStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.junit.Before;
 import org.junit.Test;
-import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
-import uk.nhs.tis.sync.dto.PlacementDmsDto;
+import uk.nhs.tis.sync.dto.PlacementDetailsDmsDto;
 
 public class PlacementMapperTest {
 
-  PlacementMapper mapper;
+  PlacementDetailsMapper mapper;
 
-  PlacementDTO placementDto;
+  PlacementDetailsDTO placementDetailsDto;
 
   @Before
   public void setUp() {
-    mapper = Mappers.getMapper(PlacementMapper.class);
+    mapper = Mappers.getMapper(PlacementDetailsMapper.class);
 
-    placementDto = new PlacementDTO();
-    placementDto.setId(45L);
-    placementDto.setDateFrom(LocalDate.MIN);
-    placementDto.setDateTo(LocalDate.MAX);
-    placementDto.setPlacementWholeTimeEquivalent(new BigDecimal("1"));
-    placementDto.setIntrepidId("00");
-    placementDto.setTraineeId(4500L);
-    placementDto.setPostId(5L);
-    placementDto.setGradeAbbreviation("gradeAbbreviation");
-    placementDto.setPlacementType("placementType");
-    placementDto.setStatus(PlacementStatus.CURRENT);
-    placementDto.setTrainingDescription("trainingDescription");
-    placementDto.setGradeId(20L);
-    placementDto.setLifecycleState(LifecycleState.APPROVED);
-    placementDto.setSiteId(30L);
-    placementDto.setSiteCode("siteCode");
-    placementDto.setLocalPostNumber("PO5TN0");
+    placementDetailsDto = new PlacementDetailsDTO();
+    placementDetailsDto.setId(45L);
+    placementDetailsDto.setDateFrom(LocalDate.MIN);
+    placementDetailsDto.setDateTo(LocalDate.MAX);
+    placementDetailsDto.setWholeTimeEquivalent(new BigDecimal("1"));
+    placementDetailsDto.setIntrepidId("00");
+    placementDetailsDto.setTraineeId(4500L);
+    placementDetailsDto.setPostId(5L);
+    placementDetailsDto.setGradeAbbreviation("gradeAbbreviation");
+    placementDetailsDto.setPlacementType("placementType");
+    placementDetailsDto.setStatus(PlacementStatus.CURRENT);
+    placementDetailsDto.setTrainingDescription("trainingDescription");
+    placementDetailsDto.setGradeId(20L);
+    placementDetailsDto.setLifecycleState(LifecycleState.APPROVED);
+    placementDetailsDto.setSiteId(30L);
+    placementDetailsDto.setSiteCode("siteCode");
+    placementDetailsDto.setLocalPostNumber("PO5TN0");
   }
 
   @Test
-  public void shouldMapAPlacementDtoToADataDmsDto() {
-    PlacementDmsDto placementDmsDto = mapper.toDmsDto(placementDto);
+  public void shouldMapAPlacementDetailsDtoToADataDmsDto() {
+    PlacementDetailsDmsDto placementDetailsDmsDto = mapper.toDmsDto(placementDetailsDto);
 
-    assertEquals("45", placementDmsDto.getId());
-    assertEquals(LocalDate.MIN.toString(), placementDmsDto.getDateFrom());
-    assertEquals(LocalDate.MAX.toString(), placementDmsDto.getDateTo());
-    assertEquals("1", placementDmsDto.getPlacementWholeTimeEquivalent());
-    assertEquals("00", placementDmsDto.getIntrepidId());
-    assertEquals("4500", placementDmsDto.getTraineeId());
-    assertEquals("5", placementDmsDto.getPostId());
-    assertEquals("gradeAbbreviation", placementDmsDto.getGradeAbbreviation());
-    assertEquals("placementType", placementDmsDto.getPlacementType());
-    assertEquals("CURRENT", placementDmsDto.getStatus());
-    assertEquals("trainingDescription", placementDmsDto.getTrainingDescription());
-    assertEquals("20", placementDmsDto.getGradeId());
-    assertEquals("APPROVED", placementDmsDto.getLifecycleState());
-    assertEquals("30", placementDmsDto.getSiteId());
-    assertEquals("siteCode", placementDmsDto.getSiteCode());
-    assertEquals("PO5TN0", placementDmsDto.getLocalPostNumber());
+    assertEquals("45", placementDetailsDmsDto.getId());
+    assertEquals(LocalDate.MIN.toString(), placementDetailsDmsDto.getDateFrom());
+    assertEquals(LocalDate.MAX.toString(), placementDetailsDmsDto.getDateTo());
+    assertEquals("1", placementDetailsDmsDto.getWholeTimeEquivalent());
+    assertEquals("00", placementDetailsDmsDto.getIntrepidId());
+    assertEquals("4500", placementDetailsDmsDto.getTraineeId());
+    assertEquals("5", placementDetailsDmsDto.getPostId());
+    assertEquals("gradeAbbreviation", placementDetailsDmsDto.getGradeAbbreviation());
+    assertEquals("placementType", placementDetailsDmsDto.getPlacementType());
+    assertEquals("CURRENT", placementDetailsDmsDto.getStatus());
+    assertEquals("trainingDescription", placementDetailsDmsDto.getTrainingDescription());
+    assertEquals("20", placementDetailsDmsDto.getGradeId());
+    assertEquals("APPROVED", placementDetailsDmsDto.getLifecycleState());
+    assertEquals("30", placementDetailsDmsDto.getSiteId());
+    assertEquals("siteCode", placementDetailsDmsDto.getSiteCode());
+    assertEquals("PO5TN0", placementDetailsDmsDto.getLocalPostNumber());
   }
 }
