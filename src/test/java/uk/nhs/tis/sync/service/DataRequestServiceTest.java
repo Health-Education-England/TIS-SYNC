@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
@@ -330,25 +331,33 @@ class DataRequestServiceTest {
   }
 
   @Test
-  void shouldReturnNullWhenGetPlacementByIdThrowsException() {
+  void shouldReturnNullWhenGetPlacementByIdThrowsExceptionRequestingAPlacementSpecialty() {
     when(tcsService.getPlacementById(70L))
         .thenThrow(new RuntimeException("Expected exception."));
 
-    Map<String, String> messageForAPlacementSpecialty = new HashMap<String, String>() {{
+    Map<String, String> message = new HashMap<String, String>() {{
       put("table", "PlacementSpecialty");
       put("placementId", "70");
       put("placementSpecialtyType", "PRIMARY");
     }};
-    Object placementSpecialty = service.retrieveDto(messageForAPlacementSpecialty);
+    Object placementSpecialty = service.retrieveDto(message);
 
+    verify(tcsService).getPlacementById(70L);
     assertThat("Unexpected DTO.", placementSpecialty, nullValue());
+  }
 
-    Map<String, String> messageForAPlacement = new HashMap<String, String>() {{
+  @Test
+  void shouldReturnNullWhenGetPlacementByIdThrowsExceptionRequestingAPlacement() {
+    when(tcsService.getPlacementById(80L))
+        .thenThrow(new RuntimeException("Expected exception."));
+
+    Map<String, String> message = new HashMap<String, String>() {{
       put("table", "Placement");
-      put("placementId", "70");
+      put("id", "80");
     }};
-    Object placement = service.retrieveDto(messageForAPlacement);
+    Object placement = service.retrieveDto(message);
 
+    verify(tcsService).getPlacementById(80L);
     assertThat("Unexpected DTO.", placement, nullValue());
   }
 
