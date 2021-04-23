@@ -11,6 +11,7 @@ import static org.junit.Assert.assertEquals;
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
@@ -18,8 +19,11 @@ import com.transformuk.hee.tis.tcs.api.dto.SpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.dto.SpecialtyGroupDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.AssessmentType;
 import com.transformuk.hee.tis.tcs.api.enumeration.CurriculumSubType;
+import com.transformuk.hee.tis.tcs.api.enumeration.LifecycleState;
+import com.transformuk.hee.tis.tcs.api.enumeration.PlacementStatus;
 import com.transformuk.hee.tis.tcs.api.enumeration.PostSpecialtyType;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +31,7 @@ import org.mapstruct.factory.Mappers;
 import uk.nhs.tis.sync.dto.CurriculumDmsDto;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
+import uk.nhs.tis.sync.dto.PlacementDetailsDmsDto;
 import uk.nhs.tis.sync.dto.PlacementSpecialtyDmsDto;
 import uk.nhs.tis.sync.dto.PostDmsDto;
 import uk.nhs.tis.sync.dto.ProgrammeDmsDto;
@@ -34,6 +39,7 @@ import uk.nhs.tis.sync.dto.SiteDmsDto;
 import uk.nhs.tis.sync.dto.SpecialtyDmsDto;
 import uk.nhs.tis.sync.dto.TrustDmsDto;
 import uk.nhs.tis.sync.mapper.CurriculumMapper;
+import uk.nhs.tis.sync.mapper.PlacementDetailsMapper;
 import uk.nhs.tis.sync.mapper.PlacementSpecialtyMapper;
 import uk.nhs.tis.sync.mapper.PostMapperImpl;
 import uk.nhs.tis.sync.mapper.ProgrammeMapper;
@@ -55,9 +61,11 @@ class DmsRecordAssemblerTest {
     SpecialtyMapper specialtyMapper = Mappers.getMapper(SpecialtyMapper.class);
     PlacementSpecialtyMapper placementSpecialtyMapper = Mappers
         .getMapper(PlacementSpecialtyMapper.class);
+    PlacementDetailsMapper placementDetailsMapper = Mappers.getMapper(PlacementDetailsMapper.class);
 
     dmsRecordAssembler = new DmsRecordAssembler(postMapper, trustMapper, siteMapper,
-        programmeMapper, curriculumMapper, specialtyMapper, placementSpecialtyMapper);
+        programmeMapper, curriculumMapper, specialtyMapper, placementSpecialtyMapper,
+        placementDetailsMapper);
   }
 
   @Test
@@ -362,5 +370,66 @@ class DmsRecordAssemblerTest {
         placementSpecialtyDmsDto.getPlacementSpecialtyType(), is("PRIMARY"));
     assertThat("Unexpected specialty name.", placementSpecialtyDmsDto.getSpecialtyName(),
         is("specialtyName"));
+  }
+
+  @Test
+  void shouldHandlePlacement() {
+    PlacementDetailsDTO placementDetailsDto = new PlacementDetailsDTO();
+    placementDetailsDto.setId(45L);
+    placementDetailsDto.setDateFrom(LocalDate.MIN);
+    placementDetailsDto.setDateTo(LocalDate.MAX);
+    placementDetailsDto.setWholeTimeEquivalent(new BigDecimal("1"));
+    placementDetailsDto.setIntrepidId("00");
+    placementDetailsDto.setTraineeId(4500L);
+    placementDetailsDto.setPostId(5L);
+    placementDetailsDto.setGradeAbbreviation("gradeAbbreviation");
+    placementDetailsDto.setPlacementType("placementType");
+    placementDetailsDto.setStatus(PlacementStatus.CURRENT);
+    placementDetailsDto.setTrainingDescription("trainingDescription");
+    placementDetailsDto.setGradeId(20L);
+    placementDetailsDto.setLifecycleState(LifecycleState.APPROVED);
+    placementDetailsDto.setSiteId(30L);
+    placementDetailsDto.setSiteCode("siteCode");
+    placementDetailsDto.setLocalPostNumber("PO5TN0");
+
+    DmsDto dmsDto = dmsRecordAssembler.assembleDmsDto(placementDetailsDto);
+
+    MetadataDto metadata = dmsDto.getMetadata();
+    assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
+    assertThat("Unexpected partition key.", metadata.getPartitionKeyType(), is("schema-table"));
+    assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
+    assertThat("Unexpected table.", metadata.getTableName(), is("Placement"));
+    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+
+    Object data = dmsDto.getData();
+    assertThat("Unexpected data.", data, instanceOf(PlacementDetailsDmsDto.class));
+
+    PlacementDetailsDmsDto placementDetailsDmsDto = (PlacementDetailsDmsDto) data;
+    assertThat("Unexpected id", "45", is(placementDetailsDmsDto.getId()));
+    assertThat("Unexpected dateFrom", LocalDate.MIN.toString(),
+        is(placementDetailsDmsDto.getDateFrom()));
+    assertThat("Unexpected dateTo", LocalDate.MAX.toString(),
+        is(placementDetailsDmsDto.getDateTo()));
+    assertThat("Unexpected wholeTimeEquivalent", "1",
+        is(placementDetailsDmsDto.getWholeTimeEquivalent()));
+    assertThat("Unexpected intrepidId", "00", is(placementDetailsDmsDto.getIntrepidId()));
+    assertThat("Unexpected traineeId", "4500", is(placementDetailsDmsDto.getTraineeId()));
+    assertThat("Unexpected postId", "5", is(placementDetailsDmsDto.getPostId()));
+    assertThat("Unexpected gradeAbbreviation", "gradeAbbreviation",
+        is(placementDetailsDmsDto.getGradeAbbreviation()));
+    assertThat("Unexpected placementType", "placementType",
+        is(placementDetailsDmsDto.getPlacementType()));
+    assertThat("Unexpected status", "CURRENT", is(placementDetailsDmsDto.getStatus()));
+    assertThat("Unexpected trainingDescription", "trainingDescription",
+        is(placementDetailsDmsDto.getTrainingDescription()));
+    assertThat("Unexpected gradeId", "20", is(placementDetailsDmsDto.getGradeId()));
+    assertThat("Unexpected lifecycleState", "APPROVED",
+        is(placementDetailsDmsDto.getLifecycleState()));
+    assertThat("Unexpected siteId", "30", is(placementDetailsDmsDto.getSiteId()));
+    assertThat("Unexpected siteCode", "siteCode", is(placementDetailsDmsDto.getSiteCode()));
+    assertThat("Unexpected localPostNumber", "PO5TN0",
+        is(placementDetailsDmsDto.getLocalPostNumber()));
   }
 }

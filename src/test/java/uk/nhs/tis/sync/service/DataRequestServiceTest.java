@@ -4,12 +4,14 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
 import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PlacementDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
@@ -329,7 +331,7 @@ class DataRequestServiceTest {
   }
 
   @Test
-  void shouldReturnNullWhenGetPlacementByIdThrowsException() {
+  void shouldReturnNullWhenGetPlacementByIdThrowsExceptionRequestingAPlacementSpecialty() {
     when(tcsService.getPlacementById(70L))
         .thenThrow(new RuntimeException("Expected exception."));
 
@@ -340,7 +342,59 @@ class DataRequestServiceTest {
     }};
     Object placementSpecialty = service.retrieveDto(message);
 
+    verify(tcsService).getPlacementById(70L);
     assertThat("Unexpected DTO.", placementSpecialty, nullValue());
+  }
+
+  @Test
+  void shouldReturnNullWhenGetPlacementByIdThrowsExceptionRequestingAPlacement() {
+    when(tcsService.getPlacementById(80L))
+        .thenThrow(new RuntimeException("Expected exception."));
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Placement");
+      put("id", "80");
+    }};
+    Object placement = service.retrieveDto(message);
+
+    verify(tcsService).getPlacementById(80L);
+    assertThat("Unexpected DTO.", placement, nullValue());
+  }
+
+  @Test
+  void shouldReturnPlacementWhenPlacementFound() {
+    PlacementDetailsDTO expectedDto = new PlacementDetailsDTO();
+    when(tcsService.getPlacementById(80L)).thenReturn(expectedDto);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Placement");
+      put("id", "80");
+    }};
+    Object retrievedDto = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
+  }
+
+  @Test
+  void shouldReturnNullWhenPlacementNotFound() {
+    when(tcsService.getPlacementById(80L)).thenReturn(null);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Placement");
+      put("id", "80");
+    }};
+    Object specialty = service.retrieveDto(message);
+
+    assertThat("Unexpected DTO.", specialty, nullValue());
+  }
+
+  @Test
+  void shouldReturnNullWhenTableDoesNotMatchAnyCase() {
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Wrong");
+      put("id", "0");
+    }};
+    assertThat(service.retrieveDto(message), nullValue());
   }
 
   @Test
@@ -369,14 +423,5 @@ class DataRequestServiceTest {
     Object trust = service.retrieveDto(messageForTrust);
 
     assertThat("Unexpected DTO.", trust, nullValue());
-  }
-
-  @Test
-  void shouldReturnNullWhenTableDoesNotMatchAnyCase() {
-    Map<String, String> message = new HashMap<String, String>() {{
-      put("table", "Wrong");
-      put("id", "0");
-    }};
-    assertThat(service.retrieveDto(message), nullValue());
   }
 }
