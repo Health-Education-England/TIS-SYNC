@@ -69,3 +69,18 @@ button:hover{
 .running-text{
   color: green;
 }
+
+.help{
+  display:flex;
+  width:700px;
+  align-items:center;
+  justify-content:center;
+  margin-right:auto;
+  margin-left:auto;
+}
+
+.help p {
+  line-height:2;
+  color:unset;
+  margin-left:unset;
+}
