@@ -200,7 +200,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
-      <version>1.11.1026</version>
+      <version>1.12.87</version>
     </dependency>
     <dependency>
       <groupId>org.mapstruct</groupId>
@@ -379,7 +379,7 @@
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>8.42</version>
+            <version>9.0.1</version>
           </dependency>
         </dependencies>
         <executions>
