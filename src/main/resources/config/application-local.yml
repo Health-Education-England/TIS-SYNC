@@ -11,7 +11,7 @@ spring:
     schemas: ${DBNAME:tcs}
   elasticsearch:
     rest:
-      uris: http://localhost:9200
+      uris: ${ES_URLS:http://localhost:9200}
   jpa:
     show_sql: false
 
