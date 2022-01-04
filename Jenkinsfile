@@ -53,7 +53,7 @@ node {
           }
         }
 
-        if (env.BRANCH_NAME == "master") {
+        if (env.BRANCH_NAME == "main") {
 
         milestone 2
 
