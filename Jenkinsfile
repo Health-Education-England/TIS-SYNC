@@ -1,4 +1,4 @@
-@Library('utils@master')_
+@Library('utils@main')_
 
 def utils = new hee.tis.utils()
 
