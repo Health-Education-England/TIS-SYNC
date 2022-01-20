@@ -40,6 +40,11 @@ node {
 
         milestone 1
 
+        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "aws_maven_repo", accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+          env.CODEARTIFACT_AUTH_TOKEN = sh(
+              returnStdout: true,
+              script: 'aws codeartifact get-authorization-token --domain hee --domain-owner 430723991443 --query authorizationToken --output text --region eu-west-1').trim()
+        }
 
         stage('Build') {
           sh "'${mvn}' clean install -DskipTests"
