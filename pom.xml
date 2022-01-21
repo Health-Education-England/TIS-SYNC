@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.3.1.RELEASE</version>
+    <version>2.6.3</version>
     <relativePath/>
   </parent>
   <groupId>uk.nhs.tis</groupId>
@@ -99,7 +99,7 @@
     <dependency>
       <groupId>net.javacrumbs.shedlock</groupId>
       <artifactId>shedlock-provider-jdbc-template</artifactId>
-      <version>2.5.0</version>
+      <version>4.31.0</version>
     </dependency>
     <!-- Dependecies to try removing -->
     <dependency>
