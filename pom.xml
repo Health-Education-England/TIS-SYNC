@@ -99,7 +99,7 @@
     <dependency>
       <groupId>net.javacrumbs.shedlock</groupId>
       <artifactId>shedlock-provider-jdbc-template</artifactId>
-      <version>2.5.0</version>
+      <version>4.31.0</version>
     </dependency>
     <!-- Dependecies to try removing -->
     <dependency>
