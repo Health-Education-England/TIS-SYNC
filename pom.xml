@@ -83,7 +83,7 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
-      <version>2.12.3</version>
+      <version>2.13.1</version>
     </dependency>
     <dependency>
       <groupId>org.javassist</groupId>
@@ -99,7 +99,7 @@
     <dependency>
       <groupId>net.javacrumbs.shedlock</groupId>
       <artifactId>shedlock-provider-jdbc-template</artifactId>
-      <version>2.5.0</version>
+      <version>4.31.0</version>
     </dependency>
     <!-- Dependecies to try removing -->
     <dependency>
