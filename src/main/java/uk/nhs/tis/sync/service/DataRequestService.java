@@ -1,11 +1,15 @@
 package uk.nhs.tis.sync.service;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.PostSpecialtyType;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -38,13 +42,13 @@ public class DataRequestService {
    *
    * @param message The message to get info from for DTO retrieval.
    */
-  public Object retrieveDto(Map<String, String> message) {
+  public List<Object> retrieveDtos(Map<String, String> message) {
     try {
       String table = message.get("table");
 
       if (table.equals(TABLE_PLACEMENT_SPECIALTY) && message.containsKey("placementId")) {
         long placementId = Long.parseLong(message.get("placementId"));
-        return retrievePlacementSpecialty(placementId);
+        return createNonNullList(retrievePlacementSpecialty(placementId));
       }
 
       if (message.containsKey("id")) {
@@ -52,20 +56,21 @@ public class DataRequestService {
 
         switch (table) {
           case TABLE_CURRICULUM:
-            return tcsServiceImpl.getCurriculumById(id);
+            return createNonNullList(tcsServiceImpl.getCurriculumById(id));
           case TABLE_PLACEMENT:
-            return tcsServiceImpl.getPlacementById(id);
+            return createNonNullList(tcsServiceImpl.getPlacementById(id));
           case TABLE_POST:
-            return tcsServiceImpl.getPostById(id);
+            return createNonNullList(tcsServiceImpl.getPostById(id));
           case TABLE_PROGRAMME:
-            return tcsServiceImpl.findProgrammesIn(Collections.singletonList(String.valueOf(id)))
-                .get(0);
+            return createNonNullList(
+                tcsServiceImpl.findProgrammesIn(singletonList(String.valueOf(id))).get(0));
           case TABLE_SITE:
-            return referenceServiceImpl.findSitesIdIn(Collections.singleton(id)).get(0);
+            return createNonNullList(
+                referenceServiceImpl.findSitesIdIn(Collections.singleton(id)).get(0));
           case TABLE_SPECIALTY:
-            return tcsServiceImpl.getSpecialtyById(id);
+            return createNonNullList(tcsServiceImpl.getSpecialtyById(id));
           case TABLE_TRUST:
-            return referenceServiceImpl.findTrustById(id);
+            return createNonNullList(referenceServiceImpl.findTrustById(id));
           default:
             break;
         }
@@ -74,7 +79,7 @@ public class DataRequestService {
       log.error(e.getMessage(), e);
     }
 
-    return null;
+    return emptyList();
   }
 
   private PlacementSpecialtyDTO retrievePlacementSpecialty(long placementId) {
@@ -85,4 +90,17 @@ public class DataRequestService {
     return placementSpecialtyDto.orElse(null);
   }
 
+  /**
+   * Create a non-null singleton list from the given DTO.
+   *
+   * @param dto The DTO to check for null.
+   * @return An empty list if DTO is null, else a singleton list.
+   */
+  private List<Object> createNonNullList(Object dto) {
+    if (dto != null) {
+      return singletonList(dto);
+    } else {
+      return emptyList();
+    }
+  }
 }

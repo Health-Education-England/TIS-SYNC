@@ -1,6 +1,6 @@
 package uk.nhs.tis.sync.service;
 
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -11,7 +11,6 @@ import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
 import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
-import com.transformuk.hee.tis.tcs.api.dto.PlacementDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
@@ -22,6 +21,7 @@ import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,13 +52,14 @@ class DataRequestServiceTest {
       put("table", "Post");
       put("id", "10");
     }};
-    Object retrievedDto = service.retrieveDto(message);
+    List<Object> retrievedDtos = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(1));
+    assertThat("Unexpected DTO.", retrievedDtos.get(0), sameInstance(expectedDto));
   }
 
   @Test
-  void shouldReturnNullWhenPostNotFound() {
+  void shouldReturnEmptyWhenPostNotFound() {
     when(tcsService.getPostById(10L))
         .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 
@@ -66,9 +67,9 @@ class DataRequestServiceTest {
       put("table", "Post");
       put("id", "10");
     }};
-    Object post = service.retrieveDto(message);
+    List<Object> posts = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", post, nullValue());
+    assertThat("Unexpected DTO count.", posts.size(), is(0));
   }
 
   @Test
@@ -80,13 +81,14 @@ class DataRequestServiceTest {
       put("table", "Trust");
       put("id", "20");
     }};
-    Object retrievedDto = service.retrieveDto(message);
+    List<Object> retrievedDtos = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(1));
+    assertThat("Unexpected DTO.", retrievedDtos.get(0), sameInstance(expectedDto));
   }
 
   @Test
-  void shouldReturnNullWhenTrustNotFound() {
+  void shouldReturnEmptyWhenTrustNotFound() {
     when(referenceService.findTrustById(20L))
         .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 
@@ -94,9 +96,9 @@ class DataRequestServiceTest {
       put("table", "Trust");
       put("id", "20");
     }};
-    Object trust = service.retrieveDto(message);
+    List<Object> trusts = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", trust, nullValue());
+    assertThat("Unexpected DTO count.", trusts.size(), is(0));
   }
 
   @Test
@@ -109,13 +111,14 @@ class DataRequestServiceTest {
       put("table", "Site");
       put("id", "30");
     }};
-    Object retrievedDto = service.retrieveDto(message);
+    List<Object> retrievedDtos = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(1));
+    assertThat("Unexpected DTO.", retrievedDtos.get(0), sameInstance(expectedDto));
   }
 
   @Test
-  void shouldReturnNullWhenSiteNotFound() {
+  void shouldReturnEmptyWhenSiteNotFound() {
     when(referenceService.findSitesIdIn(Collections.singleton(30L)))
         .thenReturn(Collections.emptyList());
 
@@ -123,13 +126,13 @@ class DataRequestServiceTest {
       put("table", "Site");
       put("id", "30");
     }};
-    Object site = service.retrieveDto(message);
+    List<Object> sites = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", site, nullValue());
+    assertThat("Unexpected DTO count.", sites.size(), is(0));
   }
 
   @Test
-  void shouldReturnNullWhenFindSiteThrowsException() {
+  void shouldReturnEmptyWhenFindSiteThrowsException() {
     when(referenceService.findSitesIdIn(Collections.singleton(30L)))
         .thenThrow(new RuntimeException("Expected exception."));
 
@@ -137,9 +140,9 @@ class DataRequestServiceTest {
       put("table", "Site");
       put("id", "30");
     }};
-    Object site = service.retrieveDto(message);
+    List<Object> sites = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", site, nullValue());
+    assertThat("Unexpected DTO count.", sites.size(), is(0));
   }
 
   @Test
@@ -152,13 +155,14 @@ class DataRequestServiceTest {
       put("table", "Programme");
       put("id", "40");
     }};
-    Object retrievedDto = service.retrieveDto(message);
+    List<Object> retrievedDtos = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(1));
+    assertThat("Unexpected DTO.", retrievedDtos.get(0), sameInstance(expectedDto));
   }
 
   @Test
-  void shouldReturnNullWhenProgrammeNotFound() {
+  void shouldReturnEmptyWhenProgrammeNotFound() {
     when(tcsService.findProgrammesIn(Collections.singletonList("40")))
         .thenReturn(null);
 
@@ -166,13 +170,13 @@ class DataRequestServiceTest {
       put("table", "Programme");
       put("id", "40");
     }};
-    Object programme = service.retrieveDto(message);
+    List<Object> programmes = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", programme, nullValue());
+    assertThat("Unexpected DTO count.", programmes.size(), is(0));
   }
 
   @Test
-  void shouldReturnNullWhenGetProgrammeByIdThrowsException() {
+  void shouldReturnEmptyWhenGetProgrammeByIdThrowsException() {
     when(tcsService.findProgrammesIn(Collections.singletonList("40")))
         .thenThrow(new RuntimeException("Expected exception."));
 
@@ -180,9 +184,9 @@ class DataRequestServiceTest {
       put("table", "Programme");
       put("id", "40");
     }};
-    Object programme = service.retrieveDto(message);
+    List<Object> programmes = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", programme, nullValue());
+    assertThat("Unexpected DTO count.", programmes.size(), is(0));
   }
 
   @Test
@@ -195,13 +199,14 @@ class DataRequestServiceTest {
       put("table", "Curriculum");
       put("id", "50");
     }};
-    Object retrievedDto = service.retrieveDto(message);
+    List<Object> retrievedDtos = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(1));
+    assertThat("Unexpected DTO.", retrievedDtos.get(0), sameInstance(expectedDto));
   }
 
   @Test
-  void shouldReturnNullWhenCurriculumNotFound() {
+  void shouldReturnEmptyWhenCurriculumNotFound() {
     when(tcsService.getCurriculumById(50L))
         .thenReturn(null);
 
@@ -209,13 +214,13 @@ class DataRequestServiceTest {
       put("table", "Curriculum");
       put("id", "50");
     }};
-    Object curriculum = service.retrieveDto(message);
+    List<Object> curriculums = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", curriculum, nullValue());
+    assertThat("Unexpected DTO count.", curriculums.size(), is(0));
   }
 
   @Test
-  void shouldReturnNullWhenGetCurriculumByIdThrowsException() {
+  void shouldReturnEmptyWhenGetCurriculumByIdThrowsException() {
     when(tcsService.getCurriculumById(50L))
         .thenThrow(new RuntimeException("Expected exception."));
 
@@ -223,9 +228,9 @@ class DataRequestServiceTest {
       put("table", "Curriculum");
       put("id", "50");
     }};
-    Object curriculum = service.retrieveDto(message);
+    List<Object> curriculums = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", curriculum, nullValue());
+    assertThat("Unexpected DTO count.", curriculums.size(), is(0));
   }
 
   @Test
@@ -238,13 +243,14 @@ class DataRequestServiceTest {
       put("table", "Specialty");
       put("id", "60");
     }};
-    Object retrievedDto = service.retrieveDto(message);
+    List<Object> retrievedDtos = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(1));
+    assertThat("Unexpected DTO.", retrievedDtos.get(0), sameInstance(expectedDto));
   }
 
   @Test
-  void shouldReturnNullWhenSpecialtyNotFound() {
+  void shouldReturnEmptyWhenSpecialtyNotFound() {
     when(tcsService.getSpecialtyById(60L))
         .thenReturn(null);
 
@@ -252,13 +258,13 @@ class DataRequestServiceTest {
       put("table", "Specialty");
       put("id", "60");
     }};
-    Object specialty = service.retrieveDto(message);
+    List<Object> specialties = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", specialty, nullValue());
+    assertThat("Unexpected DTO count.", specialties.size(), is(0));
   }
 
   @Test
-  void shouldReturnNullWhenGetSpecialtyByIdThrowsException() {
+  void shouldReturnEmptyWhenGetSpecialtyByIdThrowsException() {
     when(tcsService.getSpecialtyById(60L))
         .thenThrow(new RuntimeException("Expected exception."));
 
@@ -266,9 +272,9 @@ class DataRequestServiceTest {
       put("table", "Specialty");
       put("id", "60");
     }};
-    Object specialty = service.retrieveDto(message);
+    List<Object> specialties = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", specialty, nullValue());
+    assertThat("Unexpected DTO count.", specialties.size(), is(0));
   }
 
   @Test
@@ -287,13 +293,14 @@ class DataRequestServiceTest {
       put("placementId", "70");
       put("placementSpecialtyType", "PRIMARY");
     }};
-    Object retrievedDto = service.retrieveDto(message);
+    List<Object> retrievedDtos = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedPrimaryDto));
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(1));
+    assertThat("Unexpected DTO.", retrievedDtos.get(0), sameInstance(expectedPrimaryDto));
   }
 
   @Test
-  void shouldReturnNullWhenOnlyNonPrimaryPlacementSpecialtyFound() {
+  void shouldReturnEmptyWhenOnlyNonPrimaryPlacementSpecialtyFound() {
     PlacementSpecialtyDTO expectedNonPrimaryDto = new PlacementSpecialtyDTO();
     expectedNonPrimaryDto.setPlacementSpecialtyType(PostSpecialtyType.SUB_SPECIALTY);
 
@@ -308,13 +315,13 @@ class DataRequestServiceTest {
       put("placementId", "70");
       put("placementSpecialtyType", "PRIMARY");
     }};
-    Object retrievedDto = service.retrieveDto(message);
+    List<Object> retrievedDtos = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", retrievedDto, nullValue());
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(0));
   }
 
   @Test
-  void shouldReturnNullWhenPlacementSpecialtyNotFound() {
+  void shouldReturnEmptyWhenPlacementSpecialtyNotFound() {
     PlacementDetailsDTO expectedPlacementDetailsDto = new PlacementDetailsDTO();
     expectedPlacementDetailsDto.setSpecialties(new HashSet<>());
     when(tcsService.getPlacementById(70L))
@@ -325,13 +332,13 @@ class DataRequestServiceTest {
       put("placementId", "70");
       put("placementSpecialtyType", "PRIMARY");
     }};
-    Object placementSpecialty = service.retrieveDto(message);
+    List<Object> placementSpecialties = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", placementSpecialty, nullValue());
+    assertThat("Unexpected DTO count.", placementSpecialties.size(), is(0));
   }
 
   @Test
-  void shouldReturnNullWhenGetPlacementByIdThrowsExceptionRequestingAPlacementSpecialty() {
+  void shouldReturnEmptyWhenGetPlacementByIdThrowsExceptionRequestingAPlacementSpecialty() {
     when(tcsService.getPlacementById(70L))
         .thenThrow(new RuntimeException("Expected exception."));
 
@@ -340,14 +347,14 @@ class DataRequestServiceTest {
       put("placementId", "70");
       put("placementSpecialtyType", "PRIMARY");
     }};
-    Object placementSpecialty = service.retrieveDto(message);
+    List<Object> placementSpecialties = service.retrieveDtos(message);
 
     verify(tcsService).getPlacementById(70L);
-    assertThat("Unexpected DTO.", placementSpecialty, nullValue());
+    assertThat("Unexpected DTO count.", placementSpecialties.size(), is(0));
   }
 
   @Test
-  void shouldReturnNullWhenGetPlacementByIdThrowsExceptionRequestingAPlacement() {
+  void shouldReturnEmptyWhenGetPlacementByIdThrowsExceptionRequestingAPlacement() {
     when(tcsService.getPlacementById(80L))
         .thenThrow(new RuntimeException("Expected exception."));
 
@@ -355,10 +362,10 @@ class DataRequestServiceTest {
       put("table", "Placement");
       put("id", "80");
     }};
-    Object placement = service.retrieveDto(message);
+    List<Object> placements = service.retrieveDtos(message);
 
     verify(tcsService).getPlacementById(80L);
-    assertThat("Unexpected DTO.", placement, nullValue());
+    assertThat("Unexpected DTO count.", placements.size(), is(0));
   }
 
   @Test
@@ -370,58 +377,62 @@ class DataRequestServiceTest {
       put("table", "Placement");
       put("id", "80");
     }};
-    Object retrievedDto = service.retrieveDto(message);
+    List<Object> retrievedDtos = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", retrievedDto, sameInstance(expectedDto));
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(1));
+    assertThat("Unexpected DTO.", retrievedDtos.get(0), sameInstance(expectedDto));
   }
 
   @Test
-  void shouldReturnNullWhenPlacementNotFound() {
+  void shouldReturnEmptyWhenPlacementNotFound() {
     when(tcsService.getPlacementById(80L)).thenReturn(null);
 
     Map<String, String> message = new HashMap<String, String>() {{
       put("table", "Placement");
       put("id", "80");
     }};
-    Object specialty = service.retrieveDto(message);
+    List<Object> specialties = service.retrieveDtos(message);
 
-    assertThat("Unexpected DTO.", specialty, nullValue());
+    assertThat("Unexpected DTO count.", specialties.size(), is(0));
   }
 
   @Test
-  void shouldReturnNullWhenTableDoesNotMatchAnyCase() {
+  void shouldReturnEmptyWhenTableDoesNotMatchAnyCase() {
     Map<String, String> message = new HashMap<String, String>() {{
       put("table", "Wrong");
       put("id", "0");
     }};
-    assertThat(service.retrieveDto(message), nullValue());
+
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(0));
   }
 
   @Test
-  void shouldReturnNullWhenMessageContainsWrongKey() {
+  void shouldReturnEmptyWhenMessageContainsWrongKey() {
     // Malformed message with no "placementId" key
     Map<String, String> messageForSpecialty = new HashMap<String, String>() {{
       put("table", "PlacementSpecialty");
       put("placementSpecialtyType", "PRIMARY");
     }};
-    Object placementSpecialty = service.retrieveDto(messageForSpecialty);
+    List<Object> placementSpecialties = service.retrieveDtos(messageForSpecialty);
 
-    assertThat("Unexpected DTO.", placementSpecialty, nullValue());
+    assertThat("Unexpected DTO count.", placementSpecialties.size(), is(0));
 
     // Malformed message with no "id" key
     Map<String, String> messageForPost = new HashMap<String, String>() {{
       put("table", "Post");
     }};
-    Object post = service.retrieveDto(messageForPost);
+    List<Object> posts = service.retrieveDtos(messageForPost);
 
-    assertThat("Unexpected DTO.", post, nullValue());
+    assertThat("Unexpected DTO count.", posts.size(), is(0));
 
     // Malformed message with no "table" key
     Map<String, String> messageForTrust = new HashMap<String, String>() {{
       put("id", "4");
     }};
-    Object trust = service.retrieveDto(messageForTrust);
+    List<Object> trusts = service.retrieveDtos(messageForTrust);
 
-    assertThat("Unexpected DTO.", trust, nullValue());
+    assertThat("Unexpected DTO count.", trusts.size(), is(0));
   }
 }

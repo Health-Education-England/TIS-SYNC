@@ -9,7 +9,10 @@ import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import com.transformuk.hee.tis.tcs.api.dto.SpecialtyDTO;
 import java.time.Instant;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
@@ -78,13 +81,26 @@ public class DmsRecordAssembler {
   }
 
   /**
+   * Assemble a list of DmsDtos from the given dto (e.g. a PostDto and a TrustDto).
+   *
+   * @param dtos The dto objects which will be mapped to DmsDtos.
+   * @return The assembled DmsDtos
+   */
+  public List<DmsDto> assembleDmsDtos(List<Object> dtos) {
+    return dtos.stream()
+        .map(this::assembleDmsDto)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
+  }
+
+  /**
    * The method that assembles a complete DmsDto starting from a dto (e.g. a PostDto or a TrustDto)
    *
    * @param dto The dto which will be mapped to another dto representative of the "data" portion of
    *            a DmsDto (e.g. PostDmsDto).
    * @return The DmsDto, complete with data and metadata.
    */
-  public DmsDto assembleDmsDto(Object dto) {
+  private DmsDto assembleDmsDto(Object dto) {
     Object dmsData = null;
     String schema = null;
     String table = null;
