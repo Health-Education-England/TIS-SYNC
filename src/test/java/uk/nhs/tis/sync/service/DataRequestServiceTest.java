@@ -1,5 +1,6 @@
 package uk.nhs.tis.sync.service;
 
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -10,25 +11,41 @@ import static org.mockito.Mockito.when;
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
+import com.transformuk.hee.tis.tcs.api.dto.ContactDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
+import com.transformuk.hee.tis.tcs.api.dto.GdcDetailsDTO;
+import com.transformuk.hee.tis.tcs.api.dto.GmcDetailsDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PersonDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PersonalDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
+import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
+import com.transformuk.hee.tis.tcs.api.dto.QualificationDTO;
 import com.transformuk.hee.tis.tcs.api.dto.SpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.PostSpecialtyType;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
 class DataRequestServiceTest {
+
+  private static final String FORENAMES = "Joe";
+  private static final String SURNAME = "Bloggs";
+
+  private static final String GDC_NUMBER = "gdc123";
+  private static final String GMC_NUMBER = "gmc123";
 
   private DataRequestService service;
 
@@ -41,6 +58,99 @@ class DataRequestServiceTest {
     tcsService = mock(TcsServiceImpl.class);
     referenceService = mock(ReferenceServiceImpl.class);
     service = new DataRequestService(tcsService, referenceService);
+  }
+
+  @Test
+  void shouldReturnFullSyncDataWhenPersonFound() {
+    String personIdString = "10";
+    long personId = 10;
+
+    // Create person with one-to-one data mappings.
+    PersonDTO person = new PersonDTO();
+    person.setId(personId);
+
+    ContactDetailsDTO contactDetails = new ContactDetailsDTO();
+    contactDetails.setId(personId);
+    contactDetails.setLegalForenames(FORENAMES);
+    contactDetails.setSurname(SURNAME);
+    person.setContactDetails(contactDetails);
+
+    GdcDetailsDTO gdcDetails = new GdcDetailsDTO();
+    gdcDetails.setId(personId);
+    gdcDetails.setGdcNumber(GDC_NUMBER);
+    person.setGdcDetails(gdcDetails);
+
+    GmcDetailsDTO gmcDetails = new GmcDetailsDTO();
+    gmcDetails.setId(personId);
+    gmcDetails.setGmcNumber(GMC_NUMBER);
+    person.setGmcDetails(gmcDetails);
+
+    PersonalDetailsDTO personalDetails = new PersonalDetailsDTO();
+    personalDetails.setId(personId);
+    personalDetails.setDateOfBirth(LocalDate.now());
+    person.setPersonalDetails(personalDetails);
+
+    // Add programme memberships.
+    Set<ProgrammeMembershipDTO> programmeMemberships = new HashSet<>();
+
+    ProgrammeMembershipDTO programmeMembership1 = new ProgrammeMembershipDTO();
+    programmeMembership1.setProgrammeId(30L);
+    programmeMembership1.setPerson(person);
+    programmeMembership1.setProgrammeName("programme one");
+    programmeMemberships.add(programmeMembership1);
+
+    ProgrammeMembershipDTO programmeMembership2 = new ProgrammeMembershipDTO();
+    programmeMembership2.setProgrammeId(31L);
+    programmeMembership2.setPerson(person);
+    programmeMembership2.setProgrammeName("programme two");
+    programmeMemberships.add(programmeMembership2);
+
+    person.setProgrammeMemberships(programmeMemberships);
+
+    // Add qualifications.
+    Set<QualificationDTO> qualifications = new HashSet<>();
+
+    QualificationDTO qualification1 = new QualificationDTO();
+    qualification1.setId(40L);
+    qualification1.setPerson(person);
+    qualification1.setQualification("qualification one");
+    qualifications.add(qualification1);
+
+    QualificationDTO qualification2 = new QualificationDTO();
+    qualification2.setId(41L);
+    qualification2.setPerson(person);
+    qualification2.setQualification("qualification two");
+    qualifications.add(qualification2);
+
+    person.setQualifications(qualifications);
+
+    when(tcsService.getPerson(personIdString)).thenReturn(person);
+
+    // Create placements
+    List<PlacementDetailsDTO> placements = new ArrayList<>();
+
+    PlacementDetailsDTO placement1 = new PlacementDetailsDTO();
+    placement1.setId(20L);
+    placement1.setTraineeId(personId);
+    placements.add(placement1);
+
+    PlacementDetailsDTO placement2 = new PlacementDetailsDTO();
+    placement2.setId(21L);
+    placement2.setTraineeId(personId);
+    placements.add(placement2);
+
+    when(tcsService.getPlacementForTrainee(personId)).thenReturn(placements);
+
+    Map<String, String> message = new HashMap<>();
+    message.put("table", "Person");
+    message.put("id", personIdString);
+
+    List<Object> dtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", dtos.size(), is(11));
+    assertThat("Unexpected DTOs.", dtos, hasItems(contactDetails, gdcDetails, gmcDetails,
+        person, personalDetails, placement1, placement2, programmeMembership1, programmeMembership2,
+        qualification1, qualification2));
   }
 
   @Test

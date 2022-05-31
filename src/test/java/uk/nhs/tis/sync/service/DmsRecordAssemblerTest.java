@@ -5,12 +5,17 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
+import com.transformuk.hee.tis.tcs.api.dto.ContactDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
+import com.transformuk.hee.tis.tcs.api.dto.GdcDetailsDTO;
+import com.transformuk.hee.tis.tcs.api.dto.GmcDetailsDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PersonalDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
@@ -27,7 +32,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import uk.nhs.tis.sync.dto.CurriculumDmsDto;
 import uk.nhs.tis.sync.dto.DmsDto;
@@ -99,6 +106,100 @@ class DmsRecordAssemblerTest {
   }
 
   @Test
+  void shouldAssembleContactDetails() {
+    ContactDetailsDTO contactDetails = new ContactDetailsDTO();
+    contactDetails.setId(10L);
+
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(contactDetails));
+
+    assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
+    DmsDto dmsDto = dmsDtos.get(0);
+    assertThat("Unexpected data.", dmsDto.getData(), sameInstance(contactDetails));
+
+    MetadataDto metadata = dmsDto.getMetadata();
+    assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
+    assertThat("Unexpected partition key type.", metadata.getPartitionKeyType(),
+        is("schema-table"));
+    assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
+    assertThat("Unexpected table.", metadata.getTableName(), is("ContactDetails"));
+    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+  }
+
+  @Test
+  void shouldAssembleGdcDetails() {
+    GdcDetailsDTO gdcDetails = new GdcDetailsDTO();
+    gdcDetails.setId(10L);
+
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(gdcDetails));
+
+    assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
+    DmsDto dmsDto = dmsDtos.get(0);
+    assertThat("Unexpected data.", dmsDto.getData(), sameInstance(gdcDetails));
+
+    MetadataDto metadata = dmsDto.getMetadata();
+    assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
+    assertThat("Unexpected partition key type.", metadata.getPartitionKeyType(),
+        is("schema-table"));
+    assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
+    assertThat("Unexpected table.", metadata.getTableName(), is("GdcDetails"));
+    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+  }
+
+  @Test
+  void shouldAssembleGmcDetails() {
+    GmcDetailsDTO gmcDetails = new GmcDetailsDTO();
+    gmcDetails.setId(10L);
+
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(gmcDetails));
+
+    assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
+    DmsDto dmsDto = dmsDtos.get(0);
+    assertThat("Unexpected data.", dmsDto.getData(), sameInstance(gmcDetails));
+
+    MetadataDto metadata = dmsDto.getMetadata();
+    assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
+    assertThat("Unexpected partition key type.", metadata.getPartitionKeyType(),
+        is("schema-table"));
+    assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
+    assertThat("Unexpected table.", metadata.getTableName(), is("GmcDetails"));
+    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+  }
+
+  @Test
+  @Disabled("Not yet implemented")
+  void shouldAssemblePerson() {
+    Assertions.fail("Not yet implemented.");
+  }
+
+  @Test
+  void shouldAssemblePersonalDetails() {
+    PersonalDetailsDTO personalDetails = new PersonalDetailsDTO();
+    personalDetails.setId(10L);
+
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(personalDetails));
+
+    assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
+    DmsDto dmsDto = dmsDtos.get(0);
+    assertThat("Unexpected data.", dmsDto.getData(), sameInstance(personalDetails));
+
+    MetadataDto metadata = dmsDto.getMetadata();
+    assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
+    assertThat("Unexpected partition key type.", metadata.getPartitionKeyType(),
+        is("schema-table"));
+    assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
+    assertThat("Unexpected table.", metadata.getTableName(), is("PersonalDetails"));
+    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+  }
+
+  @Test
   void shouldAssembleADmsDtoWhenGivenAPostDto() {
     PostDTO newPost = new PostDTO();
     newPost.setId(184668L);
@@ -148,6 +249,18 @@ class DmsRecordAssemblerTest {
     DmsDto expectedDmsDto = new DmsDto(expectedPostDmsDto, expectedMetadataDto);
 
     assertEquals(expectedDmsDto, actualDmsDto);
+  }
+
+  @Test
+  @Disabled("Not yet implemented")
+  void shouldAssembleProgrammeMembership() {
+    Assertions.fail("Not yet implemented.");
+  }
+
+  @Test
+  @Disabled("Not yet implemented")
+  void shouldAssembleQualification() {
+    Assertions.fail("Not yet implemented.");
   }
 
   @Test
