@@ -35,7 +35,7 @@ import uk.nhs.tis.sync.dto.PostDmsDto;
 import uk.nhs.tis.sync.dto.TrustDmsDto;
 
 @ExtendWith(MockitoExtension.class)
-public class KinesisServiceTest {
+class KinesisServiceTest {
 
   public static final String STREAM_NAME = "streamName";
   private List<DmsDto> dmsDtoList;

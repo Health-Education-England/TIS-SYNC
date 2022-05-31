@@ -15,6 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.nhs.tis.sync.dto.DmsDto;
 
+/**
+ * A service which sends DMS DTOs to a Kinesis stream for processing.
+ */
 @Slf4j
 @Service
 public class KinesisService {
