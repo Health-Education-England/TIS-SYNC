@@ -39,9 +39,9 @@ enable.es.search: false
 
 application:
   cron:
-    recordResendingJob: ${APPLICATION_CRON_RECORDRESENDINGJOB:0 * * * * *}
+    recordResendingJob: ${APPLICATION_CRON_RECORDRESENDINGJOB:-}
   aws:
     kinesis:
-      streamName: ${AWS_KINESIS_STREAM_NAME:tis21-2997_test_stream}
+      streamName: ${AWS_KINESIS_STREAM_NAME:}
     sqs:
-      queueUrl: ${AWS_SQS_QUEUE_URL:https://sqs.eu-west-2.amazonaws.com/430723991443/tis21-2997_test_queue}
+      queueUrl: ${AWS_SQS_QUEUE_URL:}
