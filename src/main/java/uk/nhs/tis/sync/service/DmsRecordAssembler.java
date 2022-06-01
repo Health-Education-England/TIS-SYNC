@@ -28,6 +28,7 @@ import uk.nhs.tis.sync.mapper.PlacementDetailsMapper;
 import uk.nhs.tis.sync.mapper.PlacementSpecialtyMapper;
 import uk.nhs.tis.sync.mapper.PostMapper;
 import uk.nhs.tis.sync.mapper.ProgrammeMapper;
+import uk.nhs.tis.sync.mapper.ProgrammeMembershipMapper;
 import uk.nhs.tis.sync.mapper.SiteMapper;
 import uk.nhs.tis.sync.mapper.SpecialtyMapper;
 import uk.nhs.tis.sync.mapper.TrustMapper;
@@ -53,7 +54,7 @@ public class DmsRecordAssembler {
   private static final String TABLE_PLACEMENT_SPECIALTY = "PlacementSpecialty";
   private static final String TABLE_POST = "Post";
   private static final String TABLE_PROGRAMME = "Programme";
-  private static final String TABLE_PROGRAMME_MEMBERSHIP = "ProgrammeMembership";
+  private static final String TABLE_PROGRAMME_MEMBERSHIP = "CurriculumMembership";
   private static final String TABLE_QUALIFICATION = "Qualification";
   private static final String TABLE_SITE = "Site";
   private static final String TABLE_SPECIALTY = "Specialty";
@@ -75,15 +76,18 @@ public class DmsRecordAssembler {
 
   private final PlacementDetailsMapper placementDetailsMapper;
 
+  private final ProgrammeMembershipMapper programmeMembershipMapper;
+
   /**
    * Constructor for a DmsRecordAssembler, which instantiates the relevant mappers.
    */
   DmsRecordAssembler(PostMapper postMapper,
-      TrustMapper trustMapper, SiteMapper siteMapper,
-      ProgrammeMapper programmeMapper, CurriculumMapper curriculumMapper,
-      SpecialtyMapper specialtyMapper,
-      PlacementSpecialtyMapper placementSpecialtyMapper,
-      PlacementDetailsMapper placementDetailsMapper) {
+                     TrustMapper trustMapper, SiteMapper siteMapper,
+                     ProgrammeMapper programmeMapper, CurriculumMapper curriculumMapper,
+                     SpecialtyMapper specialtyMapper,
+                     PlacementSpecialtyMapper placementSpecialtyMapper,
+                     PlacementDetailsMapper placementDetailsMapper,
+                     ProgrammeMembershipMapper programmeMembershipMapper) {
     this.postMapper = postMapper;
     this.trustMapper = trustMapper;
     this.siteMapper = siteMapper;
@@ -92,6 +96,7 @@ public class DmsRecordAssembler {
     this.specialtyMapper = specialtyMapper;
     this.placementSpecialtyMapper = placementSpecialtyMapper;
     this.placementDetailsMapper = placementDetailsMapper;
+    this.programmeMembershipMapper = programmeMembershipMapper;
   }
 
   /**
@@ -180,7 +185,7 @@ public class DmsRecordAssembler {
     }
 
     if (dto instanceof ProgrammeMembershipDTO) {
-      // dmsData = programmeMembershipMapper.toDmsDto((ProgrammeMembershipDTO) dto);
+      dmsData = programmeMembershipMapper.toDmsDto((ProgrammeMembershipDTO) dto);
       schema = SCHEMA_TCS;
       table = TABLE_PROGRAMME_MEMBERSHIP;
     }
