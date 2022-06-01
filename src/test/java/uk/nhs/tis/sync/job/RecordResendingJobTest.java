@@ -2,6 +2,7 @@ package uk.nhs.tis.sync.job;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.eq;
@@ -23,6 +24,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +38,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PostDmsDto;
+import uk.nhs.tis.sync.dto.ProgrammeDmsDto;
 import uk.nhs.tis.sync.service.DataRequestService;
 import uk.nhs.tis.sync.service.DmsRecordAssembler;
 import uk.nhs.tis.sync.service.KinesisService;
@@ -48,9 +52,7 @@ class RecordResendingJobTest {
 
   private RecordResendingJob job;
 
-  private PostDTO postDto;
-
-  private RecordResendingJob jobSpy;
+  private List<Object> postDtos;
 
   @Mock
   private KinesisService kinesisServiceMock;
@@ -64,7 +66,7 @@ class RecordResendingJobTest {
   @Mock
   private DmsRecordAssembler dmsRecordAssemblerMock;
 
-  private DmsDto dmsDto;
+  private List<DmsDto> dmsDtos;
 
   private Message message1;
   private Message message2;
@@ -82,7 +84,7 @@ class RecordResendingJobTest {
     PostDTO newPost = new PostDTO();
     newPost.setId(184668L);
 
-    postDto = new PostDTO();
+    PostDTO postDto = new PostDTO();
     postDto.setId(44381L);
     postDto.setNationalPostNumber("EAN/8EJ83/094/SPR/001");
     postDto.status(Status.CURRENT);
@@ -92,6 +94,7 @@ class RecordResendingJobTest {
     postDto.oldPost(null);
     postDto.owner("Health Education England North West London");
     postDto.intrepidId("128374444");
+    postDtos = Collections.singletonList(postDto);
 
     PostDmsDto postDmsDto = new PostDmsDto();
     postDmsDto.setId("44381");
@@ -113,7 +116,7 @@ class RecordResendingJobTest {
     metadataDto.setTableName("Post");
     metadataDto.setTransactionId("transaction-id");
 
-    dmsDto = new DmsDto(postDmsDto, metadataDto);
+    dmsDtos = Collections.singletonList(new DmsDto(postDmsDto, metadataDto));
 
     message1 = new Message();
     message1.setReceiptHandle("message1");
@@ -141,13 +144,13 @@ class RecordResendingJobTest {
 
   @Test
   void shouldSendDataToKinesisStream() {
-    when(dataRequestServiceMock.retrieveDto(any(Map.class))).thenReturn(postDto);
-    when(dmsRecordAssemblerMock.assembleDmsDto(postDto)).thenReturn(dmsDto);
+    when(dataRequestServiceMock.retrieveDtos(any(Map.class))).thenReturn(postDtos);
+    when(dmsRecordAssemblerMock.assembleDmsDtos(postDtos)).thenReturn(dmsDtos);
 
     job.run();
 
-    verify(dataRequestServiceMock, times(2)).retrieveDto(any(Map.class));
-    verify(dmsRecordAssemblerMock, times(2)).assembleDmsDto(postDto);
+    verify(dataRequestServiceMock, times(2)).retrieveDtos(any(Map.class));
+    verify(dmsRecordAssemblerMock, times(2)).assembleDmsDtos(postDtos);
 
     ArgumentCaptor<List<DmsDto>> captor = ArgumentCaptor.forClass(List.class);
     verify(kinesisServiceMock).sendData(eq(STREAM_NAME), captor.capture());
@@ -160,8 +163,8 @@ class RecordResendingJobTest {
 
   @Test
   void shouldDeleteProcessedMessages() {
-    when(dataRequestServiceMock.retrieveDto(any(Map.class))).thenReturn(postDto);
-    when(dmsRecordAssemblerMock.assembleDmsDto(postDto)).thenReturn(dmsDto);
+    when(dataRequestServiceMock.retrieveDtos(any(Map.class))).thenReturn(postDtos);
+    when(dmsRecordAssemblerMock.assembleDmsDtos(postDtos)).thenReturn(dmsDtos);
 
     job.run();
 
@@ -187,7 +190,7 @@ class RecordResendingJobTest {
   @Test
   void runSyncHandlingJobShouldBeCalled() {
     reset(amazonSqsMock);
-    jobSpy = spy(job);
+    RecordResendingJob jobSpy = spy(job);
     jobSpy.recordResendingJob();
     verify(jobSpy).runRecordResendingJob();
   }
@@ -198,10 +201,12 @@ class RecordResendingJobTest {
     when(objectMapperMock.readValue(message1.getBody(), Map.class))
         .thenThrow(JsonProcessingException.class);
     when(objectMapperMock.readValue(message2.getBody(), Map.class))
-        .thenReturn(new HashMap<String, String>(){{ put("Post", "44382"); }});
+        .thenReturn(new HashMap<String, String>() {{
+          put("Post", "44382");
+        }});
 
-    when(dataRequestServiceMock.retrieveDto(any(Map.class))).thenReturn(postDto);
-    when(dmsRecordAssemblerMock.assembleDmsDto(postDto)).thenReturn(dmsDto);
+    when(dataRequestServiceMock.retrieveDtos(any(Map.class))).thenReturn(postDtos);
+    when(dmsRecordAssemblerMock.assembleDmsDtos(postDtos)).thenReturn(dmsDtos);
 
     RecordResendingJob job = new RecordResendingJob(kinesisServiceMock,
         dataRequestServiceMock,
@@ -213,8 +218,8 @@ class RecordResendingJobTest {
 
     job.run();
 
-    verify(dataRequestServiceMock).retrieveDto(any(Map.class));
-    verify(dmsRecordAssemblerMock).assembleDmsDto(postDto);
+    verify(dataRequestServiceMock).retrieveDtos(any(Map.class));
+    verify(dmsRecordAssemblerMock).assembleDmsDtos(postDtos);
 
     ArgumentCaptor<List<DmsDto>> captor = ArgumentCaptor.forClass(List.class);
     verify(kinesisServiceMock).sendData(eq(STREAM_NAME), captor.capture());
@@ -231,7 +236,42 @@ class RecordResendingJobTest {
 
     job.run();
 
-    verify(dmsRecordAssemblerMock, never()).assembleDmsDto(any());
+    verify(dmsRecordAssemblerMock, never()).assembleDmsDtos(any());
     verify(kinesisServiceMock, never()).sendData(any(), any());
+  }
+
+  @Test
+  void shouldHandleMessagesResultingInMultipleDtos() {
+    PostDmsDto postDto1 = new PostDmsDto();
+    postDto1.setId("1");
+    PostDmsDto postDto2 = new PostDmsDto();
+    postDto2.setId("2");
+    List<Object> postDtos = Arrays.asList(postDto1, postDto2);
+
+    ProgrammeDmsDto programmeDto = new ProgrammeDmsDto();
+    programmeDto.setId("3");
+    List<Object> programmeDtos = Collections.singletonList(programmeDto);
+
+    when(dataRequestServiceMock.retrieveDtos(any(Map.class))).thenReturn(postDtos, programmeDtos);
+
+    DmsDto dmsDto1 = new DmsDto(null, null);
+    DmsDto dmsDto2 = new DmsDto(null, null);
+    when(dmsRecordAssemblerMock.assembleDmsDtos(postDtos)).thenReturn(
+        Arrays.asList(dmsDto1, dmsDto2));
+
+    DmsDto dmsDto3 = new DmsDto(null, null);
+    when(dmsRecordAssemblerMock.assembleDmsDtos(programmeDtos)).thenReturn(
+        Collections.singletonList(dmsDto3));
+
+    job.run();
+
+    ArgumentCaptor<List<DmsDto>> captor = ArgumentCaptor.forClass(List.class);
+    verify(kinesisServiceMock).sendData(eq(STREAM_NAME), captor.capture());
+
+    List<DmsDto> dmsDtos = captor.getValue();
+    assertThat(dmsDtos.size(), is(3));
+    assertThat(dmsDtos.get(0), sameInstance(dmsDto1));
+    assertThat(dmsDtos.get(1), sameInstance(dmsDto2));
+    assertThat(dmsDtos.get(2), sameInstance(dmsDto3));
   }
 }

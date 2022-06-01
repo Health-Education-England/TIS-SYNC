@@ -8,6 +8,7 @@ import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -97,12 +98,8 @@ public class RecordResendingJob {
       List<Message> messages = sqs.receiveMessage(request).getMessages();
 
       for (Message message : messages) {
-        DmsDto dmsDto = processMessage(message);
-
-        if (dmsDto != null) {
-          dmsDtoList.add(dmsDto);
-          receiptHandles.add(message.getReceiptHandle());
-        }
+        dmsDtoList.addAll(processMessage(message));
+        receiptHandles.add(message.getReceiptHandle());
       }
 
       if (!dmsDtoList.isEmpty()) {
@@ -114,23 +111,22 @@ public class RecordResendingJob {
     }
   }
 
-  private DmsDto processMessage(Message message) {
+  private List<DmsDto> processMessage(Message message) {
     try {
       String messageBody = message.getBody();
-      Map<String, String> messageMap = objectMapper
-          .readValue(messageBody, Map.class);
+      Map<String, String> messageMap = objectMapper.readValue(messageBody, Map.class);
       LOG.info(messageBody);
 
-      Object retrievedDto = dataRequestService.retrieveDto(messageMap);
+      List<Object> retrievedDtos = dataRequestService.retrieveDtos(messageMap);
 
-      if (retrievedDto != null) {
-        return dmsRecordAssembler.assembleDmsDto(retrievedDto);
+      if (!retrievedDtos.isEmpty()) {
+        return dmsRecordAssembler.assembleDmsDtos(retrievedDtos);
       }
     } catch (JsonProcessingException e) {
       LOG.error(e.getMessage(), e);
     }
 
-    return null;
+    return Collections.emptyList();
   }
 
   private void deleteMessagesFromQueue(List<String> receiptHandles) {

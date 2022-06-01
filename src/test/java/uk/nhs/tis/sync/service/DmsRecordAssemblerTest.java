@@ -1,16 +1,21 @@
 package uk.nhs.tis.sync.service;
 
 import static com.transformuk.hee.tis.reference.api.enums.Status.CURRENT;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
+import com.transformuk.hee.tis.tcs.api.dto.ContactDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
+import com.transformuk.hee.tis.tcs.api.dto.GdcDetailsDTO;
+import com.transformuk.hee.tis.tcs.api.dto.GmcDetailsDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PersonalDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
@@ -25,9 +30,12 @@ import com.transformuk.hee.tis.tcs.api.enumeration.PostSpecialtyType;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mapstruct.factory.Mappers;
 import uk.nhs.tis.sync.dto.CurriculumDmsDto;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
@@ -39,12 +47,18 @@ import uk.nhs.tis.sync.dto.SiteDmsDto;
 import uk.nhs.tis.sync.dto.SpecialtyDmsDto;
 import uk.nhs.tis.sync.dto.TrustDmsDto;
 import uk.nhs.tis.sync.mapper.CurriculumMapper;
+import uk.nhs.tis.sync.mapper.CurriculumMapperImpl;
 import uk.nhs.tis.sync.mapper.PlacementDetailsMapper;
+import uk.nhs.tis.sync.mapper.PlacementDetailsMapperImpl;
 import uk.nhs.tis.sync.mapper.PlacementSpecialtyMapper;
+import uk.nhs.tis.sync.mapper.PlacementSpecialtyMapperImpl;
 import uk.nhs.tis.sync.mapper.PostMapperImpl;
 import uk.nhs.tis.sync.mapper.ProgrammeMapper;
+import uk.nhs.tis.sync.mapper.ProgrammeMapperImpl;
 import uk.nhs.tis.sync.mapper.SiteMapper;
+import uk.nhs.tis.sync.mapper.SiteMapperImpl;
 import uk.nhs.tis.sync.mapper.SpecialtyMapper;
+import uk.nhs.tis.sync.mapper.SpecialtyMapperImpl;
 import uk.nhs.tis.sync.mapper.TrustMapperImpl;
 
 class DmsRecordAssemblerTest {
@@ -55,17 +69,134 @@ class DmsRecordAssemblerTest {
   void setUp() {
     PostMapperImpl postMapper = new PostMapperImpl();
     TrustMapperImpl trustMapper = new TrustMapperImpl();
-    SiteMapper siteMapper = Mappers.getMapper(SiteMapper.class);
-    ProgrammeMapper programmeMapper = Mappers.getMapper(ProgrammeMapper.class);
-    CurriculumMapper curriculumMapper = Mappers.getMapper(CurriculumMapper.class);
-    SpecialtyMapper specialtyMapper = Mappers.getMapper(SpecialtyMapper.class);
-    PlacementSpecialtyMapper placementSpecialtyMapper = Mappers
-        .getMapper(PlacementSpecialtyMapper.class);
-    PlacementDetailsMapper placementDetailsMapper = Mappers.getMapper(PlacementDetailsMapper.class);
+    SiteMapper siteMapper = new SiteMapperImpl();
+    ProgrammeMapper programmeMapper = new ProgrammeMapperImpl();
+    CurriculumMapper curriculumMapper = new CurriculumMapperImpl();
+    SpecialtyMapper specialtyMapper = new SpecialtyMapperImpl();
+    PlacementSpecialtyMapper placementSpecialtyMapper = new PlacementSpecialtyMapperImpl();
+    PlacementDetailsMapper placementDetailsMapper = new PlacementDetailsMapperImpl();
 
     dmsRecordAssembler = new DmsRecordAssembler(postMapper, trustMapper, siteMapper,
         programmeMapper, curriculumMapper, specialtyMapper, placementSpecialtyMapper,
         placementDetailsMapper);
+  }
+
+  @Test
+  void shouldAssembleMultipleDtos() {
+    PostDTO post = new PostDTO();
+    post.setId(1L);
+
+    ProgrammeDTO programme = new ProgrammeDTO();
+    programme.setId(2L);
+
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
+        Arrays.asList(post, new Object(), programme));
+
+    assertThat("Unexpected DMS DTO count.", dmsDtos.size(), is(2));
+
+    DmsDto dmsDto = dmsDtos.get(0);
+    assertThat("Unexpected DMS DTO type.", dmsDto.getData(), instanceOf(PostDmsDto.class));
+    PostDmsDto postDmsDto = (PostDmsDto) dmsDto.getData();
+    assertThat("Unexpected post ID.", postDmsDto.getId(), is("1"));
+
+    dmsDto = dmsDtos.get(1);
+    assertThat("Unexpected DMS DTO type.", dmsDto.getData(), instanceOf(ProgrammeDmsDto.class));
+    ProgrammeDmsDto programmeDmsDto = (ProgrammeDmsDto) dmsDto.getData();
+    assertThat("Unexpected programme ID.", programmeDmsDto.getId(), is("2"));
+  }
+
+  @Test
+  void shouldAssembleContactDetails() {
+    ContactDetailsDTO contactDetails = new ContactDetailsDTO();
+    contactDetails.setId(10L);
+
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(contactDetails));
+
+    assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
+    DmsDto dmsDto = dmsDtos.get(0);
+    assertThat("Unexpected data.", dmsDto.getData(), sameInstance(contactDetails));
+
+    MetadataDto metadata = dmsDto.getMetadata();
+    assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
+    assertThat("Unexpected partition key type.", metadata.getPartitionKeyType(),
+        is("schema-table"));
+    assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
+    assertThat("Unexpected table.", metadata.getTableName(), is("ContactDetails"));
+    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+  }
+
+  @Test
+  void shouldAssembleGdcDetails() {
+    GdcDetailsDTO gdcDetails = new GdcDetailsDTO();
+    gdcDetails.setId(10L);
+
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(gdcDetails));
+
+    assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
+    DmsDto dmsDto = dmsDtos.get(0);
+    assertThat("Unexpected data.", dmsDto.getData(), sameInstance(gdcDetails));
+
+    MetadataDto metadata = dmsDto.getMetadata();
+    assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
+    assertThat("Unexpected partition key type.", metadata.getPartitionKeyType(),
+        is("schema-table"));
+    assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
+    assertThat("Unexpected table.", metadata.getTableName(), is("GdcDetails"));
+    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+  }
+
+  @Test
+  void shouldAssembleGmcDetails() {
+    GmcDetailsDTO gmcDetails = new GmcDetailsDTO();
+    gmcDetails.setId(10L);
+
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(gmcDetails));
+
+    assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
+    DmsDto dmsDto = dmsDtos.get(0);
+    assertThat("Unexpected data.", dmsDto.getData(), sameInstance(gmcDetails));
+
+    MetadataDto metadata = dmsDto.getMetadata();
+    assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
+    assertThat("Unexpected partition key type.", metadata.getPartitionKeyType(),
+        is("schema-table"));
+    assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
+    assertThat("Unexpected table.", metadata.getTableName(), is("GmcDetails"));
+    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+  }
+
+  @Test
+  @Disabled("Not yet implemented")
+  void shouldAssemblePerson() {
+    Assertions.fail("Not yet implemented.");
+  }
+
+  @Test
+  void shouldAssemblePersonalDetails() {
+    PersonalDetailsDTO personalDetails = new PersonalDetailsDTO();
+    personalDetails.setId(10L);
+
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(personalDetails));
+
+    assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
+    DmsDto dmsDto = dmsDtos.get(0);
+    assertThat("Unexpected data.", dmsDto.getData(), sameInstance(personalDetails));
+
+    MetadataDto metadata = dmsDto.getMetadata();
+    assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
+    assertThat("Unexpected partition key type.", metadata.getPartitionKeyType(),
+        is("schema-table"));
+    assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
+    assertThat("Unexpected table.", metadata.getTableName(), is("PersonalDetails"));
+    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
   }
 
   @Test
@@ -84,7 +215,10 @@ class DmsRecordAssemblerTest {
     postDto.owner("Health Education England North West London");
     postDto.intrepidId("128374444");
 
-    DmsDto actualDmsDto = dmsRecordAssembler.assembleDmsDto(postDto);
+    List<DmsDto> actualDmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(postDto));
+
+    assertThat("Unexpected DTO count.", actualDmsDtos.size(), is(1));
+    DmsDto actualDmsDto = actualDmsDtos.get(0);
 
     PostDmsDto expectedPostDmsDto = new PostDmsDto();
     expectedPostDmsDto.setId("44381");
@@ -118,6 +252,18 @@ class DmsRecordAssemblerTest {
   }
 
   @Test
+  @Disabled("Not yet implemented")
+  void shouldAssembleProgrammeMembership() {
+    Assertions.fail("Not yet implemented.");
+  }
+
+  @Test
+  @Disabled("Not yet implemented")
+  void shouldAssembleQualification() {
+    Assertions.fail("Not yet implemented.");
+  }
+
+  @Test
   void shouldAssembleADmsDtoWhenGivenATrustDto() {
     TrustDTO trustDto = new TrustDTO();
     trustDto.setCode("000");
@@ -129,7 +275,10 @@ class DmsRecordAssemblerTest {
     trustDto.setIntrepidId("222");
     trustDto.setId(333L);
 
-    DmsDto actualDmsDto = dmsRecordAssembler.assembleDmsDto(trustDto);
+    List<DmsDto> actualDmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(trustDto));
+
+    assertThat("Unexpected DTO count.", actualDmsDtos.size(), is(1));
+    DmsDto actualDmsDto = actualDmsDtos.get(0);
 
     TrustDmsDto expectedTrustDmsDto = new TrustDmsDto();
     expectedTrustDmsDto.setCode("000");
@@ -180,7 +329,10 @@ class DmsRecordAssemblerTest {
     site.setPostCode("AB12 3CD");
     site.setStatus(CURRENT);
 
-    DmsDto dmsDto = dmsRecordAssembler.assembleDmsDto(site);
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(site));
+
+    assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
+    DmsDto dmsDto = dmsDtos.get(0);
 
     MetadataDto metadata = dmsDto.getMetadata();
     assertThat("Unexpected record type.", metadata.getTimestamp(), notNullValue());
@@ -213,10 +365,9 @@ class DmsRecordAssemblerTest {
   }
 
   @Test
-  void shouldReturnNullWhenUnsupportedType() {
-    DmsDto dmsDto = dmsRecordAssembler.assembleDmsDto(new Object());
-    assertThat("Unexpected dms dto.", dmsDto, nullValue());
-
+  void shouldReturnEmptyWhenUnsupportedType() {
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(new Object()));
+    assertThat("Unexpected dms dto count.", dmsDtos.size(), is(0));
   }
 
   @Test
@@ -229,7 +380,10 @@ class DmsRecordAssemblerTest {
     programme.setProgrammeNumber("500");
     programme.setStatus(Status.CURRENT);
 
-    DmsDto dmsDto = dmsRecordAssembler.assembleDmsDto(programme);
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(programme));
+
+    assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
+    DmsDto dmsDto = dmsDtos.get(0);
 
     MetadataDto metadata = dmsDto.getMetadata();
     assertThat("Unexpected record type.", metadata.getTimestamp(), notNullValue());
@@ -271,7 +425,10 @@ class DmsRecordAssemblerTest {
     curriculum.setStatus(Status.CURRENT);
     curriculum.setLength(12);
 
-    DmsDto dmsDto = dmsRecordAssembler.assembleDmsDto(curriculum);
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(curriculum));
+
+    assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
+    DmsDto dmsDto = dmsDtos.get(0);
 
     MetadataDto metadata = dmsDto.getMetadata();
     assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
@@ -316,7 +473,10 @@ class DmsRecordAssemblerTest {
     specialtyGroupDto.setId(75L);
     specialty.setSpecialtyGroup(specialtyGroupDto);
 
-    DmsDto dmsDto = dmsRecordAssembler.assembleDmsDto(specialty);
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(specialty));
+
+    assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
+    DmsDto dmsDto = dmsDtos.get(0);
 
     MetadataDto metadata = dmsDto.getMetadata();
     assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
@@ -349,7 +509,10 @@ class DmsRecordAssemblerTest {
     placementSpecialty.setPlacementSpecialtyType(PostSpecialtyType.PRIMARY);
     placementSpecialty.setSpecialtyName("specialtyName");
 
-    DmsDto dmsDto = dmsRecordAssembler.assembleDmsDto(placementSpecialty);
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(placementSpecialty));
+
+    assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
+    DmsDto dmsDto = dmsDtos.get(0);
 
     MetadataDto metadata = dmsDto.getMetadata();
     assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
@@ -392,7 +555,10 @@ class DmsRecordAssemblerTest {
     placementDetailsDto.setSiteCode("siteCode");
     placementDetailsDto.setLocalPostNumber("PO5TN0");
 
-    DmsDto dmsDto = dmsRecordAssembler.assembleDmsDto(placementDetailsDto);
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(placementDetailsDto));
+
+    assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
+    DmsDto dmsDto = dmsDtos.get(0);
 
     MetadataDto metadata = dmsDto.getMetadata();
     assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());

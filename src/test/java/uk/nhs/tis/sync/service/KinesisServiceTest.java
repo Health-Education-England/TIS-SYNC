@@ -1,45 +1,44 @@
 package uk.nhs.tis.sync.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.model.PutRecordsRequest;
 import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.transformuk.hee.tis.tcs.api.dto.ContactDetailsDTO;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PostDmsDto;
 import uk.nhs.tis.sync.dto.TrustDmsDto;
 
-@RunWith(MockitoJUnitRunner.class)
-public class KinesisServiceTest {
+@ExtendWith(MockitoExtension.class)
+class KinesisServiceTest {
 
   public static final String STREAM_NAME = "streamName";
-  private PostDmsDto postDmsDto;
-  private TrustDmsDto trustDmsDto;
   private List<DmsDto> dmsDtoList;
-
-  private ObjectMapper objectMapper;
 
   private String timestamp;
 
@@ -50,11 +49,9 @@ public class KinesisServiceTest {
   @InjectMocks
   private KinesisService kinesisService;
 
-  @Before
-  public void setUp() {
-    objectMapper = new ObjectMapper();
-
-    postDmsDto = new PostDmsDto();
+  @BeforeEach
+  void setUp() {
+    PostDmsDto postDmsDto = new PostDmsDto();
     postDmsDto.setId("44381");
     postDmsDto.setNationalPostNumber("EAN/8EJ83/094/SPR/001");
     postDmsDto.setStatus("CURRENT");
@@ -78,7 +75,7 @@ public class KinesisServiceTest {
 
     DmsDto dmsDto1 = new DmsDto(postDmsDto, metadataDto1);
 
-    trustDmsDto = new TrustDmsDto();
+    TrustDmsDto trustDmsDto = new TrustDmsDto();
     trustDmsDto.setCode("222");
     trustDmsDto.setLocalOffice("someLocalOffice");
     trustDmsDto.setStatus("CURRENT");
@@ -105,7 +102,7 @@ public class KinesisServiceTest {
   }
 
   @Test
-  public void givenAListOfDmsDtosItShouldSendThemSerializedIntoAStream() {
+  void givenAListOfDmsDtosItShouldSendThemSerializedIntoAStream() {
     kinesisService.sendData(STREAM_NAME, dmsDtoList);
 
     ArgumentCaptor<PutRecordsRequest> captor = ArgumentCaptor.forClass(PutRecordsRequest.class);
@@ -177,29 +174,29 @@ public class KinesisServiceTest {
   }
 
   @Test
-  public void shouldCatchAJsonProcessingExceptionIfThrownByObjectMapper()
-      throws JsonProcessingException {
-    ObjectMapper mObjectMapper = mock(ObjectMapper.class);
-    kinesisService.setObjectMapper(mObjectMapper);
-    when(mObjectMapper.writeValueAsString(any(DmsDto.class)))
-        .thenThrow(JsonProcessingException.class);
-
+  void shouldCatchAJsonProcessingExceptionIfThrownByObjectMapper() {
+    List<DmsDto> dmsDtoList = Collections.singletonList(new DmsDto(new Object(), null));
     assertDoesNotThrow(() -> kinesisService.sendData(STREAM_NAME, dmsDtoList));
+    verifyNoInteractions(mAmazonKinesis);
   }
 
   @Test
-  public void getObjectMapperGetsTheObjectMapper() {
-    ObjectMapper objectMapper = kinesisService.getObjectMapper();
-    assertThat(objectMapper).isNotNull().isInstanceOf(ObjectMapper.class);
-  }
+  void shouldConvertNumbersToStrings() throws IOException {
+    ContactDetailsDTO contactDetails = new ContactDetailsDTO();
+    contactDetails.setId(10L);
+    DmsDto dmsDto = new DmsDto(contactDetails, new MetadataDto());
 
-  @Test
-  public void setObjectMapperSetsTheObjectMapper() {
-    ObjectMapper originalObjectMapper = kinesisService.getObjectMapper();
-    ObjectMapper newObjectMapper = new ObjectMapper();
-    kinesisService.setObjectMapper(newObjectMapper);
+    kinesisService.sendData(STREAM_NAME, Collections.singletonList(dmsDto));
 
-    assertThat(originalObjectMapper).isNotEqualTo(kinesisService.getObjectMapper());
-    assertThat(newObjectMapper).isEqualTo(kinesisService.getObjectMapper());
+    ArgumentCaptor<PutRecordsRequest> captor = ArgumentCaptor.forClass(PutRecordsRequest.class);
+    verify(mAmazonKinesis).putRecords(captor.capture());
+
+    PutRecordsRequest request = captor.getValue();
+    byte[] data = request.getRecords().get(0).getData().array();
+    ObjectMapper objectMapper = new ObjectMapper();
+    JsonNode jsonNode = objectMapper.readTree(data);
+    JsonNodeType nodeType = jsonNode.get("data").get("id").getNodeType();
+
+    assertThat("Unexpected node type.", nodeType, is(JsonNodeType.STRING));
   }
 }

@@ -5,22 +5,26 @@ import com.amazonaws.services.kinesis.model.PutRecordsRequest;
 import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
 import com.amazonaws.services.kinesis.model.PutRecordsResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.nhs.tis.sync.dto.DmsDto;
 
+/**
+ * A service which sends DMS DTOs to a Kinesis stream for processing.
+ */
+@Slf4j
 @Service
 public class KinesisService {
 
   public static final String PARTITION_KEY = "0";
-  private static final Logger LOG = LoggerFactory.getLogger(KinesisService.class);
   private final AmazonKinesis amazonKinesis;
-  private ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper;
 
   /**
    * An object to send data into a Kinesis data stream.
@@ -30,15 +34,10 @@ public class KinesisService {
   public KinesisService(
       AmazonKinesis amazonKinesis) {
     this.amazonKinesis = amazonKinesis;
-    this.objectMapper = new ObjectMapper();
-  }
-
-  public ObjectMapper getObjectMapper() {
-    return objectMapper;
-  }
-
-  public void setObjectMapper(ObjectMapper objectMapper) {
-    this.objectMapper = objectMapper;
+    this.objectMapper = JsonMapper.builder()
+        // Values are read as strings from kinesis, convert all numbers to string values.
+        .configure(JsonWriteFeature.WRITE_NUMBERS_AS_STRINGS, true)
+        .build();
   }
 
   /**
@@ -60,7 +59,7 @@ public class KinesisService {
     try {
       for (DmsDto dmsDto : dmsDtoList) {
         String jsonString = objectMapper.writeValueAsString(dmsDto);
-        LOG.info("Trying to send{}", jsonString);
+        log.info("Trying to send{}", jsonString);
         PutRecordsRequestEntry putRecordsRequestEntry = new PutRecordsRequestEntry();
         putRecordsRequestEntry.setData(ByteBuffer.wrap(jsonString.getBytes()));
         putRecordsRequestEntryList.add(putRecordsRequestEntry);
@@ -70,9 +69,9 @@ public class KinesisService {
       putRecordsRequest.setRecords(putRecordsRequestEntryList);
       PutRecordsResult putRecordsResult = amazonKinesis.putRecords(putRecordsRequest);
 
-      LOG.info("Put Result {}", putRecordsResult);
+      log.info("Put Result {}", putRecordsResult);
     } catch (JsonProcessingException e) {
-      LOG.info(e.getMessage());
+      log.info(e.getMessage());
     }
   }
 }
