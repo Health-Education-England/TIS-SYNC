@@ -5,7 +5,7 @@ import org.mapstruct.Mapper;
 import uk.nhs.tis.sync.dto.TrustDmsDto;
 
 @Mapper(componentModel = "spring")
-public interface TrustMapper {
+public interface TrustMapper extends DmsMapper<TrustDTO, TrustDmsDto> {
 
   TrustDmsDto toDmsDto(TrustDTO trustDto);
 }
