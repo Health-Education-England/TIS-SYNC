@@ -10,8 +10,8 @@ public interface CurriculumMembershipMapper {
   /**
    * Converts a CurriculumMembershipDTO to a ProgrammeMembershipDmsDto.
    *
-   * @param curriculumMembershipDto  the CurriculumMembershipDTO to convert
-   * @return                        the ProgrammeMembershipDmsDto
+   * @param curriculumMembershipDto   the CurriculumMembershipDTO to convert
+   * @return                          the ProgrammeMembershipDmsDto
    */
   ProgrammeMembershipDmsDto toDmsDto(CurriculumMembershipDTO curriculumMembershipDto);
 }

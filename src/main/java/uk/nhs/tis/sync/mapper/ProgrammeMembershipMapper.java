@@ -11,9 +11,6 @@ import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 import uk.nhs.tis.sync.dto.ProgrammeMembershipDmsDto;
-
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.UUID;
 
 @Mapper(componentModel = "spring",
