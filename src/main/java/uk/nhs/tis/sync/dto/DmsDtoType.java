@@ -35,7 +35,7 @@ public enum DmsDtoType {
   GMC_DETAILS(GmcDetailsDTO.class, "tcs", "GmcDetails", null),
   //  PERSON(PersonDTO.class, "tcs", "Person", PersonMapper.class),
   PERSONAL_DETAILS(PersonalDetailsDTO.class, "tcs", "PersonalDetails", null),
-  PLACEMENT_DETAILS(PlacementDetailsDTO.class, "tcs", "Placement",PlacementDetailsMapper.class),
+  PLACEMENT_DETAILS(PlacementDetailsDTO.class, "tcs", "Placement", PlacementDetailsMapper.class),
   PLACEMENT_SPECIALTY(PlacementSpecialtyDTO.class, "tcs", "PlacementSpecialty", null),
   POST(PostDTO.class, "tcs", "Post", PostMapper.class),
   PROGRAMME(ProgrammeDTO.class, "tcs", "Programme", ProgrammeMapper.class),
