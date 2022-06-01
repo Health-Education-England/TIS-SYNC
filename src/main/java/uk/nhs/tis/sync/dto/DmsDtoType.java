@@ -17,12 +17,9 @@ import lombok.Getter;
 import uk.nhs.tis.sync.mapper.CurriculumMapper;
 import uk.nhs.tis.sync.mapper.DmsMapper;
 import uk.nhs.tis.sync.mapper.PlacementDetailsMapper;
-import uk.nhs.tis.sync.mapper.PlacementSpecialtyMapper;
 import uk.nhs.tis.sync.mapper.PostMapper;
 import uk.nhs.tis.sync.mapper.ProgrammeMapper;
-import uk.nhs.tis.sync.mapper.SiteMapper;
 import uk.nhs.tis.sync.mapper.SpecialtyMapper;
-import uk.nhs.tis.sync.mapper.TrustMapper;
 
 /**
  * An enumeration representing data request compatible DTOs. mapperClass is null when no mapper is
@@ -36,17 +33,18 @@ public enum DmsDtoType {
   CURRICULUM(CurriculumDTO.class, "tcs", "Curriculum", CurriculumMapper.class),
   GDC_DETAILS(GdcDetailsDTO.class, "tcs", "GdcDetails", null),
   GMC_DETAILS(GmcDetailsDTO.class, "tcs", "GmcDetails", null),
-//  PERSON(PersonDTO.class, "tcs", "Person", PersonMapper.class),
+  //  PERSON(PersonDTO.class, "tcs", "Person", PersonMapper.class),
   PERSONAL_DETAILS(PersonalDetailsDTO.class, "tcs", "PersonalDetails", null),
-  PLACEMENT_DETAILS(PlacementDetailsDTO.class, "tcs", "Placement", PlacementDetailsMapper.class),
-  PLACEMENT_SPECIALTY(PlacementSpecialtyDTO.class, "tcs", "PlacementSpecialty", PlacementSpecialtyMapper.class),
+  PLACEMENT_DETAILS(PlacementDetailsDTO.class, "tcs", "Placement",PlacementDetailsMapper.class),
+  PLACEMENT_SPECIALTY(PlacementSpecialtyDTO.class, "tcs", "PlacementSpecialty", null),
   POST(PostDTO.class, "tcs", "Post", PostMapper.class),
   PROGRAMME(ProgrammeDTO.class, "tcs", "Programme", ProgrammeMapper.class),
-//  PROGRAMME_MEMBERSHIP(ProgrammeMembershipDTO.class, "tcs", "ProgrammeMembership", ProgrammeMembershipMapper.class),
-//  QUALIFICATION(QualificationDTO.class, "tcs", "Qualification", QualificationMapper.class),
-  SITE(SiteDTO.class, "reference", "Site", SiteMapper.class),
+  //  PROGRAMME_MEMBERSHIP(ProgrammeMembershipDTO.class, "tcs", "ProgrammeMembership",
+  //  ProgrammeMembershipMapper.class),
+  //  QUALIFICATION(QualificationDTO.class, "tcs", "Qualification", QualificationMapper.class),
+  SITE(SiteDTO.class, "reference", "Site", null),
   SPECIALTY(SpecialtyDTO.class, "tcs", "Specialty", SpecialtyMapper.class),
-  TRUST(TrustDTO.class, "reference", "Trust", TrustMapper.class);
+  TRUST(TrustDTO.class, "reference", "Trust", null);
 
   private final Class<?> dtoType;
   private final String schema;
