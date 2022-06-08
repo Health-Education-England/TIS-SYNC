@@ -12,8 +12,6 @@ import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
-import com.transformuk.hee.tis.reference.api.enums.Status;
 import com.transformuk.hee.tis.tcs.api.dto.ContactDetailsDTO;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -34,6 +32,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PostDmsDto;
+import uk.nhs.tis.sync.dto.TrustDmsDto;
 
 @ExtendWith(MockitoExtension.class)
 class KinesisServiceTest {
@@ -76,15 +75,15 @@ class KinesisServiceTest {
 
     DmsDto dmsDto1 = new DmsDto(postDmsDto, metadataDto1);
 
-    TrustDTO trustDto = new TrustDTO();
-    trustDto.setCode("222");
-    trustDto.setLocalOffice("someLocalOffice");
-    trustDto.setStatus(Status.CURRENT);
-    trustDto.setTrustKnownAs("trustKnownAs");
-    trustDto.setTrustName("trustName");
-    trustDto.setTrustNumber("000");
-    trustDto.setIntrepidId("3");
-    trustDto.setId(1L);
+    TrustDmsDto trustDmsDto = new TrustDmsDto();
+    trustDmsDto.setCode("222");
+    trustDmsDto.setLocalOffice("someLocalOffice");
+    trustDmsDto.setStatus("CURRENT");
+    trustDmsDto.setTrustKnownAs("trustKnownAs");
+    trustDmsDto.setTrustName("trustName");
+    trustDmsDto.setTrustNumber("000");
+    trustDmsDto.setIntrepidId("3");
+    trustDmsDto.setId("1");
 
     MetadataDto metadataDto2 = new MetadataDto();
     metadataDto2.setTimestamp(timestamp);
@@ -95,7 +94,7 @@ class KinesisServiceTest {
     metadataDto2.setTableName("Trust");
     metadataDto2.setTransactionId("111");
 
-    DmsDto dmsDto2 = new DmsDto(trustDto, metadataDto2);
+    DmsDto dmsDto2 = new DmsDto(trustDmsDto, metadataDto2);
 
     dmsDtoList = new ArrayList<>();
     dmsDtoList.add(dmsDto1);

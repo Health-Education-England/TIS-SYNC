@@ -40,9 +40,12 @@ import uk.nhs.tis.sync.dto.CurriculumDmsDto;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PlacementDetailsDmsDto;
+import uk.nhs.tis.sync.dto.PlacementSpecialtyDmsDto;
 import uk.nhs.tis.sync.dto.PostDmsDto;
 import uk.nhs.tis.sync.dto.ProgrammeDmsDto;
+import uk.nhs.tis.sync.dto.SiteDmsDto;
 import uk.nhs.tis.sync.dto.SpecialtyDmsDto;
+import uk.nhs.tis.sync.dto.TrustDmsDto;
 
 class DmsRecordAssemblerTest {
 
@@ -238,46 +241,102 @@ class DmsRecordAssemblerTest {
   @Test
   void shouldAssembleADmsDtoWhenGivenATrustDto() {
     TrustDTO trustDto = new TrustDTO();
+    trustDto.setCode("000");
+    trustDto.setLocalOffice("someLocalOffice");
+    trustDto.setStatus(CURRENT);
+    trustDto.setTrustKnownAs("trustKnownAs");
+    trustDto.setTrustName("trustName");
+    trustDto.setTrustNumber("111");
+    trustDto.setIntrepidId("222");
     trustDto.setId(333L);
 
-    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(trustDto));
+    List<DmsDto> actualDmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(trustDto));
 
-    assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
-    DmsDto dmsDto = dmsDtos.get(0);
-    assertThat("Unexpected data.", dmsDto.getData(), sameInstance(trustDto));
+    assertThat("Unexpected DTO count.", actualDmsDtos.size(), is(1));
+    DmsDto actualDmsDto = actualDmsDtos.get(0);
 
-    MetadataDto metadata = dmsDto.getMetadata();
-    assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
-    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
-    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
-    assertThat("Unexpected partition key type.", metadata.getPartitionKeyType(),
-        is("schema-table"));
-    assertThat("Unexpected schema.", metadata.getSchemaName(), is("reference"));
-    assertThat("Unexpected table.", metadata.getTableName(), is("Trust"));
-    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+    TrustDmsDto expectedTrustDmsDto = new TrustDmsDto();
+    expectedTrustDmsDto.setCode("000");
+    expectedTrustDmsDto.setLocalOffice("someLocalOffice");
+    expectedTrustDmsDto.setStatus("CURRENT");
+    expectedTrustDmsDto.setTrustKnownAs("trustKnownAs");
+    expectedTrustDmsDto.setTrustName("trustName");
+    expectedTrustDmsDto.setTrustNumber("111");
+    expectedTrustDmsDto.setIntrepidId("222");
+    expectedTrustDmsDto.setId("333");
+
+    //inject the timestamp from the actualDmsDto into the expectedDmsDto
+    String timestamp = actualDmsDto.getMetadata().getTimestamp();
+
+    //inject the transaction-id from the actualDmsDto into the expectedDmsDto
+    String transactionId = actualDmsDto.getMetadata().getTransactionId();
+
+    MetadataDto expectedMetadataDto = new MetadataDto();
+    expectedMetadataDto.setTimestamp(timestamp);
+    expectedMetadataDto.setRecordType("data");
+    expectedMetadataDto.setOperation("load");
+    expectedMetadataDto.setPartitionKeyType("schema-table");
+    expectedMetadataDto.setSchemaName("reference");
+    expectedMetadataDto.setTableName("Trust");
+    expectedMetadataDto.setTransactionId(transactionId);
+
+    DmsDto expectedDmsDto = new DmsDto(expectedTrustDmsDto, expectedMetadataDto);
+
+    assertEquals(expectedDmsDto, actualDmsDto);
   }
 
   @Test
   void shouldHandleSite() {
     SiteDTO site = new SiteDTO();
     site.setId(40L);
+    site.setIntrepidId("i40");
+    site.setStartDate(LocalDate.MIN);
+    site.setEndDate(LocalDate.MAX);
+    site.setTrustId(140L);
+    site.setTrustCode("TABC");
+    site.setLocalOffice("some local office");
+    site.setOrganisationalUnit("some org unit");
+    site.setSiteCode("SABC");
+    site.setSiteNumber("S123");
+    site.setSiteName("Site Alpha Beta Charlie");
+    site.setSiteKnownAs("Site ABC");
+    site.setAddress("123 ABC Lane");
+    site.setPostCode("AB12 3CD");
     site.setStatus(CURRENT);
 
     List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(site));
 
     assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
     DmsDto dmsDto = dmsDtos.get(0);
-    assertThat("Unexpected data.", dmsDto.getData(), sameInstance(site));
 
     MetadataDto metadata = dmsDto.getMetadata();
-    assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getTimestamp(), notNullValue());
     assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
     assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
-    assertThat("Unexpected partition key type.", metadata.getPartitionKeyType(),
-        is("schema-table"));
+    assertThat("Unexpected partition key.", metadata.getPartitionKeyType(), is("schema-table"));
     assertThat("Unexpected schema.", metadata.getSchemaName(), is("reference"));
     assertThat("Unexpected table.", metadata.getTableName(), is("Site"));
     assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+
+    Object data = dmsDto.getData();
+    assertThat("Unexpected data.", data, instanceOf(SiteDmsDto.class));
+
+    SiteDmsDto siteDms = (SiteDmsDto) data;
+    assertThat("Unexpected record type.", siteDms.getId(), is("40"));
+    assertThat("Unexpected record type.", siteDms.getIntrepidId(), is("i40"));
+    assertThat("Unexpected record type.", siteDms.getStartDate(), is(LocalDate.MIN.toString()));
+    assertThat("Unexpected record type.", siteDms.getEndDate(), is(LocalDate.MAX.toString()));
+    assertThat("Unexpected record type.", siteDms.getLocalOffice(), is("some local office"));
+    assertThat("Unexpected record type.", siteDms.getOrganisationalUnit(), is("some org unit"));
+    assertThat("Unexpected record type.", siteDms.getTrustId(), is("140"));
+    assertThat("Unexpected record type.", siteDms.getTrustCode(), is("TABC"));
+    assertThat("Unexpected record type.", siteDms.getSiteCode(), is("SABC"));
+    assertThat("Unexpected record type.", siteDms.getSiteNumber(), is("S123"));
+    assertThat("Unexpected record type.", siteDms.getSiteName(), is("Site Alpha Beta Charlie"));
+    assertThat("Unexpected record type.", siteDms.getSiteKnownAs(), is("Site ABC"));
+    assertThat("Unexpected record type.", siteDms.getAddress(), is("123 ABC Lane"));
+    assertThat("Unexpected record type.", siteDms.getPostCode(), is("AB12 3CD"));
+    assertThat("Unexpected record type.", siteDms.getStatus(), is("CURRENT"));
   }
 
   @Test
@@ -429,17 +488,26 @@ class DmsRecordAssemblerTest {
 
     assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
     DmsDto dmsDto = dmsDtos.get(0);
-    assertThat("Unexpected data.", dmsDto.getData(), sameInstance(placementSpecialty));
 
     MetadataDto metadata = dmsDto.getMetadata();
     assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
     assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
     assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
-    assertThat("Unexpected partition key type.", metadata.getPartitionKeyType(),
-        is("schema-table"));
+    assertThat("Unexpected partition key.", metadata.getPartitionKeyType(), is("schema-table"));
     assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
     assertThat("Unexpected table.", metadata.getTableName(), is("PlacementSpecialty"));
     assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+
+    Object data = dmsDto.getData();
+    assertThat("Unexpected data.", data, instanceOf(PlacementSpecialtyDmsDto.class));
+
+    PlacementSpecialtyDmsDto placementSpecialtyDmsDto = (PlacementSpecialtyDmsDto) data;
+    assertThat("Unexpected placement id.", placementSpecialtyDmsDto.getPlacementId(), is("80"));
+    assertThat("Unexpected specialty id.", placementSpecialtyDmsDto.getSpecialtyId(), is("90"));
+    assertThat("Unexpected placement-specialty type.",
+        placementSpecialtyDmsDto.getPlacementSpecialtyType(), is("PRIMARY"));
+    assertThat("Unexpected specialty name.", placementSpecialtyDmsDto.getSpecialtyName(),
+        is("specialtyName"));
   }
 
   @Test
