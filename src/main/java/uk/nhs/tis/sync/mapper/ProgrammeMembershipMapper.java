@@ -1,31 +1,21 @@
 package uk.nhs.tis.sync.mapper;
 
-import com.transformuk.hee.tis.tcs.api.dto.CurriculumMembershipDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.ProgrammeMembershipType;
 import java.util.UUID;
-import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
-import org.mapstruct.factory.Mappers;
 import uk.nhs.tis.sync.dto.ProgrammeMembershipDmsDto;
 
-@Mapper(componentModel = "spring",
-    uses = {CurriculumMembershipMapper.class})
-public interface ProgrammeMembershipMapper extends
-    DmsMapper<ProgrammeMembershipDTO, ProgrammeMembershipDmsDto> {
+@Mapper(componentModel = "spring")
+public interface ProgrammeMembershipMapper {
 
   /**
    * Converts a ProgrammeMembershipDTO to a ProgrammeMembershipDmsDto.
    *
-   * <p>Note that the ProgrammeMembershipDTO should have exactly one child CurriculumMembershipDTO,
-   * i.e. it should be a non-normalised ProgrammeMembershipDTO, not one which has been normalised by
-   * ProgrammeMembershipServiceImpl.findProgrammeMembershipsForTraineeRolledUp()</p>
-   *
-   * @param programmeMembershipDto the ProgrammeMembershipDTO to convert
-   * @return the ProgrammeMembershipDmsDto
+   * @param programmeMembershipDto  the ProgrammeMembershipDTO to convert
+   * @return                        the ProgrammeMembershipDmsDto
    */
 
   @Mapping(target = "rotation", source = "rotation.name")
@@ -58,25 +48,5 @@ public interface ProgrammeMembershipMapper extends
       return programmeMembershipType.toString();
     }
     return null;
-  }
-
-  @AfterMapping
-  default void setCurriculumDetails(ProgrammeMembershipDTO programmeMembershipDto,
-      @MappingTarget ProgrammeMembershipDmsDto dmsDto) {
-    if (programmeMembershipDto.getCurriculumMemberships() != null) {
-      CurriculumMembershipDTO curriculumMembershipDto
-          = programmeMembershipDto.getCurriculumMemberships().get(0);
-
-      CurriculumMembershipMapper curriculumMembershipMapper
-          = Mappers.getMapper(CurriculumMembershipMapper.class);
-      ProgrammeMembershipDmsDto dmsDtoCurriculumDetails
-          = curriculumMembershipMapper.toDmsDto(curriculumMembershipDto);
-      dmsDto.setCurriculumStartDate(dmsDtoCurriculumDetails.getCurriculumStartDate());
-      dmsDto.setCurriculumEndDate(dmsDtoCurriculumDetails.getCurriculumEndDate());
-      dmsDto.setCurriculumCompletionDate(dmsDtoCurriculumDetails.getCurriculumCompletionDate());
-      dmsDto.setPeriodOfGrace(dmsDtoCurriculumDetails.getPeriodOfGrace());
-      dmsDto.setCurriculumId(dmsDtoCurriculumDetails.getCurriculumId());
-      dmsDto.setIntrepidId(dmsDtoCurriculumDetails.getIntrepidId());
-    }
   }
 }

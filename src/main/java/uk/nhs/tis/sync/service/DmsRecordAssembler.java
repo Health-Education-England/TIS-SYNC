@@ -1,15 +1,23 @@
 package uk.nhs.tis.sync.service;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import com.transformuk.hee.tis.tcs.api.dto.CurriculumMembershipDTO;
+import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.DmsDtoType;
 import uk.nhs.tis.sync.dto.MetadataDto;
+import uk.nhs.tis.sync.dto.ProgrammeMembershipDmsDto;
+import uk.nhs.tis.sync.mapper.CurriculumMembershipMapper;
+import uk.nhs.tis.sync.mapper.CurriculumMembershipMapperImpl;
 import uk.nhs.tis.sync.mapper.DmsMapper;
 
 @Component
@@ -31,17 +39,20 @@ public class DmsRecordAssembler {
     return dtos.stream()
         .map(this::assembleDmsDto)
         .filter(Objects::nonNull)
+        .flatMap(Collection::stream)
         .collect(Collectors.toList());
   }
 
   /**
-   * The method that assembles a complete DmsDto starting from a dto (e.g. a PostDto or a TrustDto)
+   * The method that assembles a list of complete DmsDtos starting from a dto (e.g. a PostDto or a TrustDto)
    *
    * @param dto The dto which will be mapped to another dto representative of the "data" portion of
    *            a DmsDto (e.g. PostDmsDto).
-   * @return The DmsDto, complete with data and metadata.
+   * @return The list of DmsDtos, complete with data and metadata.
    */
-  private DmsDto assembleDmsDto(Object dto) {
+  private List<DmsDto> assembleDmsDto(Object dto) {
+    List<DmsDto> dmsDtos = null;
+    boolean hasMultipleDmsDtos = false;
     Object dmsData = null;
     String schema = null;
     String table = null;
@@ -54,20 +65,39 @@ public class DmsRecordAssembler {
       Class<? extends DmsMapper<?, ?>> mapperClass = dmsDtoType.getMapperClass();
 
       if (mapperClass != null) {
-        DmsMapper<?, ?> dmsMapper = Mappers.getMapper(mapperClass);
-        dmsData = dmsMapper.objectToDmsDto(dto);
+        if (dto instanceof ProgrammeMembershipDTO) {
+          hasMultipleDmsDtos = true;
+          dmsDtos = new ArrayList<>();
+          for (CurriculumMembershipDTO cm : ((ProgrammeMembershipDTO) dto).getCurriculumMemberships()) {
+            CurriculumMembershipMapper curriculumMembershipMapper = new CurriculumMembershipMapperImpl();
+            ProgrammeMembershipDmsDto cmDmsData = curriculumMembershipMapper.toDmsDto(cm);
+            if (cmDmsData != null) {
+              curriculumMembershipMapper.setProgrammeMembershipDetails((ProgrammeMembershipDTO) dto, cmDmsData);
+              MetadataDto metadata = new MetadataDto(Instant.now().toString(), DATA, LOAD,
+                  PARTITION_KEY_TYPE, schema, table, UUID.randomUUID().toString());
+              dmsDtos.add(new DmsDto(cmDmsData, metadata));
+            }
+          }
+        } else {
+          DmsMapper<?, ?> dmsMapper = Mappers.getMapper(mapperClass);
+          dmsData = dmsMapper.objectToDmsDto(dto);
+        }
       } else {
         dmsData = dto;
       }
     }
 
-    if (dmsData != null) {
-      MetadataDto metadata = new MetadataDto(Instant.now().toString(), DATA, LOAD,
-          PARTITION_KEY_TYPE, schema, table, UUID.randomUUID().toString());
+    if (hasMultipleDmsDtos) {
+      return dmsDtos;
+    } else {
+      if (dmsData != null) {
+        MetadataDto metadata = new MetadataDto(Instant.now().toString(), DATA, LOAD,
+            PARTITION_KEY_TYPE, schema, table, UUID.randomUUID().toString());
 
-      return new DmsDto(dmsData, metadata);
+        return Collections.singletonList(new DmsDto(dmsData, metadata));
+      }
     }
 
-    return null;
+    return Collections.emptyList();
   }
 }

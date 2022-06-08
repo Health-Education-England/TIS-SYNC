@@ -39,7 +39,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
@@ -280,7 +279,7 @@ class DmsRecordAssemblerTest {
   }
 
   @Test
-  void shouldAssembleADmsDtoWhenGivenAProgrammeMembershipDto() {
+  void shouldAssembleTwoDmsDtosWhenGivenAProgrammeMembershipDtoWithTwoCurriculumMemberships() {
     PersonDTO personDto = new PersonDTO();
     personDto.setId(1L);
 
@@ -300,6 +299,15 @@ class DmsRecordAssemblerTest {
     curriculumMembershipDto.setPeriodOfGrace(5);
     curriculumMembershipDto.setIntrepidId("12345");
 
+    CurriculumMembershipDTO curriculumMembershipDto2 = new CurriculumMembershipDTO();
+    curriculumMembershipDto2.setCurriculumId(104L);
+    curriculumMembershipDto2.setId(101111L);
+    curriculumMembershipDto2.setCurriculumStartDate(LocalDate.of(3021, 2, 2));
+    curriculumMembershipDto2.setCurriculumEndDate(LocalDate.of(3022, 1, 1));
+    curriculumMembershipDto2.setCurriculumCompletionDate(LocalDate.of(3022, 1, 2));
+    curriculumMembershipDto2.setPeriodOfGrace(105);
+    curriculumMembershipDto2.setIntrepidId("1012345");
+
     ProgrammeMembershipDTO programmeMembershipDto = new ProgrammeMembershipDTO();
     programmeMembershipDto.setId(1111L);
     programmeMembershipDto.setUuid(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
@@ -313,15 +321,14 @@ class DmsRecordAssemblerTest {
     programmeMembershipDto.setProgrammeEndDate(LocalDate.of(2022, 2, 2));
     programmeMembershipDto.setLeavingReason("a leaving reason");
     programmeMembershipDto.setLeavingDestination("a leaving destination");
-    programmeMembershipDto.setCurriculumMemberships(
-        Collections.singletonList(curriculumMembershipDto));
+    programmeMembershipDto.setCurriculumMemberships(Arrays.asList(curriculumMembershipDto, curriculumMembershipDto2));
 
     //when
     List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
         singletonList(programmeMembershipDto));
 
     //then
-    assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
+    assertThat("Unexpected DTO count.", dmsDtos.size(), is(2));
     DmsDto dmsDto = dmsDtos.get(0);
 
     Object data = dmsDto.getData();
@@ -371,6 +378,48 @@ class DmsRecordAssemblerTest {
     assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
     assertThat("Unexpected table.", metadata.getTableName(), is("CurriculumMembership"));
     assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+
+//    DmsDto actualDmsDto2 = actualDmsDtos.get(1);
+//
+//    ProgrammeMembershipDmsDto expectedProgrammeMembershipDmsDto2 = new ProgrammeMembershipDmsDto();
+//    expectedProgrammeMembershipDmsDto2.setId("101111");
+//    expectedProgrammeMembershipDmsDto2.setCurriculumStartDate("3021-02-02");
+//    expectedProgrammeMembershipDmsDto2.setCurriculumEndDate("3022-01-01");
+//    expectedProgrammeMembershipDmsDto2.setCurriculumCompletionDate("3022-01-02");
+//    expectedProgrammeMembershipDmsDto2.setPeriodOfGrace("105");
+//    expectedProgrammeMembershipDmsDto2.setCurriculumId("104");
+//    expectedProgrammeMembershipDmsDto2.setIntrepidId("1012345");
+//    expectedProgrammeMembershipDmsDto2.setProgrammeMembershipUuid("123e4567-e89b-12d3-a456-426614174000");
+//    expectedProgrammeMembershipDmsDto2.setPersonId("1");
+//    expectedProgrammeMembershipDmsDto2.setProgrammeId("123");
+//    expectedProgrammeMembershipDmsDto2.setRotationId("2");
+//    expectedProgrammeMembershipDmsDto2.setRotation("a rotation");
+//    expectedProgrammeMembershipDmsDto2.setTrainingNumberId("3");
+//    expectedProgrammeMembershipDmsDto2.setTrainingPathway("a training pathway");
+//    expectedProgrammeMembershipDmsDto2.setProgrammeMembershipType(ProgrammeMembershipType.SUBSTANTIVE.toString());
+//    expectedProgrammeMembershipDmsDto2.setProgrammeStartDate("2021-01-01");
+//    expectedProgrammeMembershipDmsDto2.setProgrammeEndDate("2022-02-02");
+//    expectedProgrammeMembershipDmsDto2.setLeavingReason("a leaving reason");
+//    expectedProgrammeMembershipDmsDto2.setLeavingDestination("a leaving destination");
+//
+//    //inject the timestamp from the actualDmsDto into the expectedDmsDto
+//    String timestamp2 = actualDmsDto2.getMetadata().getTimestamp();
+//
+//    //inject the transaction-id from the actualDmsDto into the expectedDmsDto
+//    String transactionId2 = actualDmsDto2.getMetadata().getTransactionId();
+//
+//    MetadataDto expectedMetadataDto2 = new MetadataDto();
+//    expectedMetadataDto2.setTimestamp(timestamp2);
+//    expectedMetadataDto2.setRecordType("data");
+//    expectedMetadataDto2.setOperation("load");
+//    expectedMetadataDto2.setPartitionKeyType("schema-table");
+//    expectedMetadataDto2.setSchemaName("tcs");
+//    expectedMetadataDto2.setTableName("CurriculumMembership");
+//    expectedMetadataDto2.setTransactionId(transactionId2);
+//
+//    DmsDto expectedDmsDto2 = new DmsDto(expectedProgrammeMembershipDmsDto2, expectedMetadataDto2);
+//
+//    assertEquals(expectedDmsDto2, actualDmsDto2);
   }
 
   @Test
