@@ -13,25 +13,33 @@ import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ContactDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
+import com.transformuk.hee.tis.tcs.api.dto.CurriculumMembershipDTO;
 import com.transformuk.hee.tis.tcs.api.dto.GdcDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.GmcDetailsDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PersonDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PersonalDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
+import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
+import com.transformuk.hee.tis.tcs.api.dto.RotationDTO;
 import com.transformuk.hee.tis.tcs.api.dto.SpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.dto.SpecialtyGroupDTO;
+import com.transformuk.hee.tis.tcs.api.dto.TrainingNumberDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.AssessmentType;
 import com.transformuk.hee.tis.tcs.api.enumeration.CurriculumSubType;
 import com.transformuk.hee.tis.tcs.api.enumeration.LifecycleState;
 import com.transformuk.hee.tis.tcs.api.enumeration.PlacementStatus;
 import com.transformuk.hee.tis.tcs.api.enumeration.PostSpecialtyType;
+import com.transformuk.hee.tis.tcs.api.enumeration.ProgrammeMembershipType;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -43,6 +51,7 @@ import uk.nhs.tis.sync.dto.PlacementDetailsDmsDto;
 import uk.nhs.tis.sync.dto.PlacementSpecialtyDmsDto;
 import uk.nhs.tis.sync.dto.PostDmsDto;
 import uk.nhs.tis.sync.dto.ProgrammeDmsDto;
+import uk.nhs.tis.sync.dto.ProgrammeMembershipDmsDto;
 import uk.nhs.tis.sync.dto.SiteDmsDto;
 import uk.nhs.tis.sync.dto.SpecialtyDmsDto;
 import uk.nhs.tis.sync.dto.TrustDmsDto;
@@ -227,9 +236,87 @@ class DmsRecordAssemblerTest {
   }
 
   @Test
-  @Disabled("Not yet implemented")
-  void shouldAssembleProgrammeMembership() {
-    Assertions.fail("Not yet implemented.");
+  void shouldAssembleADmsDtoWhenGivenAProgrammeMembershipDto() {
+    PersonDTO personDto = new PersonDTO();
+    personDto.setId(1L);
+
+    RotationDTO rotationDto = new RotationDTO();
+    rotationDto.setId(2L);
+    rotationDto.setName("a rotation");
+
+    TrainingNumberDTO trainingNumberDto = new TrainingNumberDTO();
+    trainingNumberDto.setId(3L);
+
+    CurriculumMembershipDTO curriculumMembershipDto = new CurriculumMembershipDTO();
+    curriculumMembershipDto.setCurriculumId(4L);
+    curriculumMembershipDto.setId(1111L);
+    curriculumMembershipDto.setCurriculumStartDate(LocalDate.of(2021, 2, 2));
+    curriculumMembershipDto.setCurriculumEndDate(LocalDate.of(2022, 1, 1));
+    curriculumMembershipDto.setCurriculumCompletionDate(LocalDate.of(2022, 1, 2));
+    curriculumMembershipDto.setPeriodOfGrace(5);
+    curriculumMembershipDto.setIntrepidId("12345");
+
+    ProgrammeMembershipDTO programmeMembershipDto = new ProgrammeMembershipDTO();
+    programmeMembershipDto.setId(1111L);
+    programmeMembershipDto.setUuid(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+    programmeMembershipDto.setPerson(personDto);
+    programmeMembershipDto.setProgrammeId(123L);
+    programmeMembershipDto.setRotation(rotationDto);
+    programmeMembershipDto.setTrainingNumber(trainingNumberDto);
+    programmeMembershipDto.setTrainingPathway("a training pathway");
+    programmeMembershipDto.setProgrammeMembershipType(ProgrammeMembershipType.SUBSTANTIVE);
+    programmeMembershipDto.setProgrammeStartDate(LocalDate.of(2021, 1, 1));
+    programmeMembershipDto.setProgrammeEndDate(LocalDate.of(2022, 2, 2));
+    programmeMembershipDto.setLeavingReason("a leaving reason");
+    programmeMembershipDto.setLeavingDestination("a leaving destination");
+    programmeMembershipDto.setCurriculumMemberships(Collections.singletonList(curriculumMembershipDto));
+
+    //when
+    List<DmsDto> actualDmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(programmeMembershipDto));
+
+    //then
+    assertThat("Unexpected DTO count.", actualDmsDtos.size(), is(1));
+    DmsDto actualDmsDto = actualDmsDtos.get(0);
+
+    ProgrammeMembershipDmsDto expectedProgrammeMembershipDmsDto = new ProgrammeMembershipDmsDto();
+    expectedProgrammeMembershipDmsDto.setId("1111");
+    expectedProgrammeMembershipDmsDto.setCurriculumStartDate("2021-02-02");
+    expectedProgrammeMembershipDmsDto.setCurriculumEndDate("2022-01-01");
+    expectedProgrammeMembershipDmsDto.setCurriculumCompletionDate("2022-01-02");
+    expectedProgrammeMembershipDmsDto.setPeriodOfGrace("5");
+    expectedProgrammeMembershipDmsDto.setCurriculumId("4");
+    expectedProgrammeMembershipDmsDto.setIntrepidId("12345");
+    expectedProgrammeMembershipDmsDto.setProgrammeMembershipUuid("123e4567-e89b-12d3-a456-426614174000");
+    expectedProgrammeMembershipDmsDto.setPersonId("1");
+    expectedProgrammeMembershipDmsDto.setProgrammeId("123");
+    expectedProgrammeMembershipDmsDto.setRotationId("2");
+    expectedProgrammeMembershipDmsDto.setRotation("a rotation");
+    expectedProgrammeMembershipDmsDto.setTrainingNumberId("3");
+    expectedProgrammeMembershipDmsDto.setTrainingPathway("a training pathway");
+    expectedProgrammeMembershipDmsDto.setProgrammeMembershipType(ProgrammeMembershipType.SUBSTANTIVE.toString());
+    expectedProgrammeMembershipDmsDto.setProgrammeStartDate("2021-01-01");
+    expectedProgrammeMembershipDmsDto.setProgrammeEndDate("2022-02-02");
+    expectedProgrammeMembershipDmsDto.setLeavingReason("a leaving reason");
+    expectedProgrammeMembershipDmsDto.setLeavingDestination("a leaving destination");
+
+    //inject the timestamp from the actualDmsDto into the expectedDmsDto
+    String timestamp = actualDmsDto.getMetadata().getTimestamp();
+
+    //inject the transaction-id from the actualDmsDto into the expectedDmsDto
+    String transactionId = actualDmsDto.getMetadata().getTransactionId();
+
+    MetadataDto expectedMetadataDto = new MetadataDto();
+    expectedMetadataDto.setTimestamp(timestamp);
+    expectedMetadataDto.setRecordType("data");
+    expectedMetadataDto.setOperation("load");
+    expectedMetadataDto.setPartitionKeyType("schema-table");
+    expectedMetadataDto.setSchemaName("tcs");
+    expectedMetadataDto.setTableName("CurriculumMembership");
+    expectedMetadataDto.setTransactionId(transactionId);
+
+    DmsDto expectedDmsDto = new DmsDto(expectedProgrammeMembershipDmsDto, expectedMetadataDto);
+
+    assertEquals(expectedDmsDto, actualDmsDto);
   }
 
   @Test

@@ -225,7 +225,7 @@ public class PersonElasticSearchService {
   public void updatePersonDocumentForProgramme(Long programmeId) {
     String programmeMembershipQuery = sqlQuerySupplier
         .getQuery(SqlQuerySupplier.PROGRAMME_MEMBERSHIP_VIEW)
-        .replace("WHERECLAUSE", "where programmeId=:programmeId");
+        .replace("WHERECLAUSE", "where pmem.programmeId=:programmeId");
 
     MapSqlParameterSource paramSource = new MapSqlParameterSource();
     paramSource.addValue("programmeId", programmeId);
@@ -288,7 +288,7 @@ public class PersonElasticSearchService {
 
       String programmeMembershipQuery = sqlQuerySupplier
           .getQuery(SqlQuerySupplier.PROGRAMME_MEMBERSHIP_VIEW)
-          .replace("WHERECLAUSE", "where personId IN (:personIds)");
+          .replace("WHERECLAUSE", "where pmem.personId IN (:personIds)");
 
       List<ProgrammeMembershipDto> programmeMembershipDtos = namedParameterJdbcTemplate
           .query(programmeMembershipQuery,
