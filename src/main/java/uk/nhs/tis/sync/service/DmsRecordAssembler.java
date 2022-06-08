@@ -12,10 +12,11 @@ import com.transformuk.hee.tis.tcs.api.dto.CurriculumMembershipDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Component;
+import uk.nhs.tis.sync.dto.CurriculumMembershipDmsDto;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.DmsDtoType;
 import uk.nhs.tis.sync.dto.MetadataDto;
-import uk.nhs.tis.sync.dto.ProgrammeMembershipDmsDto;
+import uk.nhs.tis.sync.mapper.CurriculumMapper;
 import uk.nhs.tis.sync.mapper.CurriculumMembershipMapper;
 import uk.nhs.tis.sync.mapper.CurriculumMembershipMapperImpl;
 import uk.nhs.tis.sync.mapper.DmsMapper;
@@ -70,7 +71,7 @@ public class DmsRecordAssembler {
           dmsDtos = new ArrayList<>();
           for (CurriculumMembershipDTO cm : ((ProgrammeMembershipDTO) dto).getCurriculumMemberships()) {
             CurriculumMembershipMapper curriculumMembershipMapper = new CurriculumMembershipMapperImpl();
-            ProgrammeMembershipDmsDto cmDmsData = curriculumMembershipMapper.toDmsDto(cm);
+            CurriculumMembershipDmsDto cmDmsData = curriculumMembershipMapper.toDmsDto(cm);
             if (cmDmsData != null) {
               curriculumMembershipMapper.setProgrammeMembershipDetails((ProgrammeMembershipDTO) dto, cmDmsData);
               MetadataDto metadata = new MetadataDto(Instant.now().toString(), DATA, LOAD,

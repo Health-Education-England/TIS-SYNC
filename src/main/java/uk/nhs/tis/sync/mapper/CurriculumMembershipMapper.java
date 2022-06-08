@@ -5,31 +5,31 @@ import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
-import uk.nhs.tis.sync.dto.ProgrammeMembershipDmsDto;
+import uk.nhs.tis.sync.dto.CurriculumMembershipDmsDto;
 
 @Mapper(componentModel = "spring")
 public interface CurriculumMembershipMapper {
 
   /**
-   * Converts a CurriculumMembershipDTO to a ProgrammeMembershipDmsDto.
+   * Converts a CurriculumMembershipDTO to a CurriculumMembershipDmsDto.
    *
    * @param curriculumMembershipDto the CurriculumMembershipDTO to convert
-   * @return the ProgrammeMembershipDmsDto
+   * @return the CurriculumMembershipDmsDto
    */
-  ProgrammeMembershipDmsDto toDmsDto(CurriculumMembershipDTO curriculumMembershipDto);
+  CurriculumMembershipDmsDto toDmsDto(CurriculumMembershipDTO curriculumMembershipDto);
 
   /**
-   * Adds ProgrammeMembership details to an existing ProgrammeMembershipDmsDto.
+   * Adds ProgrammeMembership details to an existing CurriculumMembershipDmsDto.
    *
    * @param programmeMembershipDto the ProgrammeMembershipDTO to incorporate
-   * @param dmsDto                 the ProgrammeMembershipDmsDto to augment
+   * @param dmsDto                 the CurriculumMembershipDmsDto to augment
    */
   default void setProgrammeMembershipDetails(ProgrammeMembershipDTO programmeMembershipDto,
-                                             @MappingTarget ProgrammeMembershipDmsDto dmsDto) {
+                                             @MappingTarget CurriculumMembershipDmsDto dmsDto) {
 
     ProgrammeMembershipMapper programmeMembershipMapper
         = Mappers.getMapper(ProgrammeMembershipMapper.class);
-    ProgrammeMembershipDmsDto dmsDtoPmDetails
+    CurriculumMembershipDmsDto dmsDtoPmDetails
         = programmeMembershipMapper.toDmsDto(programmeMembershipDto);
     dmsDto.setProgrammeMembershipUuid(dmsDtoPmDetails.getProgrammeMembershipUuid());
     dmsDto.setPersonId(dmsDtoPmDetails.getPersonId());

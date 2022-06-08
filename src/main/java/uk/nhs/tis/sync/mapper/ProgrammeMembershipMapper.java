@@ -6,16 +6,16 @@ import java.util.UUID;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
-import uk.nhs.tis.sync.dto.ProgrammeMembershipDmsDto;
+import uk.nhs.tis.sync.dto.CurriculumMembershipDmsDto;
 
 @Mapper(componentModel = "spring")
 public interface ProgrammeMembershipMapper {
 
   /**
-   * Converts a ProgrammeMembershipDTO to a ProgrammeMembershipDmsDto.
+   * Converts a ProgrammeMembershipDTO to a CurriculumMembershipDmsDto.
    *
    * @param programmeMembershipDto  the ProgrammeMembershipDTO to convert
-   * @return                        the ProgrammeMembershipDmsDto
+   * @return                        the CurriculumMembershipDmsDto
    */
 
   @Mapping(target = "rotation", source = "rotation.name")
@@ -32,7 +32,7 @@ public interface ProgrammeMembershipMapper {
   @Mapping(target = "periodOfGrace", ignore = true)
   @Mapping(target = "curriculumId", ignore = true)
   @Mapping(target = "intrepidId", ignore = true)
-  ProgrammeMembershipDmsDto toDmsDto(ProgrammeMembershipDTO programmeMembershipDto);
+  CurriculumMembershipDmsDto toDmsDto(ProgrammeMembershipDTO programmeMembershipDto);
 
   @Named("getProgrammeMembershipUuid")
   default String getProgrammeMembershipUuid(UUID uuid) {
