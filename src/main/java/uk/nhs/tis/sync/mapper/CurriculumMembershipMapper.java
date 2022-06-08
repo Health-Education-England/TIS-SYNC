@@ -22,7 +22,7 @@ public interface CurriculumMembershipMapper {
    * Adds ProgrammeMembership details to an existing ProgrammeMembershipDmsDto.
    *
    * @param programmeMembershipDto the ProgrammeMembershipDTO to incorporate
-   * @return the amended ProgrammeMembershipDmsDto
+   * @param dmsDto                 the ProgrammeMembershipDmsDto to augment
    */
   default void setProgrammeMembershipDetails(ProgrammeMembershipDTO programmeMembershipDto,
                                              @MappingTarget ProgrammeMembershipDmsDto dmsDto) {
