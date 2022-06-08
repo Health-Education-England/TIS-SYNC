@@ -13,8 +13,9 @@ import org.mapstruct.factory.Mappers;
 import uk.nhs.tis.sync.dto.ProgrammeMembershipDmsDto;
 
 @Mapper(componentModel = "spring",
-        uses = {CurriculumMembershipMapper.class})
-public interface ProgrammeMembershipMapper {
+    uses = {CurriculumMembershipMapper.class})
+public interface ProgrammeMembershipMapper extends
+    DmsMapper<ProgrammeMembershipDTO, ProgrammeMembershipDmsDto> {
 
   /**
    * Converts a ProgrammeMembershipDTO to a ProgrammeMembershipDmsDto.
@@ -23,8 +24,8 @@ public interface ProgrammeMembershipMapper {
    * i.e. it should be a non-normalised ProgrammeMembershipDTO, not one which has been normalised by
    * ProgrammeMembershipServiceImpl.findProgrammeMembershipsForTraineeRolledUp()</p>
    *
-   * @param programmeMembershipDto  the ProgrammeMembershipDTO to convert
-   * @return                        the ProgrammeMembershipDmsDto
+   * @param programmeMembershipDto the ProgrammeMembershipDTO to convert
+   * @return the ProgrammeMembershipDmsDto
    */
 
   @Mapping(target = "rotation", source = "rotation.name")
@@ -61,7 +62,7 @@ public interface ProgrammeMembershipMapper {
 
   @AfterMapping
   default void setCurriculumDetails(ProgrammeMembershipDTO programmeMembershipDto,
-                                    @MappingTarget ProgrammeMembershipDmsDto dmsDto) {
+      @MappingTarget ProgrammeMembershipDmsDto dmsDto) {
     if (programmeMembershipDto.getCurriculumMemberships() != null) {
       CurriculumMembershipDTO curriculumMembershipDto
           = programmeMembershipDto.getCurriculumMemberships().get(0);
