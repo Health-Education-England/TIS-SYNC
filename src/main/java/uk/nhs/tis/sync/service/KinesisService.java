@@ -4,6 +4,7 @@ import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.model.PutRecordsRequest;
 import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
 import com.amazonaws.services.kinesis.model.PutRecordsResult;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,6 +38,7 @@ public class KinesisService {
     this.objectMapper = JsonMapper.builder()
         // Values are read as strings from kinesis, convert all numbers to string values.
         .configure(JsonWriteFeature.WRITE_NUMBERS_AS_STRINGS, true)
+        .serializationInclusion(Include.NON_NULL)
         .build();
   }
 

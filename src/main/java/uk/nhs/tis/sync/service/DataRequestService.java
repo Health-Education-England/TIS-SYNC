@@ -1,8 +1,5 @@
 package uk.nhs.tis.sync.service;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
 import com.transformuk.hee.tis.tcs.api.dto.PersonDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
@@ -68,7 +65,8 @@ public class DataRequestService {
             return createNonNullList(tcsServiceImpl.getPostById(id));
           case TABLE_PROGRAMME:
             return createNonNullList(
-                tcsServiceImpl.findProgrammesIn(singletonList(String.valueOf(id))).get(0));
+                tcsServiceImpl.findProgrammesIn(Collections.singletonList(String.valueOf(id)))
+                    .get(0));
           case TABLE_SITE:
             return createNonNullList(
                 referenceServiceImpl.findSitesIdIn(Collections.singleton(id)).get(0));
@@ -84,7 +82,7 @@ public class DataRequestService {
       log.error(e.getMessage(), e);
     }
 
-    return emptyList();
+    return Collections.emptyList();
   }
 
   private PlacementSpecialtyDTO retrievePlacementSpecialty(long placementId) {
@@ -96,7 +94,8 @@ public class DataRequestService {
   }
 
   /**
-   * Retrieve all data needed for a full sync of a single person.
+   * Retrieve all data needed for a full sync of a single person. PersonOwner is excluded due to no
+   * existing interaction with it via TCS, the overnight rebuild job will populate it when it runs.
    *
    * @param personId The ID to use to find related data.
    * @return The list of found DTOs.
@@ -105,10 +104,10 @@ public class DataRequestService {
     List<Object> fullData = new ArrayList<>();
 
     PersonDTO person = tcsServiceImpl.getPerson(Long.toString(personId));
+    fullData.add(person);
     fullData.add(person.getContactDetails());
     fullData.add(person.getGdcDetails());
     fullData.add(person.getGmcDetails());
-    fullData.add(person);
     fullData.add(person.getPersonalDetails());
     fullData.addAll(tcsServiceImpl.getPlacementForTrainee(personId));
     fullData.addAll(person.getProgrammeMemberships());
@@ -125,9 +124,9 @@ public class DataRequestService {
    */
   private List<Object> createNonNullList(Object dto) {
     if (dto != null) {
-      return singletonList(dto);
+      return Collections.singletonList(dto);
     } else {
-      return emptyList();
+      return Collections.emptyList();
     }
   }
 }

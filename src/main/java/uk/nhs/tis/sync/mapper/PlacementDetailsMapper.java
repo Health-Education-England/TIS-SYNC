@@ -5,7 +5,8 @@ import org.mapstruct.Mapper;
 import uk.nhs.tis.sync.dto.PlacementDetailsDmsDto;
 
 @Mapper(componentModel = "spring")
-public interface PlacementDetailsMapper {
+public interface PlacementDetailsMapper extends
+    DmsMapper<PlacementDetailsDTO, PlacementDetailsDmsDto> {
 
   PlacementDetailsDmsDto toDmsDto(PlacementDetailsDTO placementDetailsDto);
 }

@@ -5,7 +5,7 @@ import org.mapstruct.Mapper;
 import uk.nhs.tis.sync.dto.SiteDmsDto;
 
 @Mapper(componentModel = "spring")
-public interface SiteMapper {
+public interface SiteMapper extends DmsMapper<SiteDTO, SiteDmsDto> {
 
   SiteDmsDto toDmsDto(SiteDTO site);
 }
