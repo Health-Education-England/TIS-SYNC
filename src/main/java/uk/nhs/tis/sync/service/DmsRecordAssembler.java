@@ -1,23 +1,17 @@
 package uk.nhs.tis.sync.service;
 
-import com.transformuk.hee.tis.tcs.api.dto.CurriculumMembershipDTO;
-import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Component;
-import uk.nhs.tis.sync.dto.CurriculumMembershipDmsDto;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.DmsDtoType;
 import uk.nhs.tis.sync.dto.MetadataDto;
-import uk.nhs.tis.sync.mapper.CurriculumMembershipMapper;
-import uk.nhs.tis.sync.mapper.CurriculumMembershipMapperImpl;
 import uk.nhs.tis.sync.mapper.DmsMapper;
 
 @Component
@@ -38,7 +32,6 @@ public class DmsRecordAssembler {
   public List<DmsDto> assembleDmsDtos(List<Object> dtos) {
     return dtos.stream()
         .map(this::assembleDmsDto)
-        .filter(Objects::nonNull)
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
   }
@@ -51,9 +44,8 @@ public class DmsRecordAssembler {
    * @return The list of DmsDtos, complete with data and metadata.
    */
   private List<DmsDto> assembleDmsDto(Object dto) {
-    List<DmsDto> dmsDtos = null;
-    boolean hasMultipleDmsDtos = false;
-    Object dmsData = null;
+    List<DmsDto> dmsDtoList = new ArrayList<>();
+    List<Object> dmsDataList = new ArrayList<>();
     String schema = null;
     String table = null;
 
@@ -66,56 +58,20 @@ public class DmsRecordAssembler {
 
       if (mapperClass != null) {
         DmsMapper<?, ?> dmsMapper = Mappers.getMapper(mapperClass);
-        dmsData = dmsMapper.objectToDmsDto(dto);
-        if (dto instanceof ProgrammeMembershipDTO) {
-          hasMultipleDmsDtos = true;
-          dmsDtos = buildCurriculumMembershipDmsDtos(schema, table, (ProgrammeMembershipDTO) dto,
-              (CurriculumMembershipDmsDto) dmsData);
-        }
+        dmsDataList.addAll(dmsMapper.objectToDmsDto(dto));
       } else {
-        dmsData = dto;
+        dmsDataList.add(dto);
       }
     }
 
-    if (hasMultipleDmsDtos) {
-      return dmsDtos;
-    } else {
-      if (dmsData != null) {
+    if (!dmsDataList.isEmpty()) {
+      for (Object dmsData : dmsDataList) {
         MetadataDto metadata = new MetadataDto(Instant.now().toString(), DATA, LOAD,
             PARTITION_KEY_TYPE, schema, table, UUID.randomUUID().toString());
-
-        return Collections.singletonList(new DmsDto(dmsData, metadata));
+        dmsDtoList.add(new DmsDto(dmsData, metadata));
       }
     }
 
-    return Collections.emptyList();
-  }
-
-  /**
-   * Builds a list of DmsDtos for the curriculum membership records within a ProgrammeMembershipDTO.
-   *
-   * @param schema the overall schema for the DTO mapping
-   * @param table the database table source for the programme membership
-   * @param dto the ProgrammeMembershipDTO containing the curriculum memberships
-   * @param programmeMembershipDtoDetails a parent CurriculumMembershipDmsDto with
-   *                                      programme membership information
-   * @return the list of DmsDtos containing CurriculumMembershipDmsDtos and metadata
-   */
-  private List<DmsDto> buildCurriculumMembershipDmsDtos(String schema, String table,
-                                                        ProgrammeMembershipDTO dto,
-                                                        CurriculumMembershipDmsDto programmeMembershipDtoDetails) {
-    List<DmsDto> dmsDtos = new ArrayList<>();
-    CurriculumMembershipMapper curriculumMembershipMapper = new CurriculumMembershipMapperImpl();
-    for (CurriculumMembershipDTO cm : dto.getCurriculumMemberships()) {
-      CurriculumMembershipDmsDto cmDmsData = curriculumMembershipMapper.toDmsDto(cm);
-      if (cmDmsData != null) {
-        curriculumMembershipMapper
-            .addProgrammeMembershipDetails(programmeMembershipDtoDetails, cmDmsData);
-        MetadataDto metadata = new MetadataDto(Instant.now().toString(), DATA, LOAD,
-            PARTITION_KEY_TYPE, schema, table, UUID.randomUUID().toString());
-        dmsDtos.add(new DmsDto(cmDmsData, metadata));
-      }
-    }
-    return dmsDtos;
+    return dmsDtoList;
   }
 }
