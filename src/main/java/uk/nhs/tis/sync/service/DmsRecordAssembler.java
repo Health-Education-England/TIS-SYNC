@@ -16,7 +16,6 @@ import uk.nhs.tis.sync.dto.CurriculumMembershipDmsDto;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.DmsDtoType;
 import uk.nhs.tis.sync.dto.MetadataDto;
-import uk.nhs.tis.sync.mapper.CurriculumMapper;
 import uk.nhs.tis.sync.mapper.CurriculumMembershipMapper;
 import uk.nhs.tis.sync.mapper.CurriculumMembershipMapperImpl;
 import uk.nhs.tis.sync.mapper.DmsMapper;
@@ -66,22 +65,12 @@ public class DmsRecordAssembler {
       Class<? extends DmsMapper<?, ?>> mapperClass = dmsDtoType.getMapperClass();
 
       if (mapperClass != null) {
+        DmsMapper<?, ?> dmsMapper = Mappers.getMapper(mapperClass);
+        dmsData = dmsMapper.objectToDmsDto(dto);
         if (dto instanceof ProgrammeMembershipDTO) {
           hasMultipleDmsDtos = true;
-          dmsDtos = new ArrayList<>();
-          for (CurriculumMembershipDTO cm : ((ProgrammeMembershipDTO) dto).getCurriculumMemberships()) {
-            CurriculumMembershipMapper curriculumMembershipMapper = new CurriculumMembershipMapperImpl();
-            CurriculumMembershipDmsDto cmDmsData = curriculumMembershipMapper.toDmsDto(cm);
-            if (cmDmsData != null) {
-              curriculumMembershipMapper.setProgrammeMembershipDetails((ProgrammeMembershipDTO) dto, cmDmsData);
-              MetadataDto metadata = new MetadataDto(Instant.now().toString(), DATA, LOAD,
-                  PARTITION_KEY_TYPE, schema, table, UUID.randomUUID().toString());
-              dmsDtos.add(new DmsDto(cmDmsData, metadata));
-            }
-          }
-        } else {
-          DmsMapper<?, ?> dmsMapper = Mappers.getMapper(mapperClass);
-          dmsData = dmsMapper.objectToDmsDto(dto);
+          dmsDtos = buildCurriculumMembershipDmsDtos(schema, table, (ProgrammeMembershipDTO) dto,
+              (CurriculumMembershipDmsDto) dmsData);
         }
       } else {
         dmsData = dto;
@@ -100,5 +89,33 @@ public class DmsRecordAssembler {
     }
 
     return Collections.emptyList();
+  }
+
+  /**
+   * Builds a list of DmsDtos for the curriculum membership records within a ProgrammeMembershipDTO.
+   *
+   * @param schema the overall schema for the DTO mapping
+   * @param table the database table source for the programme membership
+   * @param dto the ProgrammeMembershipDTO containing the curriculum memberships
+   * @param programmeMembershipDtoDetails a parent CurriculumMembershipDmsDto with
+   *                                      programme membership information
+   * @return the list of DmsDtos containing CurriculumMembershipDmsDtos and metadata
+   */
+  private List<DmsDto> buildCurriculumMembershipDmsDtos(String schema, String table,
+                                                        ProgrammeMembershipDTO dto,
+                                                        CurriculumMembershipDmsDto programmeMembershipDtoDetails) {
+    List<DmsDto> dmsDtos = new ArrayList<>();
+    CurriculumMembershipMapper curriculumMembershipMapper = new CurriculumMembershipMapperImpl();
+    for (CurriculumMembershipDTO cm : dto.getCurriculumMemberships()) {
+      CurriculumMembershipDmsDto cmDmsData = curriculumMembershipMapper.toDmsDto(cm);
+      if (cmDmsData != null) {
+        curriculumMembershipMapper
+            .addProgrammeMembershipDetails(programmeMembershipDtoDetails, cmDmsData);
+        MetadataDto metadata = new MetadataDto(Instant.now().toString(), DATA, LOAD,
+            PARTITION_KEY_TYPE, schema, table, UUID.randomUUID().toString());
+        dmsDtos.add(new DmsDto(cmDmsData, metadata));
+      }
+    }
+    return dmsDtos;
   }
 }

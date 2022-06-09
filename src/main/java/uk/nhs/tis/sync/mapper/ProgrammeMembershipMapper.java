@@ -9,7 +9,8 @@ import org.mapstruct.Named;
 import uk.nhs.tis.sync.dto.CurriculumMembershipDmsDto;
 
 @Mapper(componentModel = "spring")
-public interface ProgrammeMembershipMapper {
+public interface ProgrammeMembershipMapper extends
+    DmsMapper<ProgrammeMembershipDTO, CurriculumMembershipDmsDto> {
 
   /**
    * Converts a ProgrammeMembershipDTO to a CurriculumMembershipDmsDto.

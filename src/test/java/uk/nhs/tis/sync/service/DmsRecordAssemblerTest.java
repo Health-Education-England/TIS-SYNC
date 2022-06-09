@@ -321,7 +321,8 @@ class DmsRecordAssemblerTest {
     programmeMembershipDto.setProgrammeEndDate(LocalDate.of(2022, 2, 2));
     programmeMembershipDto.setLeavingReason("a leaving reason");
     programmeMembershipDto.setLeavingDestination("a leaving destination");
-    programmeMembershipDto.setCurriculumMemberships(Arrays.asList(curriculumMembershipDto, curriculumMembershipDto2));
+    programmeMembershipDto.setCurriculumMemberships(
+        Arrays.asList(curriculumMembershipDto, curriculumMembershipDto2));
 
     //when
     List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
@@ -332,41 +333,65 @@ class DmsRecordAssemblerTest {
     DmsDto dmsDto = dmsDtos.get(0);
 
     Object data = dmsDto.getData();
-    assertThat("Unexpected data.", data, instanceOf(ProgrammeMembershipDmsDto.class));
+    assertThat("Unexpected data.", data, instanceOf(CurriculumMembershipDmsDto.class));
 
-    ProgrammeMembershipDmsDto programmeMembershipDmsDto = (ProgrammeMembershipDmsDto) data;
-    assertThat("Unexpected id.", programmeMembershipDmsDto.getId(), is("1111"));
+    CurriculumMembershipDmsDto CurriculumMembershipDmsDto = (CurriculumMembershipDmsDto) data;
+    assertThat("Unexpected id.",
+        CurriculumMembershipDmsDto.getId(),
+        is("1111"));
     assertThat("Unexpected curriculum start date.",
-        programmeMembershipDmsDto.getCurriculumStartDate(), is("2021-02-02"));
-    assertThat("Unexpected curriculum end date.", programmeMembershipDmsDto.getCurriculumEndDate(),
+        CurriculumMembershipDmsDto.getCurriculumStartDate(),
+        is("2021-02-02"));
+    assertThat("Unexpected curriculum end date.",
+        CurriculumMembershipDmsDto.getCurriculumEndDate(),
         is("2022-01-01"));
     assertThat("Unexpected curriculum completion date.",
-        programmeMembershipDmsDto.getCurriculumCompletionDate(), is("2022-01-02"));
-    assertThat("Unexpected period of grace.", programmeMembershipDmsDto.getPeriodOfGrace(),
+        CurriculumMembershipDmsDto.getCurriculumCompletionDate(),
+        is("2022-01-02"));
+    assertThat("Unexpected period of grace.",
+        CurriculumMembershipDmsDto.getPeriodOfGrace(),
         is("5"));
-    assertThat("Unexpected curriculum id.", programmeMembershipDmsDto.getCurriculumId(), is("4"));
-    assertThat("Unexpected intrepid id.", programmeMembershipDmsDto.getIntrepidId(), is("12345"));
+    assertThat("Unexpected curriculum id.",
+        CurriculumMembershipDmsDto.getCurriculumId(),
+        is("4"));
+    assertThat("Unexpected intrepid id.",
+        CurriculumMembershipDmsDto.getIntrepidId(),
+        is("12345"));
     assertThat("Unexpected programme membership UUID.",
-        programmeMembershipDmsDto.getProgrammeMembershipUuid(),
+        CurriculumMembershipDmsDto.getProgrammeMembershipUuid(),
         is("123e4567-e89b-12d3-a456-426614174000"));
-    assertThat("Unexpected person ID.", programmeMembershipDmsDto.getPersonId(), is("1"));
-    assertThat("Unexpected programme ID.", programmeMembershipDmsDto.getProgrammeId(), is("123"));
-    assertThat("Unexpected rotation ID.", programmeMembershipDmsDto.getRotationId(), is("2"));
-    assertThat("Unexpected rotation.", programmeMembershipDmsDto.getRotation(), is("a rotation"));
-    assertThat("Unexpected training number ID.", programmeMembershipDmsDto.getTrainingNumberId(),
+    assertThat("Unexpected person ID.",
+        CurriculumMembershipDmsDto.getPersonId(),
+        is("1"));
+    assertThat("Unexpected programme ID.",
+        CurriculumMembershipDmsDto.getProgrammeId(),
+        is("123"));
+    assertThat("Unexpected rotation ID.",
+        CurriculumMembershipDmsDto.getRotationId(),
+        is("2"));
+    assertThat("Unexpected rotation.",
+        CurriculumMembershipDmsDto.getRotation(),
+        is("a rotation"));
+    assertThat("Unexpected training number ID.",
+        CurriculumMembershipDmsDto.getTrainingNumberId(),
         is("3"));
-    assertThat("Unexpected training pathway.", programmeMembershipDmsDto.getTrainingPathway(),
+    assertThat("Unexpected training pathway.",
+        CurriculumMembershipDmsDto.getTrainingPathway(),
         is("a training pathway"));
     assertThat("Unexpected programme membership type.",
-        programmeMembershipDmsDto.getProgrammeMembershipType(),
+        CurriculumMembershipDmsDto.getProgrammeMembershipType(),
         is(ProgrammeMembershipType.SUBSTANTIVE.toString()));
     assertThat("Unexpected programme start date.",
-        programmeMembershipDmsDto.getProgrammeStartDate(), is("2021-01-01"));
-    assertThat("Unexpected programme end date.", programmeMembershipDmsDto.getProgrammeEndDate(),
+        CurriculumMembershipDmsDto.getProgrammeStartDate(),
+        is("2021-01-01"));
+    assertThat("Unexpected programme end date.",
+        CurriculumMembershipDmsDto.getProgrammeEndDate(),
         is("2022-02-02"));
-    assertThat("Unexpected leaving reason.", programmeMembershipDmsDto.getLeavingReason(),
+    assertThat("Unexpected leaving reason.",
+        CurriculumMembershipDmsDto.getLeavingReason(),
         is("a leaving reason"));
-    assertThat("Unexpected leaving destination.", programmeMembershipDmsDto.getLeavingDestination(),
+    assertThat("Unexpected leaving destination.",
+        CurriculumMembershipDmsDto.getLeavingDestination(),
         is("a leaving destination"));
 
     MetadataDto metadata = dmsDto.getMetadata();
@@ -379,47 +404,79 @@ class DmsRecordAssemblerTest {
     assertThat("Unexpected table.", metadata.getTableName(), is("CurriculumMembership"));
     assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
 
-//    DmsDto actualDmsDto2 = actualDmsDtos.get(1);
-//
-//    ProgrammeMembershipDmsDto expectedProgrammeMembershipDmsDto2 = new ProgrammeMembershipDmsDto();
-//    expectedProgrammeMembershipDmsDto2.setId("101111");
-//    expectedProgrammeMembershipDmsDto2.setCurriculumStartDate("3021-02-02");
-//    expectedProgrammeMembershipDmsDto2.setCurriculumEndDate("3022-01-01");
-//    expectedProgrammeMembershipDmsDto2.setCurriculumCompletionDate("3022-01-02");
-//    expectedProgrammeMembershipDmsDto2.setPeriodOfGrace("105");
-//    expectedProgrammeMembershipDmsDto2.setCurriculumId("104");
-//    expectedProgrammeMembershipDmsDto2.setIntrepidId("1012345");
-//    expectedProgrammeMembershipDmsDto2.setProgrammeMembershipUuid("123e4567-e89b-12d3-a456-426614174000");
-//    expectedProgrammeMembershipDmsDto2.setPersonId("1");
-//    expectedProgrammeMembershipDmsDto2.setProgrammeId("123");
-//    expectedProgrammeMembershipDmsDto2.setRotationId("2");
-//    expectedProgrammeMembershipDmsDto2.setRotation("a rotation");
-//    expectedProgrammeMembershipDmsDto2.setTrainingNumberId("3");
-//    expectedProgrammeMembershipDmsDto2.setTrainingPathway("a training pathway");
-//    expectedProgrammeMembershipDmsDto2.setProgrammeMembershipType(ProgrammeMembershipType.SUBSTANTIVE.toString());
-//    expectedProgrammeMembershipDmsDto2.setProgrammeStartDate("2021-01-01");
-//    expectedProgrammeMembershipDmsDto2.setProgrammeEndDate("2022-02-02");
-//    expectedProgrammeMembershipDmsDto2.setLeavingReason("a leaving reason");
-//    expectedProgrammeMembershipDmsDto2.setLeavingDestination("a leaving destination");
-//
-//    //inject the timestamp from the actualDmsDto into the expectedDmsDto
-//    String timestamp2 = actualDmsDto2.getMetadata().getTimestamp();
-//
-//    //inject the transaction-id from the actualDmsDto into the expectedDmsDto
-//    String transactionId2 = actualDmsDto2.getMetadata().getTransactionId();
-//
-//    MetadataDto expectedMetadataDto2 = new MetadataDto();
-//    expectedMetadataDto2.setTimestamp(timestamp2);
-//    expectedMetadataDto2.setRecordType("data");
-//    expectedMetadataDto2.setOperation("load");
-//    expectedMetadataDto2.setPartitionKeyType("schema-table");
-//    expectedMetadataDto2.setSchemaName("tcs");
-//    expectedMetadataDto2.setTableName("CurriculumMembership");
-//    expectedMetadataDto2.setTransactionId(transactionId2);
-//
-//    DmsDto expectedDmsDto2 = new DmsDto(expectedProgrammeMembershipDmsDto2, expectedMetadataDto2);
-//
-//    assertEquals(expectedDmsDto2, actualDmsDto2);
+    DmsDto dmsDto2 = dmsDtos.get(1);
+
+    Object data2 = dmsDto2.getData();
+    assertThat("Unexpected data.", data2, instanceOf(CurriculumMembershipDmsDto.class));
+
+    CurriculumMembershipDmsDto CurriculumMembershipDmsDto2 = (CurriculumMembershipDmsDto) data2;
+    assertThat("Unexpected id.",
+        CurriculumMembershipDmsDto2.getId(),
+        is("101111"));
+    assertThat("Unexpected curriculum start date.",
+        CurriculumMembershipDmsDto2.getCurriculumStartDate(),
+        is("3021-02-02"));
+    assertThat("Unexpected curriculum end date.",
+        CurriculumMembershipDmsDto2.getCurriculumEndDate(),
+        is("3022-01-01"));
+    assertThat("Unexpected curriculum completion date.",
+        CurriculumMembershipDmsDto2.getCurriculumCompletionDate(),
+        is("3022-01-02"));
+    assertThat("Unexpected period of grace.",
+        CurriculumMembershipDmsDto2.getPeriodOfGrace(),
+        is("105"));
+    assertThat("Unexpected curriculum id.",
+        CurriculumMembershipDmsDto2.getCurriculumId(),
+        is("104"));
+    assertThat("Unexpected intrepid id.",
+        CurriculumMembershipDmsDto2.getIntrepidId(),
+        is("1012345"));
+    assertThat("Unexpected programme membership UUID.",
+        CurriculumMembershipDmsDto2.getProgrammeMembershipUuid(),
+        is(CurriculumMembershipDmsDto.getProgrammeMembershipUuid()));
+    assertThat("Unexpected person ID.",
+        CurriculumMembershipDmsDto2.getPersonId(),
+        is(CurriculumMembershipDmsDto.getPersonId()));
+    assertThat("Unexpected programme ID.",
+        CurriculumMembershipDmsDto2.getProgrammeId(),
+        is(CurriculumMembershipDmsDto.getProgrammeId()));
+    assertThat("Unexpected rotation ID.",
+        CurriculumMembershipDmsDto2.getRotationId(),
+        is(CurriculumMembershipDmsDto.getRotationId()));
+    assertThat("Unexpected rotation.",
+        CurriculumMembershipDmsDto2.getRotation(),
+        is(CurriculumMembershipDmsDto.getRotation()));
+    assertThat("Unexpected training number ID.",
+        CurriculumMembershipDmsDto2.getTrainingNumberId(),
+        is(CurriculumMembershipDmsDto.getTrainingNumberId()));
+    assertThat("Unexpected training pathway.",
+        CurriculumMembershipDmsDto2.getTrainingPathway(),
+        is(CurriculumMembershipDmsDto.getTrainingPathway()));
+    assertThat("Unexpected programme membership type.",
+        CurriculumMembershipDmsDto2.getProgrammeMembershipType(),
+        is(CurriculumMembershipDmsDto.getProgrammeMembershipType()));
+    assertThat("Unexpected programme start date.",
+        CurriculumMembershipDmsDto2.getProgrammeStartDate(),
+        is(CurriculumMembershipDmsDto.getProgrammeStartDate()));
+    assertThat("Unexpected programme end date.",
+        CurriculumMembershipDmsDto2.getProgrammeEndDate(),
+        is(CurriculumMembershipDmsDto.getProgrammeEndDate()));
+    assertThat("Unexpected leaving reason.",
+        CurriculumMembershipDmsDto2.getLeavingReason(),
+        is(CurriculumMembershipDmsDto.getLeavingReason()));
+    assertThat("Unexpected leaving destination.",
+        CurriculumMembershipDmsDto2.getLeavingDestination(),
+        is(CurriculumMembershipDmsDto.getLeavingDestination()));
+
+    MetadataDto metadata2 = dmsDto2.getMetadata();
+    assertThat("Unexpected timestamp.", metadata2.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata2.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata2.getOperation(), is("load"));
+    assertThat("Unexpected partition key type.", metadata2.getPartitionKeyType(),
+        is("schema-table"));
+    assertThat("Unexpected schema.", metadata2.getSchemaName(), is("tcs"));
+    assertThat("Unexpected table.", metadata2.getTableName(), is("CurriculumMembership"));
+    assertThat("Unexpected transaction id.", metadata2.getTransactionId(), notNullValue());
   }
 
   @Test
