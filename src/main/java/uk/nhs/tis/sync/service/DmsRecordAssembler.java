@@ -1,5 +1,7 @@
 package uk.nhs.tis.sync.service;
 
+import com.transformuk.hee.tis.tcs.api.dto.CurriculumMembershipDTO;
+import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,8 +10,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import com.transformuk.hee.tis.tcs.api.dto.CurriculumMembershipDTO;
-import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.dto.CurriculumMembershipDmsDto;
