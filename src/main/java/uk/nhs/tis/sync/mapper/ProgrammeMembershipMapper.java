@@ -72,19 +72,7 @@ public interface ProgrammeMembershipMapper extends
     for (CurriculumMembershipDTO cm : pmDto.getCurriculumMemberships()) {
       CurriculumMembershipDmsDto dmsDto = curriculumMembershipMapper.toDmsDto(cm);
       if (dmsDto != null) {
-        dmsDto.setProgrammeMembershipUuid(dmsDtoFromPm.getProgrammeMembershipUuid());
-        dmsDto.setPersonId(dmsDtoFromPm.getPersonId());
-        dmsDto.setProgrammeId(dmsDtoFromPm.getProgrammeId());
-        dmsDto.setRotationId(dmsDtoFromPm.getRotationId());
-        dmsDto.setRotation(dmsDtoFromPm.getRotation());
-        dmsDto.setTrainingNumberId(dmsDtoFromPm.getTrainingNumberId());
-        dmsDto.setTrainingPathway(dmsDtoFromPm.getTrainingPathway());
-        dmsDto.setProgrammeMembershipType(dmsDtoFromPm.getProgrammeMembershipType());
-        dmsDto.setProgrammeStartDate(dmsDtoFromPm.getProgrammeStartDate());
-        dmsDto.setProgrammeEndDate(dmsDtoFromPm.getProgrammeEndDate());
-        dmsDto.setLeavingReason(dmsDtoFromPm.getLeavingReason());
-        dmsDto.setLeavingDestination(dmsDtoFromPm.getLeavingDestination());
-
+        curriculumMembershipMapper.update(dmsDto, dmsDtoFromPm);
         dmsDtos.add(dmsDto);
       }
     }
