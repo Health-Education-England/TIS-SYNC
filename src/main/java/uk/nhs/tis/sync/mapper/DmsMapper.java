@@ -17,16 +17,13 @@ public interface DmsMapper<I, O> {
   O toDmsDto(I input);
 
   /**
-   * Convert from an object to a DMS DTO output.
+   * Convert from an object to a DMS DTO output, a {@link ClassCastException} will be thrown if the
+   * provided object is not of type {@link I}.
    *
    * @param object The object to convert.
-   * @return The converted object, or null if the object was not of the correct class.
+   * @return The converted object.
    */
   default O objectToDmsDto(Object object) {
-    try {
-      return toDmsDto((I) object);
-    } catch (ClassCastException e) {
-      return null;
-    }
+    return toDmsDto((I) object);
   }
 }
