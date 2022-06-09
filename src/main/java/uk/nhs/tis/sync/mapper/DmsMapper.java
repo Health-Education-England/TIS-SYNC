@@ -21,6 +21,7 @@ public interface DmsMapper<I, O> {
 
   /**
    * Convert an entity DTO input to a DMS DTO output.
+   *
    * @param input The input to convert.
    * @return The list of converted DMS DTOs
    */
@@ -29,8 +30,8 @@ public interface DmsMapper<I, O> {
   }
 
   /**
-   * Convert from an object to a list of DMS DTOs, a {@link ClassCastException} will be thrown if the
-   * provided object is not of type {@link I}.
+   * Convert from an object to a list of DMS DTOs, a {@link ClassCastException} will be thrown if
+   * the provided object is not of type {@link I}.
    *
    * @param object The object to convert.
    * @return The converted object.
