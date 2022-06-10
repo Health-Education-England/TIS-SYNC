@@ -23,6 +23,7 @@ import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
+import com.transformuk.hee.tis.tcs.api.dto.QualificationDTO;
 import com.transformuk.hee.tis.tcs.api.dto.RotationDTO;
 import com.transformuk.hee.tis.tcs.api.dto.SpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.dto.SpecialtyGroupDTO;
@@ -33,6 +34,7 @@ import com.transformuk.hee.tis.tcs.api.enumeration.LifecycleState;
 import com.transformuk.hee.tis.tcs.api.enumeration.PlacementStatus;
 import com.transformuk.hee.tis.tcs.api.enumeration.PostSpecialtyType;
 import com.transformuk.hee.tis.tcs.api.enumeration.ProgrammeMembershipType;
+import com.transformuk.hee.tis.tcs.api.enumeration.QualificationType;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -54,6 +56,7 @@ import uk.nhs.tis.sync.dto.PlacementDetailsDmsDto;
 import uk.nhs.tis.sync.dto.PlacementSpecialtyDmsDto;
 import uk.nhs.tis.sync.dto.PostDmsDto;
 import uk.nhs.tis.sync.dto.ProgrammeDmsDto;
+import uk.nhs.tis.sync.dto.QualificationDmsDto;
 import uk.nhs.tis.sync.dto.SiteDmsDto;
 import uk.nhs.tis.sync.dto.SpecialtyDmsDto;
 import uk.nhs.tis.sync.dto.TrustDmsDto;
@@ -490,7 +493,56 @@ class DmsRecordAssemblerTest {
   @Test
   @Disabled("Not yet implemented")
   void shouldAssembleQualification() {
-    Assertions.fail("Not yet implemented.");
+    PersonDTO personDto = new PersonDTO();
+    personDto.setId(100L);
+    QualificationDTO qualificationDto = new QualificationDTO();
+    qualificationDto.setId(1L);
+    qualificationDto.setQualification("a qualification");
+    qualificationDto.setIntrepidId("i2");
+    qualificationDto.setQualificationType(QualificationType.HIGHER_QUALIFICATION);
+    qualificationDto.setPerson(personDto);
+    qualificationDto.setCountryOfQualification("a country");
+    qualificationDto.setMedicalSchool("medical school");
+    qualificationDto.setQualificationAttainedDate(LocalDate.MIN);
+    qualificationDto.setAmendedDate(LocalDateTime.of(2021, 1, 1, 1, 1, 1));
+
+    List<DmsDto> actualDmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(qualificationDto));
+
+    assertThat("Unexpected DTO count.", actualDmsDtos.size(), is(1));
+    DmsDto actualDmsDto = actualDmsDtos.get(0);
+
+    MetadataDto metadata = actualDmsDto.getMetadata();
+    assertThat("Unexpected record type.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
+    assertThat("Unexpected partition key.", metadata.getPartitionKeyType(), is("schema-table"));
+    assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
+    assertThat("Unexpected table.", metadata.getTableName(), is("Qualification"));
+    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
+
+    Object data = actualDmsDto.getData();
+    assertThat("Unexpected data.", data, instanceOf(QualificationDmsDto.class));
+
+    QualificationDmsDto qualificationDms = (QualificationDmsDto) data;
+    assertThat("Unexpected record id.",
+        qualificationDms.getId(), is("1"));
+    assertThat("Unexpected record qualification.",
+        qualificationDms.getQualification(), is("a qualification"));
+    assertThat("Unexpected record intrepid id.",
+        qualificationDms.getIntrepidId(), is("i2"));
+    assertThat("Unexpected record qualification type.",
+        qualificationDms.getQualificationType(),
+        is(QualificationType.HIGHER_QUALIFICATION.toString()));
+    assertThat("Unexpected record person id.",
+        qualificationDms.getPersonId(), is("100"));
+    assertThat("Unexpected record country of qualification.",
+        qualificationDms.getCountryOfQualification(), is("a country"));
+    assertThat("Unexpected record medical school.",
+        qualificationDms.getMedicalSchool(), is("medical school"));
+    assertThat("Unexpected record qualification attained date.",
+        qualificationDms.getQualificationAttainedDate(), is(LocalDate.MIN.toString()));
+    assertThat("Unexpected amended date.",
+        qualificationDms.getAmendedDate(), is(LocalDateTime.of(2021, 1, 1, 1, 1, 1).toString()));
   }
 
   @Test

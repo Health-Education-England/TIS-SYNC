@@ -13,6 +13,7 @@ import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
+import com.transformuk.hee.tis.tcs.api.dto.QualificationDTO;
 import com.transformuk.hee.tis.tcs.api.dto.SpecialtyDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,6 +25,7 @@ import uk.nhs.tis.sync.mapper.PlacementSpecialtyMapper;
 import uk.nhs.tis.sync.mapper.PostMapper;
 import uk.nhs.tis.sync.mapper.ProgrammeMapper;
 import uk.nhs.tis.sync.mapper.ProgrammeMembershipMapper;
+import uk.nhs.tis.sync.mapper.QualificationMapper;
 import uk.nhs.tis.sync.mapper.SiteMapper;
 import uk.nhs.tis.sync.mapper.SpecialtyMapper;
 import uk.nhs.tis.sync.mapper.TrustMapper;
@@ -49,7 +51,7 @@ public enum DmsDtoType {
   PROGRAMME(ProgrammeDTO.class, "tcs", "Programme", ProgrammeMapper.class),
   PROGRAMME_MEMBERSHIP(ProgrammeMembershipDTO.class, "tcs", "CurriculumMembership",
       ProgrammeMembershipMapper.class),
-  //  QUALIFICATION(QualificationDTO.class, "tcs", "Qualification", QualificationMapper.class),
+  QUALIFICATION(QualificationDTO.class, "tcs", "Qualification", QualificationMapper.class),
   SITE(SiteDTO.class, "reference", "Site", SiteMapper.class),
   SPECIALTY(SpecialtyDTO.class, "tcs", "Specialty", SpecialtyMapper.class),
   TRUST(TrustDTO.class, "reference", "Trust", TrustMapper.class);
