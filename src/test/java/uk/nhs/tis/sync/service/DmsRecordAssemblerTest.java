@@ -504,6 +504,7 @@ class DmsRecordAssemblerTest {
     qualificationDto.setCountryOfQualification("a country");
     qualificationDto.setMedicalSchool("medical school");
     qualificationDto.setQualificationAttainedDate(LocalDate.MIN);
+    qualificationDto.setAmendedDate(LocalDateTime.of(2021, 1, 1, 1, 1, 1));
 
     List<DmsDto> actualDmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(qualificationDto));
 
@@ -540,6 +541,8 @@ class DmsRecordAssemblerTest {
         qualificationDms.getMedicalSchool(), is("medical school"));
     assertThat("Unexpected record qualification attained date.",
         qualificationDms.getQualificationAttainedDate(), is(LocalDate.MIN.toString()));
+    assertThat("Unexpected amended date.",
+        qualificationDms.getAmendedDate(), is(LocalDateTime.of(2021, 1, 1, 1, 1, 1).toString()));
   }
 
   @Test

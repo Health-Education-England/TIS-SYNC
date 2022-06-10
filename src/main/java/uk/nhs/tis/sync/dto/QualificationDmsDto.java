@@ -14,4 +14,5 @@ public class QualificationDmsDto {
   private String countryOfQualification;
   private String personId;
   private String intrepidId;
+  private String amendedDate;
 }
