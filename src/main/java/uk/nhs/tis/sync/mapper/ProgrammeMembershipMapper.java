@@ -3,29 +3,23 @@ package uk.nhs.tis.sync.mapper;
 import com.transformuk.hee.tis.tcs.api.dto.CurriculumMembershipDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.ProgrammeMembershipType;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
-import org.mapstruct.factory.Mappers;
-import uk.nhs.tis.sync.dto.ProgrammeMembershipDmsDto;
+import uk.nhs.tis.sync.dto.CurriculumMembershipDmsDto;
 
-@Mapper(componentModel = "spring",
-    uses = {CurriculumMembershipMapper.class})
+@Mapper(componentModel = "spring")
 public interface ProgrammeMembershipMapper extends
-    DmsMapper<ProgrammeMembershipDTO, ProgrammeMembershipDmsDto> {
+    DmsMapper<ProgrammeMembershipDTO, CurriculumMembershipDmsDto> {
 
   /**
-   * Converts a ProgrammeMembershipDTO to a ProgrammeMembershipDmsDto.
-   *
-   * <p>Note that the ProgrammeMembershipDTO should have exactly one child CurriculumMembershipDTO,
-   * i.e. it should be a non-normalised ProgrammeMembershipDTO, not one which has been normalised by
-   * ProgrammeMembershipServiceImpl.findProgrammeMembershipsForTraineeRolledUp()</p>
+   * Converts a ProgrammeMembershipDTO to a CurriculumMembershipDmsDto.
    *
    * @param programmeMembershipDto the ProgrammeMembershipDTO to convert
-   * @return the ProgrammeMembershipDmsDto
+   * @return the CurriculumMembershipDmsDto
    */
 
   @Mapping(target = "rotation", source = "rotation.name")
@@ -42,7 +36,7 @@ public interface ProgrammeMembershipMapper extends
   @Mapping(target = "periodOfGrace", ignore = true)
   @Mapping(target = "curriculumId", ignore = true)
   @Mapping(target = "intrepidId", ignore = true)
-  ProgrammeMembershipDmsDto toDmsDto(ProgrammeMembershipDTO programmeMembershipDto);
+  CurriculumMembershipDmsDto toDmsDto(ProgrammeMembershipDTO programmeMembershipDto);
 
   @Named("getProgrammeMembershipUuid")
   default String getProgrammeMembershipUuid(UUID uuid) {
@@ -60,23 +54,28 @@ public interface ProgrammeMembershipMapper extends
     return null;
   }
 
-  @AfterMapping
-  default void setCurriculumDetails(ProgrammeMembershipDTO programmeMembershipDto,
-      @MappingTarget ProgrammeMembershipDmsDto dmsDto) {
-    if (programmeMembershipDto.getCurriculumMemberships() != null) {
-      CurriculumMembershipDTO curriculumMembershipDto
-          = programmeMembershipDto.getCurriculumMemberships().get(0);
+  /**
+   * Builds a list of DmsDtos from a programme membership's curriculum memberships.
+   *
+   * <p>Each will have details from the parent programme membership, as well as curriculum
+   * membership-specific information.</p>
+   *
+   * @param pmDto the ProgrammeMembershipDTO to process
+   * @return a list of CurriculumMembershipDmsDtos
+   */
+  @Override
+  default List<CurriculumMembershipDmsDto> toListDmsDto(ProgrammeMembershipDTO pmDto) {
+    List<CurriculumMembershipDmsDto> dmsDtos = new ArrayList<>();
+    CurriculumMembershipDmsDto dmsDtoFromPm = toDmsDto(pmDto);
+    CurriculumMembershipMapper curriculumMembershipMapper = new CurriculumMembershipMapperImpl();
 
-      CurriculumMembershipMapper curriculumMembershipMapper
-          = Mappers.getMapper(CurriculumMembershipMapper.class);
-      ProgrammeMembershipDmsDto dmsDtoCurriculumDetails
-          = curriculumMembershipMapper.toDmsDto(curriculumMembershipDto);
-      dmsDto.setCurriculumStartDate(dmsDtoCurriculumDetails.getCurriculumStartDate());
-      dmsDto.setCurriculumEndDate(dmsDtoCurriculumDetails.getCurriculumEndDate());
-      dmsDto.setCurriculumCompletionDate(dmsDtoCurriculumDetails.getCurriculumCompletionDate());
-      dmsDto.setPeriodOfGrace(dmsDtoCurriculumDetails.getPeriodOfGrace());
-      dmsDto.setCurriculumId(dmsDtoCurriculumDetails.getCurriculumId());
-      dmsDto.setIntrepidId(dmsDtoCurriculumDetails.getIntrepidId());
+    for (CurriculumMembershipDTO cm : pmDto.getCurriculumMemberships()) {
+      CurriculumMembershipDmsDto dmsDto = curriculumMembershipMapper.toDmsDto(cm);
+      if (dmsDto != null) {
+        curriculumMembershipMapper.update(dmsDto, dmsDtoFromPm);
+        dmsDtos.add(dmsDto);
+      }
     }
+    return dmsDtos;
   }
 }

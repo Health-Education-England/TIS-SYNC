@@ -1,6 +1,8 @@
 package uk.nhs.tis.sync.service;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -30,19 +32,20 @@ public class DmsRecordAssembler {
   public List<DmsDto> assembleDmsDtos(List<Object> dtos) {
     return dtos.stream()
         .map(this::assembleDmsDto)
-        .filter(Objects::nonNull)
+        .flatMap(Collection::stream)
         .collect(Collectors.toList());
   }
 
   /**
-   * The method that assembles a complete DmsDto starting from a dto (e.g. a PostDto or a TrustDto)
+   * The method that assembles a list of complete DmsDtos starting from a dto (e.g. a PostDto or a TrustDto)
    *
    * @param dto The dto which will be mapped to another dto representative of the "data" portion of
    *            a DmsDto (e.g. PostDmsDto).
-   * @return The DmsDto, complete with data and metadata.
+   * @return The list of DmsDtos, complete with data and metadata.
    */
-  private DmsDto assembleDmsDto(Object dto) {
-    Object dmsData = null;
+  private List<DmsDto> assembleDmsDto(Object dto) {
+    List<DmsDto> dmsDtoList = new ArrayList<>();
+    List<Object> dmsDataList = new ArrayList<>();
     String schema = null;
     String table = null;
 
@@ -55,19 +58,20 @@ public class DmsRecordAssembler {
 
       if (mapperClass != null) {
         DmsMapper<?, ?> dmsMapper = Mappers.getMapper(mapperClass);
-        dmsData = dmsMapper.objectToDmsDto(dto);
+        dmsDataList.addAll(dmsMapper.objectToDmsDto(dto));
       } else {
-        dmsData = dto;
+        dmsDataList.add(dto);
       }
     }
 
-    if (dmsData != null) {
-      MetadataDto metadata = new MetadataDto(Instant.now().toString(), DATA, LOAD,
-          PARTITION_KEY_TYPE, schema, table, UUID.randomUUID().toString());
-
-      return new DmsDto(dmsData, metadata);
+    if (!dmsDataList.isEmpty()) {
+      for (Object dmsData : dmsDataList) {
+        MetadataDto metadata = new MetadataDto(Instant.now().toString(), DATA, LOAD,
+            PARTITION_KEY_TYPE, schema, table, UUID.randomUUID().toString());
+        dmsDtoList.add(new DmsDto(dmsData, metadata));
+      }
     }
 
-    return null;
+    return dmsDtoList;
   }
 }

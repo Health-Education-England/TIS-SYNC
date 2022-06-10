@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProgrammeMembershipDmsDto {
+public class CurriculumMembershipDmsDto {
   //CurriculumMembership details
   private String id;
   private String curriculumStartDate;
@@ -15,6 +15,7 @@ public class ProgrammeMembershipDmsDto {
   private String curriculumId;
   private String intrepidId;
   private String programmeMembershipUuid;
+  private String amendedDate;
 
   //ProgrammeMembership details
   private String personId;
