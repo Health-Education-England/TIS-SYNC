@@ -9,7 +9,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +41,9 @@ public class KinesisService {
         // Values are read as strings from kinesis, convert all numbers to string values.
         .configure(JsonWriteFeature.WRITE_NUMBERS_AS_STRINGS, true)
         .serializationInclusion(Include.NON_NULL)
+        .addModule(new JavaTimeModule())
+        // The date format is required but appears to be ignored.
+        .defaultDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ"))
         .build();
   }
 
