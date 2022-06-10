@@ -37,6 +37,7 @@ public interface CurriculumMembershipMapper extends
   @Mapping(target = "periodOfGrace", ignore = true)
   @Mapping(target = "curriculumId", ignore = true)
   @Mapping(target = "intrepidId", ignore = true)
+  @Mapping(target = "amendedDate", ignore = true)
   CurriculumMembershipDmsDto update(@MappingTarget CurriculumMembershipDmsDto target,
                                     CurriculumMembershipDmsDto source);
 }

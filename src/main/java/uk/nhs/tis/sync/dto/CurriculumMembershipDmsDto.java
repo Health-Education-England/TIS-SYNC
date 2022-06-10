@@ -15,6 +15,7 @@ public class CurriculumMembershipDmsDto {
   private String curriculumId;
   private String intrepidId;
   private String programmeMembershipUuid;
+  private String amendedDate;
 
   //ProgrammeMembership details
   private String personId;

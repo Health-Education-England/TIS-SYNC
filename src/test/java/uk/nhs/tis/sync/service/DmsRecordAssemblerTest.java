@@ -298,6 +298,7 @@ class DmsRecordAssemblerTest {
     curriculumMembershipDto.setCurriculumCompletionDate(LocalDate.of(2022, 1, 2));
     curriculumMembershipDto.setPeriodOfGrace(5);
     curriculumMembershipDto.setIntrepidId("12345");
+    curriculumMembershipDto.setAmendedDate(LocalDateTime.of(2021, 1, 1, 1, 1, 1));
 
     CurriculumMembershipDTO curriculumMembershipDto2 = new CurriculumMembershipDTO();
     curriculumMembershipDto2.setCurriculumId(104L);
@@ -307,6 +308,7 @@ class DmsRecordAssemblerTest {
     curriculumMembershipDto2.setCurriculumCompletionDate(LocalDate.of(3022, 1, 2));
     curriculumMembershipDto2.setPeriodOfGrace(105);
     curriculumMembershipDto2.setIntrepidId("1012345");
+    curriculumMembershipDto2.setAmendedDate(LocalDateTime.of(3021, 1, 1, 1, 1, 1));
 
     ProgrammeMembershipDTO programmeMembershipDto = new ProgrammeMembershipDTO();
     programmeMembershipDto.setId(1111L);
@@ -357,6 +359,9 @@ class DmsRecordAssemblerTest {
     assertThat("Unexpected intrepid id.",
         CurriculumMembershipDmsDto.getIntrepidId(),
         is("12345"));
+    assertThat("Unexpected amended date.",
+        CurriculumMembershipDmsDto.getAmendedDate(),
+        is(LocalDateTime.of(2021, 1, 1, 1, 1, 1).toString()));
     assertThat("Unexpected programme membership UUID.",
         CurriculumMembershipDmsDto.getProgrammeMembershipUuid(),
         is("123e4567-e89b-12d3-a456-426614174000"));
@@ -431,6 +436,9 @@ class DmsRecordAssemblerTest {
     assertThat("Unexpected intrepid id.",
         CurriculumMembershipDmsDto2.getIntrepidId(),
         is("1012345"));
+    assertThat("Unexpected amended date.",
+        CurriculumMembershipDmsDto2.getAmendedDate(),
+        is(LocalDateTime.of(3021, 1, 1, 1, 1, 1).toString()));
     assertThat("Unexpected programme membership UUID.",
         CurriculumMembershipDmsDto2.getProgrammeMembershipUuid(),
         is(CurriculumMembershipDmsDto.getProgrammeMembershipUuid()));
