@@ -7,6 +7,9 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import uk.nhs.tis.sync.dto.QualificationDmsDto;
 
+/**
+ * A DMS mapper for converting QualificationDTOs into QualificationDmsDtos.
+ */
 @Mapper(componentModel = "spring")
 public interface QualificationMapper extends
     DmsMapper<QualificationDTO, QualificationDmsDto> {
@@ -15,6 +18,12 @@ public interface QualificationMapper extends
       qualifiedByName = "getQualificationType")
   QualificationDmsDto toDmsDto(QualificationDTO qualificationDto);
 
+  /**
+   * A helper function for converting qualificationType into a String.
+   *
+   * @param qualificationType the QualificationType to convert
+   * @return the QualificationType as a String
+   */
   @Named("getQualificationType")
   default String getQualificationType(QualificationType qualificationType) {
     if (qualificationType != null) {
