@@ -36,6 +36,8 @@ import com.transformuk.hee.tis.tcs.api.enumeration.ProgrammeMembershipType;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -47,6 +49,7 @@ import org.junit.jupiter.api.Test;
 import uk.nhs.tis.sync.dto.CurriculumDmsDto;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
+import uk.nhs.tis.sync.dto.PersonDmsDto;
 import uk.nhs.tis.sync.dto.PlacementDetailsDmsDto;
 import uk.nhs.tis.sync.dto.PlacementSpecialtyDmsDto;
 import uk.nhs.tis.sync.dto.PostDmsDto;
@@ -156,9 +159,50 @@ class DmsRecordAssemblerTest {
   }
 
   @Test
-  @Disabled("Not yet implemented")
   void shouldAssemblePerson() {
-    Assertions.fail("Not yet implemented.");
+    PersonDTO person = new PersonDTO();
+    person.setId(10L);
+    person.setIntrepidId("20");
+    person.setAddedDate(LocalDateTime.MIN);
+    person.setAmendedDate(LocalDateTime.MAX);
+    person.setRole("role1,role2");
+    person.setStatus(Status.INACTIVE);
+    person.setComments("someComments");
+    LocalDateTime now = LocalDateTime.now();
+    person.setInactiveDate(now);
+    person.setPublicHealthNumber("ph123");
+    person.setRegulator("regulator");
+
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(person));
+
+    assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
+    DmsDto dmsDto = dmsDtos.get(0);
+    assertThat("Unexpected data type.", dmsDto.getData(), instanceOf(PersonDmsDto.class));
+
+    PersonDmsDto personDms = (PersonDmsDto) dmsDto.getData();
+    assertThat("Unexpected id.", personDms.getId(), is("10"));
+    assertThat("Unexpected intrepid id.", personDms.getIntrepidId(), is("20"));
+    assertThat("Unexpected added date.", personDms.getAddedDate(),
+        is(LocalDateTime.MIN.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+    assertThat("Unexpected amended date.", personDms.getAmendedDate(),
+        is(LocalDateTime.MAX.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+    assertThat("Unexpected role.", personDms.getRole(), is("role1,role2"));
+    assertThat("Unexpected status.", personDms.getStatus(), is("INACTIVE"));
+    assertThat("Unexpected comments.", personDms.getComments(), is("someComments"));
+    assertThat("Unexpected inactive date.", personDms.getInactiveDate(),
+        is(now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+    assertThat("Unexpected Public Health Number.", personDms.getPublicHealthNumber(), is("ph123"));
+    assertThat("Unexpected regulator.", personDms.getRegulator(), is("regulator"));
+
+    MetadataDto metadata = dmsDto.getMetadata();
+    assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
+    assertThat("Unexpected partition key type.", metadata.getPartitionKeyType(),
+        is("schema-table"));
+    assertThat("Unexpected schema.", metadata.getSchemaName(), is("tcs"));
+    assertThat("Unexpected table.", metadata.getTableName(), is("Person"));
+    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
   }
 
   @Test
