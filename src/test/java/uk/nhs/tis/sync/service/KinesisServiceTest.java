@@ -16,6 +16,8 @@ import com.transformuk.hee.tis.tcs.api.dto.ContactDetailsDTO;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -195,8 +197,33 @@ class KinesisServiceTest {
     byte[] data = request.getRecords().get(0).getData().array();
     ObjectMapper objectMapper = new ObjectMapper();
     JsonNode jsonNode = objectMapper.readTree(data);
-    JsonNodeType nodeType = jsonNode.get("data").get("id").getNodeType();
+    JsonNode idNode = jsonNode.get("data").get("id");
 
-    assertThat("Unexpected node type.", nodeType, is(JsonNodeType.STRING));
+    assertThat("Unexpected node type.", idNode.getNodeType(), is(JsonNodeType.STRING));
+    assertThat("Unexpected id value.", idNode.textValue(), is("10"));
+  }
+
+  @Test
+  void shouldConvertDateToString() throws IOException {
+    LocalDateTime now = LocalDateTime.now();
+    ContactDetailsDTO contactDetails = new ContactDetailsDTO();
+    contactDetails.setId(10L);
+    contactDetails.setAmendedDate(now);
+    DmsDto dmsDto = new DmsDto(contactDetails, new MetadataDto());
+
+    kinesisService.sendData(STREAM_NAME, Collections.singletonList(dmsDto));
+
+    ArgumentCaptor<PutRecordsRequest> captor = ArgumentCaptor.forClass(PutRecordsRequest.class);
+    verify(mAmazonKinesis).putRecords(captor.capture());
+
+    PutRecordsRequest request = captor.getValue();
+    byte[] data = request.getRecords().get(0).getData().array();
+    ObjectMapper objectMapper = new ObjectMapper();
+    JsonNode jsonNode = objectMapper.readTree(data);
+    JsonNode amendedDateNode = jsonNode.get("data").get("amendedDate");
+
+    assertThat("Unexpected node type.", amendedDateNode.getNodeType(), is(JsonNodeType.STRING));
+    String nowString = now.format(DateTimeFormatter.ISO_DATE_TIME);
+    assertThat("Unexpected date value.", amendedDateNode.textValue(), is(nowString));
   }
 }
