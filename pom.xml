@@ -11,7 +11,7 @@
   </parent>
   <groupId>uk.nhs.tis</groupId>
   <artifactId>sync</artifactId>
-  <version>1.16.5</version>
+  <version>1.16.6</version>
   <packaging>jar</packaging>
   <name>sync</name>
   <description>Separate Microservice for synchronisation</description>
@@ -52,7 +52,7 @@
     <dependency>
       <groupId>com.transformuk.hee.tis</groupId>
       <artifactId>tcs-client</artifactId>
-      <version>5.15.0</version>
+      <version>6.0.0</version>
     </dependency>
     <dependency>
       <groupId>com.transformuk.hee</groupId>
