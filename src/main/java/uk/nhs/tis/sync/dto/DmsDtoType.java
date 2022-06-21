@@ -8,8 +8,8 @@ import com.transformuk.hee.tis.tcs.api.dto.GdcDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.GmcDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PersonDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PersonalDetailsDTO;
-import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PlacementSummaryDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
@@ -20,7 +20,7 @@ import lombok.Getter;
 import uk.nhs.tis.sync.mapper.CurriculumMapper;
 import uk.nhs.tis.sync.mapper.DmsMapper;
 import uk.nhs.tis.sync.mapper.PersonMapper;
-import uk.nhs.tis.sync.mapper.PlacementDetailsMapper;
+import uk.nhs.tis.sync.mapper.PlacementSummaryMapper;
 import uk.nhs.tis.sync.mapper.PlacementSpecialtyMapper;
 import uk.nhs.tis.sync.mapper.PostMapper;
 import uk.nhs.tis.sync.mapper.ProgrammeMapper;
@@ -44,7 +44,7 @@ public enum DmsDtoType {
   GMC_DETAILS(GmcDetailsDTO.class, "tcs", "GmcDetails", null),
   PERSON(PersonDTO.class, "tcs", "Person", PersonMapper.class),
   PERSONAL_DETAILS(PersonalDetailsDTO.class, "tcs", "PersonalDetails", null),
-  PLACEMENT_DETAILS(PlacementDetailsDTO.class, "tcs", "Placement", PlacementDetailsMapper.class),
+  PLACEMENT_DETAILS(PlacementSummaryDTO.class, "tcs", "Placement", PlacementSummaryMapper.class),
   PLACEMENT_SPECIALTY(PlacementSpecialtyDTO.class, "tcs", "PlacementSpecialty",
       PlacementSpecialtyMapper.class),
   POST(PostDTO.class, "tcs", "Post", PostMapper.class),
