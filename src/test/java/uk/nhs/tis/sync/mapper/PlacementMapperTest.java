@@ -6,11 +6,6 @@ import com.transformuk.hee.tis.tcs.api.dto.PlacementSummaryDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.PlacementStatus;
 import java.math.BigDecimal;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.Date;
-import java.util.Locale;
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +28,7 @@ public class PlacementMapperTest {
     placementSummaryDto.setDateTo(DateUtils.parseDate("2022-02-02", "yyyy-MM-dd"));
     placementSummaryDto.setPlacementWholeTimeEquivalent(new BigDecimal("1"));
     placementSummaryDto.setTraineeId(4500L);
-    //placementSummaryDto.setPostId(5L); //TODO
+    placementSummaryDto.setPostId(5L);
     placementSummaryDto.setGradeAbbreviation("gradeAbbreviation");
     placementSummaryDto.setPlacementType("placementType");
     placementSummaryDto.setStatus(PlacementStatus.CURRENT.toString());
@@ -54,7 +49,7 @@ public class PlacementMapperTest {
     assertEquals("2022-02-02", placementSummaryDmsDto.getDateTo());
     assertEquals("1", placementSummaryDmsDto.getWholeTimeEquivalent());
     assertEquals("4500", placementSummaryDmsDto.getTraineeId());
-    //TODO: assertEquals("5", placementSummaryDmsDto.getPostId());
+    assertEquals("5", placementSummaryDmsDto.getPostId());
     assertEquals("gradeAbbreviation", placementSummaryDmsDto.getGradeAbbreviation());
     assertEquals("placementType", placementSummaryDmsDto.getPlacementType());
     assertEquals("CURRENT", placementSummaryDmsDto.getStatus());

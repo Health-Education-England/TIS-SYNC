@@ -825,7 +825,7 @@ class DmsRecordAssemblerTest {
     placementSummaryDto.setDateTo(DateUtils.parseDate("2022-02-02", "yyyy-MM-dd"));
     placementSummaryDto.setTraineeId(4500L);
     placementSummaryDto.setPlacementWholeTimeEquivalent(new BigDecimal(1));
-    //TODO: placementSummaryDto.setPostId(5L);
+    placementSummaryDto.setPostId(5L);
     placementSummaryDto.setGradeAbbreviation("gradeAbbreviation");
     placementSummaryDto.setPlacementType("placementType");
     placementSummaryDto.setStatus(PlacementStatus.CURRENT.toString());
@@ -858,7 +858,7 @@ class DmsRecordAssemblerTest {
     assertThat("Unexpected wholeTimeEquivalent", "1",
         is(placementSummaryDmsDto.getWholeTimeEquivalent()));
     assertThat("Unexpected traineeId", "4500", is(placementSummaryDmsDto.getTraineeId()));
-    //TODO: assertThat("Unexpected postId", "5", is(placementSummaryDmsDto.getPostId()));
+    assertThat("Unexpected postId", "5", is(placementSummaryDmsDto.getPostId()));
     assertThat("Unexpected gradeAbbreviation", "gradeAbbreviation",
         is(placementSummaryDmsDto.getGradeAbbreviation()));
     assertThat("Unexpected placementType", "placementType",

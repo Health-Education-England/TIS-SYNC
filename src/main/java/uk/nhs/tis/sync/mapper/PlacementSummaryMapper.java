@@ -13,6 +13,5 @@ public interface PlacementSummaryMapper extends
   @Mapping(target = "wholeTimeEquivalent", source = "placementWholeTimeEquivalent")
   @Mapping(target = "dateFrom", dateFormat = "yyyy-MM-dd")
   @Mapping(target = "dateTo", dateFormat = "yyyy-MM-dd")
-  @Mapping(target = "postId", ignore = true) //FIXME
   PlacementSummaryDmsDto toDmsDto(PlacementSummaryDTO placementSummaryDto);
 }
