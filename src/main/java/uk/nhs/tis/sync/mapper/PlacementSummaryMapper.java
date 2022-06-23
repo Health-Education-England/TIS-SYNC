@@ -5,6 +5,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import uk.nhs.tis.sync.dto.PlacementSummaryDmsDto;
 
+/**
+ * A DMS mapper for converting PlacementSummaryDTOs into PlacementSummaryDmsDtos.
+ */
 @Mapper(componentModel = "spring")
 public interface PlacementSummaryMapper extends
     DmsMapper<PlacementSummaryDTO, PlacementSummaryDmsDto> {

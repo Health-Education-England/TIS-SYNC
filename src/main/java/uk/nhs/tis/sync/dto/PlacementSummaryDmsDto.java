@@ -3,6 +3,9 @@ package uk.nhs.tis.sync.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
+/**
+ * A DmsDto for a PlacementSummaryDTO.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
 public class PlacementSummaryDmsDto {
