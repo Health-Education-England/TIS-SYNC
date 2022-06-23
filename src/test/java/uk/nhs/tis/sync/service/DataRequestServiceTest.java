@@ -19,6 +19,7 @@ import com.transformuk.hee.tis.tcs.api.dto.PersonDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PersonalDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PlacementSummaryDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
@@ -127,15 +128,15 @@ class DataRequestServiceTest {
     when(tcsService.getPerson(personIdString)).thenReturn(person);
 
     // Create placements
-    List<PlacementDetailsDTO> placements = new ArrayList<>();
+    List<PlacementSummaryDTO> placements = new ArrayList<>();
 
-    PlacementDetailsDTO placement1 = new PlacementDetailsDTO();
-    placement1.setId(20L);
+    PlacementSummaryDTO placement1 = new PlacementSummaryDTO();
+    placement1.setPlacementId(20L);
     placement1.setTraineeId(personId);
     placements.add(placement1);
 
-    PlacementDetailsDTO placement2 = new PlacementDetailsDTO();
-    placement2.setId(21L);
+    PlacementSummaryDTO placement2 = new PlacementSummaryDTO();
+    placement2.setPlacementId(21L);
     placement2.setTraineeId(personId);
     placements.add(placement2);
 

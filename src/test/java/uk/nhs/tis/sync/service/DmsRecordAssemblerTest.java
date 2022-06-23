@@ -18,8 +18,8 @@ import com.transformuk.hee.tis.tcs.api.dto.GdcDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.GmcDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PersonDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PersonalDetailsDTO;
-import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
+import com.transformuk.hee.tis.tcs.api.dto.PlacementSummaryDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
@@ -30,20 +30,20 @@ import com.transformuk.hee.tis.tcs.api.dto.SpecialtyGroupDTO;
 import com.transformuk.hee.tis.tcs.api.dto.TrainingNumberDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.AssessmentType;
 import com.transformuk.hee.tis.tcs.api.enumeration.CurriculumSubType;
-import com.transformuk.hee.tis.tcs.api.enumeration.LifecycleState;
 import com.transformuk.hee.tis.tcs.api.enumeration.PlacementStatus;
 import com.transformuk.hee.tis.tcs.api.enumeration.PostSpecialtyType;
 import com.transformuk.hee.tis.tcs.api.enumeration.ProgrammeMembershipType;
 import com.transformuk.hee.tis.tcs.api.enumeration.QualificationType;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.Assertions;
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,7 @@ import uk.nhs.tis.sync.dto.CurriculumMembershipDmsDto;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PersonDmsDto;
-import uk.nhs.tis.sync.dto.PlacementDetailsDmsDto;
+import uk.nhs.tis.sync.dto.PlacementSummaryDmsDto;
 import uk.nhs.tis.sync.dto.PlacementSpecialtyDmsDto;
 import uk.nhs.tis.sync.dto.PostDmsDto;
 import uk.nhs.tis.sync.dto.ProgrammeDmsDto;
@@ -818,26 +818,21 @@ class DmsRecordAssemblerTest {
   }
 
   @Test
-  void shouldHandlePlacement() {
-    PlacementDetailsDTO placementDetailsDto = new PlacementDetailsDTO();
-    placementDetailsDto.setId(45L);
-    placementDetailsDto.setDateFrom(LocalDate.MIN);
-    placementDetailsDto.setDateTo(LocalDate.MAX);
-    placementDetailsDto.setWholeTimeEquivalent(new BigDecimal("1"));
-    placementDetailsDto.setIntrepidId("00");
-    placementDetailsDto.setTraineeId(4500L);
-    placementDetailsDto.setPostId(5L);
-    placementDetailsDto.setGradeAbbreviation("gradeAbbreviation");
-    placementDetailsDto.setPlacementType("placementType");
-    placementDetailsDto.setStatus(PlacementStatus.CURRENT);
-    placementDetailsDto.setTrainingDescription("trainingDescription");
-    placementDetailsDto.setGradeId(20L);
-    placementDetailsDto.setLifecycleState(LifecycleState.APPROVED);
-    placementDetailsDto.setSiteId(30L);
-    placementDetailsDto.setSiteCode("siteCode");
-    placementDetailsDto.setLocalPostNumber("PO5TN0");
+  void shouldHandlePlacement() throws ParseException {
+    PlacementSummaryDTO placementSummaryDto = new PlacementSummaryDTO();
+    placementSummaryDto.setPlacementId(45L);
+    placementSummaryDto.setDateFrom(DateUtils.parseDate("2020-01-01", "yyyy-MM-dd"));
+    placementSummaryDto.setDateTo(DateUtils.parseDate("2022-02-02", "yyyy-MM-dd"));
+    placementSummaryDto.setTraineeId(4500L);
+    placementSummaryDto.setPlacementWholeTimeEquivalent(new BigDecimal(1));
+    placementSummaryDto.setPostId(5L);
+    placementSummaryDto.setGradeAbbreviation("gradeAbbreviation");
+    placementSummaryDto.setPlacementType("placementType");
+    placementSummaryDto.setStatus(PlacementStatus.CURRENT.toString());
+    placementSummaryDto.setGradeId(20L);
+    placementSummaryDto.setSiteId(30L);
 
-    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(placementDetailsDto));
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(placementSummaryDto));
 
     assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
     DmsDto dmsDto = dmsDtos.get(0);
@@ -852,32 +847,24 @@ class DmsRecordAssemblerTest {
     assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
 
     Object data = dmsDto.getData();
-    assertThat("Unexpected data.", data, instanceOf(PlacementDetailsDmsDto.class));
+    assertThat("Unexpected data.", data, instanceOf(PlacementSummaryDmsDto.class));
 
-    PlacementDetailsDmsDto placementDetailsDmsDto = (PlacementDetailsDmsDto) data;
-    assertThat("Unexpected id", "45", is(placementDetailsDmsDto.getId()));
-    assertThat("Unexpected dateFrom", LocalDate.MIN.toString(),
-        is(placementDetailsDmsDto.getDateFrom()));
-    assertThat("Unexpected dateTo", LocalDate.MAX.toString(),
-        is(placementDetailsDmsDto.getDateTo()));
+    PlacementSummaryDmsDto placementSummaryDmsDto = (PlacementSummaryDmsDto) data;
+    assertThat("Unexpected id", "45", is(placementSummaryDmsDto.getId()));
+    assertThat("Unexpected dateFrom", "2020-01-01",
+        is(placementSummaryDmsDto.getDateFrom()));
+    assertThat("Unexpected dateTo", "2022-02-02",
+        is(placementSummaryDmsDto.getDateTo()));
     assertThat("Unexpected wholeTimeEquivalent", "1",
-        is(placementDetailsDmsDto.getWholeTimeEquivalent()));
-    assertThat("Unexpected intrepidId", "00", is(placementDetailsDmsDto.getIntrepidId()));
-    assertThat("Unexpected traineeId", "4500", is(placementDetailsDmsDto.getTraineeId()));
-    assertThat("Unexpected postId", "5", is(placementDetailsDmsDto.getPostId()));
+        is(placementSummaryDmsDto.getWholeTimeEquivalent()));
+    assertThat("Unexpected traineeId", "4500", is(placementSummaryDmsDto.getTraineeId()));
+    assertThat("Unexpected postId", "5", is(placementSummaryDmsDto.getPostId()));
     assertThat("Unexpected gradeAbbreviation", "gradeAbbreviation",
-        is(placementDetailsDmsDto.getGradeAbbreviation()));
+        is(placementSummaryDmsDto.getGradeAbbreviation()));
     assertThat("Unexpected placementType", "placementType",
-        is(placementDetailsDmsDto.getPlacementType()));
-    assertThat("Unexpected status", "CURRENT", is(placementDetailsDmsDto.getStatus()));
-    assertThat("Unexpected trainingDescription", "trainingDescription",
-        is(placementDetailsDmsDto.getTrainingDescription()));
-    assertThat("Unexpected gradeId", "20", is(placementDetailsDmsDto.getGradeId()));
-    assertThat("Unexpected lifecycleState", "APPROVED",
-        is(placementDetailsDmsDto.getLifecycleState()));
-    assertThat("Unexpected siteId", "30", is(placementDetailsDmsDto.getSiteId()));
-    assertThat("Unexpected siteCode", "siteCode", is(placementDetailsDmsDto.getSiteCode()));
-    assertThat("Unexpected localPostNumber", "PO5TN0",
-        is(placementDetailsDmsDto.getLocalPostNumber()));
+        is(placementSummaryDmsDto.getPlacementType()));
+    assertThat("Unexpected status", "CURRENT", is(placementSummaryDmsDto.getStatus()));
+    assertThat("Unexpected gradeId", "20", is(placementSummaryDmsDto.getGradeId()));
+    assertThat("Unexpected siteId", "30", is(placementSummaryDmsDto.getSiteId()));
   }
 }
