@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.transformuk.hee.tis.reference.api.dto.GradeDTO;
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
@@ -545,5 +546,49 @@ class DataRequestServiceTest {
     List<Object> trusts = service.retrieveDtos(messageForTrust);
 
     assertThat("Unexpected DTO count.", trusts.size(), is(0));
+  }
+
+  @Test
+  void shouldReturnGradeWhenGradeFound() {
+    GradeDTO expectedDto = new GradeDTO();
+    when(referenceService.findGradesIdIn(Collections.singleton(60L)))
+        .thenReturn(Collections.singletonList(expectedDto));
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Grade");
+      put("id", "60");
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(1));
+    assertThat("Unexpected DTO.", retrievedDtos.get(0), sameInstance(expectedDto));
+  }
+
+  @Test
+  void shouldReturnEmptyWhenGradeNotFound() {
+    when(referenceService.findGradesIdIn(Collections.singleton(60L)))
+        .thenReturn(null);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Grade");
+      put("id", "60");
+    }};
+    List<Object> grades = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", grades.size(), is(0));
+  }
+
+  @Test
+  void shouldReturnEmptyWhenFindGradesIdInThrowsException() {
+    when(referenceService.findGradesIdIn(Collections.singleton(60L)))
+        .thenThrow(new RuntimeException("Expected exception."));
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "Grade");
+      put("id", "60");
+    }};
+    List<Object> grades = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", grades.size(), is(0));
   }
 }
