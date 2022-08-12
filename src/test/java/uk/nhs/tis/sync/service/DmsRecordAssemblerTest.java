@@ -9,6 +9,7 @@ import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import com.transformuk.hee.tis.reference.api.dto.GradeDTO;
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ContactDetailsDTO;
@@ -50,6 +51,7 @@ import org.junit.jupiter.api.Test;
 import uk.nhs.tis.sync.dto.CurriculumDmsDto;
 import uk.nhs.tis.sync.dto.CurriculumMembershipDmsDto;
 import uk.nhs.tis.sync.dto.DmsDto;
+import uk.nhs.tis.sync.dto.GradeDmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PersonDmsDto;
 import uk.nhs.tis.sync.dto.PlacementSummaryDmsDto;
@@ -866,5 +868,47 @@ class DmsRecordAssemblerTest {
     assertThat("Unexpected status", "CURRENT", is(placementSummaryDmsDto.getStatus()));
     assertThat("Unexpected gradeId", "20", is(placementSummaryDmsDto.getGradeId()));
     assertThat("Unexpected siteId", "30", is(placementSummaryDmsDto.getSiteId()));
+  }
+
+  @Test
+  void shouldAssembleGrade() {
+    GradeDTO grade = new GradeDTO();
+    grade.setId(10L);
+    grade.setIntrepidId("20");
+    grade.setAbbreviation("abbreviation");
+    grade.setName("name");
+    grade.setLabel("label");
+    grade.setStatus(com.transformuk.hee.tis.reference.api.enums.Status.CURRENT);
+    grade.setPlacementGrade(true);
+    grade.setPostGrade(false);
+    grade.setTrainingGrade(true);
+
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(grade));
+
+    assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
+    DmsDto dmsDto = dmsDtos.get(0);
+    assertThat("Unexpected data type.", dmsDto.getData(), instanceOf(GradeDmsDto.class));
+
+    GradeDmsDto gradeDms = (GradeDmsDto) dmsDto.getData();
+    assertThat("Unexpected id.", gradeDms.getId(), is("10"));
+    assertThat("Unexpected intrepid id.", gradeDms.getIntrepidId(), is("20"));
+    assertThat("Unexpected abbreviation.", gradeDms.getAbbreviation(), is("abbreviation"));
+    assertThat("Unexpected name.", gradeDms.getName(), is("name"));
+    assertThat("Unexpected label.", gradeDms.getLabel(), is("label"));
+    assertThat("Unexpected status.", gradeDms.getStatus(),
+        is(com.transformuk.hee.tis.reference.api.enums.Status.CURRENT.toString()));
+    assertThat("Unexpected placement grade.", gradeDms.getPlacementGrade(), is("1"));
+    assertThat("Unexpected post grade.", gradeDms.getPostGrade(), is("0"));
+    assertThat("Unexpected post grade.", gradeDms.getTrainingGrade(), is("1"));
+
+    MetadataDto metadata = dmsDto.getMetadata();
+    assertThat("Unexpected timestamp.", metadata.getTimestamp(), notNullValue());
+    assertThat("Unexpected record type.", metadata.getRecordType(), is("data"));
+    assertThat("Unexpected operation.", metadata.getOperation(), is("load"));
+    assertThat("Unexpected partition key type.", metadata.getPartitionKeyType(),
+        is("schema-table"));
+    assertThat("Unexpected schema.", metadata.getSchemaName(), is("reference"));
+    assertThat("Unexpected table.", metadata.getTableName(), is("Grade"));
+    assertThat("Unexpected transaction id.", metadata.getTransactionId(), notNullValue());
   }
 }
