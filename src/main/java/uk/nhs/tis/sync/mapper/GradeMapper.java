@@ -21,10 +21,7 @@ public interface GradeMapper extends DmsMapper<GradeDTO, GradeDmsDto> {
   GradeDmsDto toDmsDto(GradeDTO gradeDto);
 
   @Named("getBooleanAsZeroOrOne")
-  default String getBooleanAsZeroOrOne(Boolean bool) {
-    if (bool != null) {
+  default String getBooleanAsZeroOrOne(boolean bool) {
       return bool ? "1" : "0";
-    }
-    return null;
   }
 }
