@@ -1,5 +1,6 @@
 package uk.nhs.tis.sync.dto;
 
+import com.transformuk.hee.tis.reference.api.dto.GradeDTO;
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ContactDetailsDTO;
@@ -19,6 +20,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import uk.nhs.tis.sync.mapper.CurriculumMapper;
 import uk.nhs.tis.sync.mapper.DmsMapper;
+import uk.nhs.tis.sync.mapper.GradeMapper;
 import uk.nhs.tis.sync.mapper.PersonMapper;
 import uk.nhs.tis.sync.mapper.PlacementSpecialtyMapper;
 import uk.nhs.tis.sync.mapper.PlacementSummaryMapper;
@@ -42,6 +44,7 @@ public enum DmsDtoType {
   CURRICULUM(CurriculumDTO.class, "tcs", "Curriculum", CurriculumMapper.class),
   GDC_DETAILS(GdcDetailsDTO.class, "tcs", "GdcDetails", null),
   GMC_DETAILS(GmcDetailsDTO.class, "tcs", "GmcDetails", null),
+  GRADE(GradeDTO.class, "reference", "Grade", GradeMapper.class),
   PERSON(PersonDTO.class, "tcs", "Person", PersonMapper.class),
   PERSONAL_DETAILS(PersonalDetailsDTO.class, "tcs", "PersonalDetails", null),
   PLACEMENT_DETAILS(PlacementSummaryDTO.class, "tcs", "Placement", PlacementSummaryMapper.class),

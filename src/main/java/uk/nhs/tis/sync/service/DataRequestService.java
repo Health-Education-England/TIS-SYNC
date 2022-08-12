@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 public class DataRequestService {
 
   private static final String TABLE_CURRICULUM = "Curriculum";
+  private static final String TABLE_GRADE = "Grade";
   private static final String TABLE_PERSON = "Person";
   private static final String TABLE_PLACEMENT = "Placement";
   private static final String TABLE_PLACEMENT_SPECIALTY = "PlacementSpecialty";
@@ -74,6 +76,9 @@ public class DataRequestService {
             return createNonNullList(tcsServiceImpl.getSpecialtyById(id));
           case TABLE_TRUST:
             return createNonNullList(referenceServiceImpl.findTrustById(id));
+          case TABLE_GRADE:
+            return createNonNullList(
+                referenceServiceImpl.findGradesIdIn(Collections.singleton(id)).get(0));
           default:
             break;
         }
