@@ -16,8 +16,6 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,23 +61,13 @@ public class PersonRecordStatusJob {
     runSyncJob(null);
   }
 
-  public void personRecordStatusJob(String params) throws IllegalArgumentException {
-    if (StringUtils.isEmpty(params)) {
+  public void personRecordStatusJob(String dateStr) {
+    if (StringUtils.isEmpty(dateStr)) {
       runSyncJob(null);
     } else {
-      JSONObject jsonParamsObj;
-      String dateStr;
-
       try {
-        jsonParamsObj = new JSONObject(params);
-        dateStr = jsonParamsObj.getString("date");
-      } catch (JSONException e) {
-        String errorMsg = String.format("The param is not a valid JSON string: %s", params);
-        LOG.error(errorMsg);
-        throw new IllegalArgumentException(errorMsg);
-      }
-
-      if (!validateDateParamFormat(dateStr)) {
+        validateDateParamFormat(dateStr);
+      } catch (DateTimeParseException e) {
         String errorMsg = String.format("The date is not correct: %s", dateStr);
         LOG.error(errorMsg);
         throw new IllegalArgumentException(errorMsg);
@@ -88,16 +76,11 @@ public class PersonRecordStatusJob {
     }
   }
 
-  private boolean validateDateParamFormat(String dateStr){
+  private void validateDateParamFormat(String dateStr) throws DateTimeParseException {
     if (!StringUtils.isEmpty(dateStr) && !StringUtils.equalsIgnoreCase(dateStr, FULL_SYNC_DATE_STR)
         && !StringUtils.equalsIgnoreCase(dateStr, NO_OVERWRITE_TO_AWS_DATE_STR)) {
-      try {
-        LocalDate.parse(dateStr);
-      } catch (DateTimeParseException ex) {
-        return false;
-      }
+      LocalDate.parse(dateStr);
     }
-    return true;
   }
 
   protected String getJobName() {

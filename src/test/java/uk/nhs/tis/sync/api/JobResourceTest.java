@@ -127,7 +127,7 @@ public class JobResourceTest {
       .andExpect(jsonPath("$.status").value("just started"));
   }
 
-  @DisplayName("run personRecordStatusJob with date argument")
+  @DisplayName("run personRecordStatusJob with correct date argument")
   @ParameterizedTest(name = "Should return 'just started' status when personRecordStatusJob is triggered with \"{0}\".")
   @ValueSource(strings = {
       "ANY",
@@ -136,7 +136,7 @@ public class JobResourceTest {
       ""
   })
   public void shouldReturnJustStartedWhenPersonRecordStatusJobWithCorrectArg(String arg)
-      throws Exception{
+      throws Exception {
     when(personRecordStatusJob.isCurrentlyRunning())
         .thenReturn(false);
 
@@ -147,7 +147,7 @@ public class JobResourceTest {
         .andExpect(jsonPath("$.status").value("just started"));
   }
 
-  @DisplayName("run personRecordStatusJob with date argument")
+  @DisplayName("run personRecordStatusJob with incorrect date argument")
   @ParameterizedTest(name = "Should return error status when personRecordStatusJob is triggered with \"{0}\".")
   @ValueSource(strings = {
       "aaa",
@@ -155,7 +155,7 @@ public class JobResourceTest {
       "2022-02-30",
   })
   public void shouldReturnErrorWhenPersonRecordStatusJobWithCorrectArg(String arg)
-      throws Exception{
+      throws Exception {
     when(personRecordStatusJob.isCurrentlyRunning())
         .thenReturn(false);
 
