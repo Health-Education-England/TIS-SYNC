@@ -23,7 +23,7 @@ public class PersonRecordStatusJobIntegrationTest {
 
   @Test
   public void testJobRun() throws Exception {
-    job.personRecordStatusJob();
+    job.personRecordStatusJob(null);
     int maxLoops = 1440, loops = 0;
     //Loop while the job is running up to 2 hours
     Thread.sleep(1 * 1000L);
@@ -35,5 +35,4 @@ public class PersonRecordStatusJobIntegrationTest {
     Assert.assertThat("should the sync job is not currently running", job.isCurrentlyRunning(), CoreMatchers.not(true));
     Assert.assertThat("then the sync job should not have timed out", loops > maxLoops, CoreMatchers.not(true));
   }
-
 }

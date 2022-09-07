@@ -3,6 +3,7 @@ package uk.nhs.tis.sync.job;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -15,6 +16,8 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +45,9 @@ public class PersonRecordStatusJob {
       "SELECT DISTINCT personId FROM ProgrammeMembership" + " WHERE personId > :lastPersonId"
           + " AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')"
           + " ORDER BY personId LIMIT :pageSize";
+  private static final String FULL_SYNC_DATE_STR = "ANY";
+  private static final String NO_OVERWRITE_TO_AWS_DATE_STR = "AWS";
+
   @Autowired
   private EntityManagerFactory entityManagerFactory;
   @Value("${application.jobs.personRecordStatusJob.dateOfChangeOverride:}")
@@ -54,7 +60,44 @@ public class PersonRecordStatusJob {
   @ManagedOperation(
       description = "Run sync of the PersonTrust table with Person to Placement TrainingBody")
   public void personRecordStatusJob() {
-    runSyncJob();
+    runSyncJob(null);
+  }
+
+  public void personRecordStatusJob(String params) throws IllegalArgumentException {
+    if (StringUtils.isEmpty(params)) {
+      runSyncJob(null);
+    } else {
+      JSONObject jsonParamsObj;
+      String dateStr;
+
+      try {
+        jsonParamsObj = new JSONObject(params);
+        dateStr = jsonParamsObj.getString("date");
+      } catch (JSONException e) {
+        String errorMsg = String.format("The param is not a valid JSON string: %s", params);
+        LOG.error(errorMsg);
+        throw new IllegalArgumentException(errorMsg);
+      }
+
+      if (!validateDateParamFormat(dateStr)) {
+        String errorMsg = String.format("The date is not correct: %s", dateStr);
+        LOG.error(errorMsg);
+        throw new IllegalArgumentException(errorMsg);
+      }
+      runSyncJob(dateStr);
+    }
+  }
+
+  private boolean validateDateParamFormat(String dateStr){
+    if (!StringUtils.isEmpty(dateStr) && !StringUtils.equalsIgnoreCase(dateStr, FULL_SYNC_DATE_STR)
+        && !StringUtils.equalsIgnoreCase(dateStr, NO_OVERWRITE_TO_AWS_DATE_STR)) {
+      try {
+        LocalDate.parse(dateStr);
+      } catch (DateTimeParseException ex) {
+        return false;
+      }
+    }
+    return true;
   }
 
   protected String getJobName() {
@@ -105,17 +148,23 @@ public class PersonRecordStatusJob {
     return mainStopWatch != null ? mainStopWatch.toString() : "0s";
   }
 
-  protected void runSyncJob() {
+  protected void runSyncJob(String dateStr) {
     if (mainStopWatch != null) {
       LOG.info("Sync job [{}] already running, exiting this execution", getJobName());
       return;
     }
-    CompletableFuture.runAsync(this::run);
+    CompletableFuture.runAsync(() -> run(dateStr));
   }
 
-  protected void run() {
+  protected void run(String dateStr) {
     // Configure run
-    LocalDate dateOfChange = magicallyGetDateOfChanges();
+    LocalDate dateOfChange;
+    try {
+      dateOfChange = magicallyGetDateOfChanges(dateStr);
+    } catch (Exception e) {
+      LOG.error(e.getMessage());
+      return;
+    }
     String queryString;
     if (dateOfChange != null) {
       String startDate = dateOfChange.format(DateTimeFormatter.ISO_LOCAL_DATE);
@@ -124,7 +173,7 @@ public class PersonRecordStatusJob {
           .replace(":pageSize", "" + getPageSize());
     } else {
       queryString = BASE_QUERY.replace(":pageSize", "" + getPageSize())
-          .replace(" AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')", "");
+          .replace(" AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')", "") + " FOR UPDATE";
     }
     int skipped = 0, totalRecords = 0;
     long lastEntityId = 0;
@@ -196,13 +245,22 @@ public class PersonRecordStatusJob {
     }
   }
 
-  private LocalDate magicallyGetDateOfChanges() {
-    if (StringUtils.isEmpty(dateOfChangeOverride)) {
+  private LocalDate magicallyGetDateOfChanges(String dateStr) {
+    if (StringUtils.equalsIgnoreCase(dateStr, NO_OVERWRITE_TO_AWS_DATE_STR)) {
+      return getDateOfChanges(dateOfChangeOverride);
+    } else {
+      return getDateOfChanges(dateStr);
+    }
+  }
+
+  private LocalDate getDateOfChanges(String dateInUse) {
+    if (StringUtils.isEmpty(dateInUse)) {
       return LocalDate.now();
-    } else if ("ANY".equalsIgnoreCase(dateOfChangeOverride)) {
+    } else if (FULL_SYNC_DATE_STR.equalsIgnoreCase(dateInUse)) {
       return null;
     } else {
-      return LocalDate.parse(dateOfChangeOverride);
+      LocalDate a = LocalDate.parse(dateInUse);
+      return a;
     }
   }
 

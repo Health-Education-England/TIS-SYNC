@@ -77,7 +77,7 @@ public class JobResource {
   @PutMapping("/jobs")
   @PreAuthorize("hasPermission('tis:sync::jobs:', 'Update')")
   public ResponseEntity<Void> runJobsSequentially() {
-    LOG.debug("REST reqeust to run all jobs sequentially");
+    LOG.debug("REST request to run all jobs sequentially");
     CompletableFuture.runAsync(jobRunningListener::runJobs);
     return ResponseEntity.ok().build();
   }
@@ -92,8 +92,9 @@ public class JobResource {
    */
   @PutMapping("/job/{name}")
   @PreAuthorize("hasPermission('tis:sync::jobs:', 'Update')")
-  public ResponseEntity<String> runJob(@PathVariable String name) {
-    LOG.debug("REST reqeust to run job: {}", name);
+  public ResponseEntity<String> runJob(@PathVariable String name,
+      @RequestBody(required = false) String params) {
+    LOG.debug("REST request to run job: {}", name);
     final String ALREADY_RUNNING = "{\"status\":\"already running\"}";
     final String JUST_STARTED = "{\"status\":\"just started\"}";
 
@@ -146,7 +147,12 @@ public class JobResource {
         if (personRecordStatusJob.isCurrentlyRunning()) {
           status = ALREADY_RUNNING;
         } else {
-          personRecordStatusJob.personRecordStatusJob();
+          try {
+            personRecordStatusJob.personRecordStatusJob(params);
+          } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(String.format("{\"error\":\"%s\"}",
+                e.getMessage()));
+          }
         }
         break;
       default:

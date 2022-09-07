@@ -1,5 +1,6 @@
 package uk.nhs.tis.sync.api;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,7 @@ import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
 
 import javax.ws.rs.core.MediaType;
 
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -42,7 +44,7 @@ public class JobResourceTest {
 
   @MockBean
   private PersonOwnerRebuildJob personOwnerRebuildJob;
-  
+
   @MockBean
   private PersonRecordStatusJob personRecordStatusJob;
 
@@ -81,7 +83,7 @@ public class JobResourceTest {
     .thenReturn(false);
 
     mockMvc.perform(get("/api/jobs/status")
-      .content(MediaType.APPLICATION_JSON))
+        .contentType(MediaType.APPLICATION_JSON))
       .andExpect(jsonPath("$.personPlacementTrainingBodyTrustJob").value(true))
       .andExpect(jsonPath("$.personPlacementEmployingBodyTrustJob").value(false))
       .andExpect(jsonPath("$.postEmployingBodyTrustJob").value(false))
@@ -120,11 +122,54 @@ public class JobResourceTest {
     .thenReturn(false);
 
     mockMvc.perform(put("/api/job/" + name)
-      .content(MediaType.APPLICATION_JSON))
+        .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.status").value("just started"));
   }
 
+  @DisplayName("run personRecordStatusJob with date argument")
+  @ParameterizedTest(name = "Should return 'just started' status when personRecordStatusJob is triggered with \"{0}\".")
+  @ValueSource(strings = {
+      "ANY",
+      "AWS",
+      "2022-01-01",
+      ""
+  })
+  public void shouldReturnJustStartedWhenPersonRecordStatusJobWithCorrectArg(String arg)
+      throws Exception{
+    when(personRecordStatusJob.isCurrentlyRunning())
+        .thenReturn(false);
+
+    mockMvc.perform(put("/api/job/personRecordStatusJob")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(String.format("{date:\"%s\"}", arg)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("just started"));
+  }
+
+  @DisplayName("run personRecordStatusJob with date argument")
+  @ParameterizedTest(name = "Should return error status when personRecordStatusJob is triggered with \"{0}\".")
+  @ValueSource(strings = {
+      "aaa",
+      "01/01/2020",
+      "2022-02-30",
+  })
+  public void shouldReturnErrorWhenPersonRecordStatusJobWithCorrectArg(String arg)
+      throws Exception{
+    when(personRecordStatusJob.isCurrentlyRunning())
+        .thenReturn(false);
+
+    String requestParam = String.format("{date:\"%s\"}", arg);
+
+    doThrow(new IllegalArgumentException(String.format("The date is not correct: %s", arg)))
+        .when(personRecordStatusJob).personRecordStatusJob(requestParam);
+
+    mockMvc.perform(put("/api/job/personRecordStatusJob")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestParam))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value(Matchers.containsString("The date is not correct")));
+  }
 
   @DisplayName("run an already running job")
   @ParameterizedTest(name = "Should return 'already running' status when trigger a running job \"{0}\".")
@@ -154,7 +199,7 @@ public class JobResourceTest {
     .thenReturn(true);
 
     mockMvc.perform(put("/api/job/" + name)
-      .content(MediaType.APPLICATION_JSON))
+        .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.status").value("already running"));
   }
@@ -163,7 +208,7 @@ public class JobResourceTest {
   @Test
   public void shouldReturnBadRequestWhenTriggeringANonexistentJob() throws Exception {
     mockMvc.perform(put("/api/job/" + "nonexistentJob")
-      .content(MediaType.APPLICATION_JSON))
+        .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isBadRequest())
       .andExpect(jsonPath("$.error").value("job not found"));
   }
