@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @DisplayName("JobResource")
 @ExtendWith(SpringExtension.class)
-public class JobResourceTest {
+class JobResourceTest {
 
   @MockBean
   private PersonPlacementEmployingBodyTrustJob personPlacementEmployingBodyTrustJob;
@@ -53,7 +53,7 @@ public class JobResourceTest {
   private MockMvc mockMvc;
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     jobResource = new JobResource(personPlacementEmployingBodyTrustJob,
       personPlacementTrainingBodyTrustJob,
       postEmployingBodyTrustJob,
@@ -66,7 +66,7 @@ public class JobResourceTest {
 
   @DisplayName("get Status")
   @Test
-  public void shouldReturnAllStatusWhenGetStatus() throws Exception {
+  void shouldReturnAllStatusWhenGetStatus() throws Exception {
     when(personPlacementEmployingBodyTrustJob.isCurrentlyRunning())
       .thenReturn(false);
     when(personPlacementTrainingBodyTrustJob.isCurrentlyRunning())
@@ -105,7 +105,7 @@ public class JobResourceTest {
     "personOwnerRebuildJob",
     "personRecordStatusJob"
   })
-  public void shouldReturnJustStartedWhenAJobTriggered(String name) throws Exception {
+  void shouldReturnJustStartedWhenAJobTriggered(String name) throws Exception {
     when(personPlacementTrainingBodyTrustJob.isCurrentlyRunning())
       .thenReturn(false);
     when(personPlacementEmployingBodyTrustJob.isCurrentlyRunning())
@@ -135,7 +135,7 @@ public class JobResourceTest {
       "2022-01-01",
       ""
   })
-  public void shouldReturnJustStartedWhenPersonRecordStatusJobWithCorrectArg(String arg)
+  void shouldReturnJustStartedWhenPersonRecordStatusJobWithCorrectArg(String arg)
       throws Exception {
     when(personRecordStatusJob.isCurrentlyRunning())
         .thenReturn(false);
@@ -154,7 +154,7 @@ public class JobResourceTest {
       "01/01/2020",
       "2022-02-30",
   })
-  public void shouldReturnErrorWhenPersonRecordStatusJobWithCorrectArg(String arg)
+  void shouldReturnErrorWhenPersonRecordStatusJobWithCorrectArg(String arg)
       throws Exception {
     when(personRecordStatusJob.isCurrentlyRunning())
         .thenReturn(false);
@@ -182,7 +182,7 @@ public class JobResourceTest {
     "personOwnerRebuildJob",
     "personRecordStatusJob"
   })
-  public void shouldReturnAlreadyRunningWhenTriggerARunningJob(String name) throws Exception {
+  void shouldReturnAlreadyRunningWhenTriggerARunningJob(String name) throws Exception {
     when(personPlacementTrainingBodyTrustJob.isCurrentlyRunning())
       .thenReturn(true);
     when(personPlacementEmployingBodyTrustJob.isCurrentlyRunning())
@@ -206,7 +206,7 @@ public class JobResourceTest {
 
   @DisplayName("run a nonexistent job")
   @Test
-  public void shouldReturnBadRequestWhenTriggeringANonexistentJob() throws Exception {
+  void shouldReturnBadRequestWhenTriggeringANonexistentJob() throws Exception {
     mockMvc.perform(put("/api/job/" + "nonexistentJob")
         .contentType(MediaType.APPLICATION_JSON))
       .andExpect(status().isBadRequest())

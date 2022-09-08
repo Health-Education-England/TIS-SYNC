@@ -61,6 +61,11 @@ public class PersonRecordStatusJob {
     runSyncJob(null);
   }
 
+  /**
+   * trigger the personRecordStatusJob with the specified date.
+   *
+   * @param dateStr can be "ANY", "AWS", empty or a date in format yyyy-MM-dd
+   */
   public void personRecordStatusJob(String dateStr) {
     if (StringUtils.isEmpty(dateStr)) {
       runSyncJob(null);
@@ -79,7 +84,8 @@ public class PersonRecordStatusJob {
   private void validateDateParamFormat(String dateStr) throws DateTimeParseException {
     if (!StringUtils.isEmpty(dateStr) && !StringUtils.equalsIgnoreCase(dateStr, FULL_SYNC_DATE_STR)
         && !StringUtils.equalsIgnoreCase(dateStr, NO_OVERWRITE_TO_AWS_DATE_STR)) {
-      LocalDate.parse(dateStr);
+      // if the date format is incorrect, throw a DateTimeParseException
+      LocalDate parsedDate = LocalDate.parse(dateStr);
     }
   }
 
@@ -156,7 +162,7 @@ public class PersonRecordStatusJob {
           .replace(":pageSize", "" + getPageSize());
     } else {
       queryString = BASE_QUERY.replace(":pageSize", "" + getPageSize())
-          .replace(" AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')", "") + " FOR UPDATE";
+          .replace(" AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')", "");
     }
     int skipped = 0, totalRecords = 0;
     long lastEntityId = 0;
@@ -242,8 +248,7 @@ public class PersonRecordStatusJob {
     } else if (FULL_SYNC_DATE_STR.equalsIgnoreCase(dateInUse)) {
       return null;
     } else {
-      LocalDate a = LocalDate.parse(dateInUse);
-      return a;
+      return LocalDate.parse(dateInUse);
     }
   }
 
