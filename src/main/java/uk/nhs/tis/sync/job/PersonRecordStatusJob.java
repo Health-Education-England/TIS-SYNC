@@ -1,5 +1,7 @@
 package uk.nhs.tis.sync.job;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
 import com.transformuk.hee.tis.tcs.service.model.Person;
@@ -46,11 +48,18 @@ public class PersonRecordStatusJob implements RunnableJob {
   private static final String FULL_SYNC_DATE_STR = "ANY";
   private static final String NO_DATE_OVERRIDE = "NONE";
 
-  @Autowired
-  private EntityManagerFactory entityManagerFactory;
+  private final EntityManagerFactory entityManagerFactory;
+  private final ObjectMapper objectMapper;
+
   @Value("${application.jobs.personRecordStatusJob.dateOfChangeOverride:}")
   private String dateOfChangeOverride;
   private Stopwatch mainStopWatch;
+
+  public PersonRecordStatusJob(EntityManagerFactory entityManagerFactory,
+      ObjectMapper objectMapper) {
+    this.entityManagerFactory = entityManagerFactory;
+    this.objectMapper = objectMapper;
+  }
 
   @Scheduled(cron = "${application.cron.personRecordStatusJob}")
   @SchedulerLock(name = "personRecordStatusScheduledTask", lockAtLeastFor = FIFTEEN_MIN,
@@ -69,21 +78,26 @@ public class PersonRecordStatusJob implements RunnableJob {
   /**
    * trigger the personRecordStatusJob with the specified date.
    *
-   * @param dateStr can be "ANY", "NONE", empty or a date in format yyyy-MM-dd
+   * @param jsonParams can be "ANY", "NONE", empty or a date in format yyyy-MM-dd
    */
-  public void personRecordStatusJob(String dateStr) {
-    if (StringUtils.isEmpty(dateStr)) {
-      runSyncJob(null);
+  public void personRecordStatusJob(String jsonParams) {
+    LOG.debug("Received run params [{}]", jsonParams);
+    String date;
+    if (StringUtils.isEmpty(jsonParams)) {
+      //Normalise all empty values to null
+      date = null;
     } else {
       try {
-        validateDateParamFormat(dateStr);
-      } catch (DateTimeParseException e) {
-        String errorMsg = String.format("The date is not correct: %s", dateStr);
-        LOG.error(errorMsg);
+        date = objectMapper.readTree(jsonParams).get("dateOverride").textValue();
+        validateDateParamFormat(date);
+        LOG.debug("Got validated date [{}]", date);
+      } catch (JsonProcessingException | DateTimeParseException e) {
+        String errorMsg = String.format("The date is not correct: %s", jsonParams);
+        LOG.error(errorMsg, e);
         throw new IllegalArgumentException(errorMsg);
       }
-      runSyncJob(dateStr);
     }
+    runSyncJob(date);
   }
 
   private LocalDate validateDateParamFormat(String dateStr) throws DateTimeParseException {

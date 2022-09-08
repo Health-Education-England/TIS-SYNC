@@ -39,7 +39,7 @@ function runPersonStatusSyncJob() {
 
   const requestParams = {
     method : "PUT",
-    body : JSON.stringify({ "date" : date }),
+    body : JSON.stringify({ "dateOverride" : date }),
     headers : { "Content-Type" : "application/json" }
     };
 

@@ -1,9 +1,9 @@
 package uk.nhs.tis.sync.job;
 
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.transformuk.hee.tis.tcs.service.repository.PersonRepository;
 import java.util.concurrent.TimeUnit;
 import org.awaitility.core.ConditionTimeoutException;
 import org.hamcrest.CoreMatchers;
@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest//?Need this?(classes = Application.class, webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -27,12 +26,9 @@ class PersonRecordStatusJobIntegrationTest {
   @Autowired
   PersonRecordStatusJob job;
 
-  @Autowired
-  private PersonRepository repo;
-
   @Test
   void testJobRun() {
-    job.personRecordStatusJob(null);
+    job.run(null);
 
     try {
       await().atLeast(1, TimeUnit.SECONDS)
@@ -40,7 +36,8 @@ class PersonRecordStatusJobIntegrationTest {
           .with()
           .pollInterval(1, TimeUnit.SECONDS)
           .until(() -> !job.isCurrentlyRunning());
-      assertThat("should the sync job is not currently running", job.isCurrentlyRunning(), CoreMatchers.not(true));
+      assertThat("should not be currently running",
+          job.isCurrentlyRunning(), CoreMatchers.is(false));
     } catch (ConditionTimeoutException e) {
       Assert.fail("the sync job should not have timed out");
     }
@@ -50,12 +47,12 @@ class PersonRecordStatusJobIntegrationTest {
   @ParameterizedTest(name = "Should return run job when it is triggered with \"{0}\".")
   @ValueSource(strings = {
       "ANY",
-      "NONE",
+      "none",
       "2022-01-01",
       ""
   })
   void testJobRunWithCorrectArg(String arg) {
-    job.personRecordStatusJob(arg);
+    job.run(String.format("{\"dateOverride\":\"%s\"}", arg));
 
     try {
       await().atLeast(1, TimeUnit.SECONDS)
@@ -63,7 +60,8 @@ class PersonRecordStatusJobIntegrationTest {
           .with()
           .pollInterval(1, TimeUnit.SECONDS)
           .until(() -> !job.isCurrentlyRunning());
-      assertThat("should the sync job is not currently running", job.isCurrentlyRunning(), CoreMatchers.not(true));
+      assertThat("should not be currently running",
+          job.isCurrentlyRunning(), CoreMatchers.is(false));
     } catch (ConditionTimeoutException e) {
       Assert.fail("the sync job should not have timed out");
     }
@@ -77,11 +75,13 @@ class PersonRecordStatusJobIntegrationTest {
       "2022-02-30",
   })
   void testJobShouldThrowExceptionWithIncorrectArg(String arg) {
-    Exception exception = assertThrows(IllegalArgumentException.class, () -> job.run(arg));
+    String dateParam = String.format("{\"dateOverride\":\"%s\"}", arg);
+    Exception exception = assertThrows(IllegalArgumentException.class,
+        () -> job.run(dateParam));
     String errMsg = exception.getMessage();
     assertThat("should the sync job is not currently running",
-        job.isCurrentlyRunning(), CoreMatchers.not(true));
-    assertThat("should throw exception for the incorrect date argument",
+        job.isCurrentlyRunning(), CoreMatchers.is(false));
+    assertThat("should not be currently running",
         errMsg, CoreMatchers.containsString("The date is not correct"));
   }
 }
