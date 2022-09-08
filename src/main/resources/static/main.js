@@ -23,7 +23,12 @@ function runPersonStatusSyncJob() {
   const jobName = event.srcElement.id;
   const url = window.location.origin + window.location.pathname + "api/job/" + jobName;
 
-  var date = prompt("Please input the magic date: \n  keep it blank (default) \n  ANY \n  date in format YYYY-MM-DD \n  AWS");
+  var promptMsg = "Please input the magic date override: \n" +
+    "  keep it blank (repeat the overnight job) \n" +
+    "  ANY (update all records) \n" +
+    "  date in format YYYY-MM-DD (update for a particular date)\n" +
+    "  NONE (to use the existing magic)";
+  var date = prompt(promptMsg);
   if (date === null) { // user clicks cancel button
     return;
   }
@@ -48,7 +53,7 @@ function runPersonStatusSyncJob() {
 function validateDateFormat(param) {
   var reg = /(19|20)\d\d-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])/;
   if (param === "" || param.toUpperCase() === "ANY"
-    || param.toUpperCase() === "AWS" || param.match(reg)) {
+    || param.toUpperCase() === "NONE" || param.match(reg)) {
     return true;
   }
   return false;

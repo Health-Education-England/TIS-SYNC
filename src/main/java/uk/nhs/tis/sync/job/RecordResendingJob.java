@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +31,7 @@ import uk.nhs.tis.sync.service.KinesisService;
 @ConditionalOnProperty("application.cron.recordResendingJob")
 @ManagedResource(objectName = "sync.mbean:name=RecordResendingJob",
     description = "Job that parses an sqs message, sends data accordingly into a Kinesis stream")
-public class RecordResendingJob {
+public class RecordResendingJob implements RunnableJob {
 
   private static final Logger LOG = LoggerFactory.getLogger(RecordResendingJob.class);
 
@@ -79,6 +80,11 @@ public class RecordResendingJob {
   @Scheduled(cron = "${application.cron.recordResendingJob}")
   @ManagedOperation(description = "Run RecordResendingJob")
   public void recordResendingJob() {
+    runRecordResendingJob();
+  }
+
+  @Override
+  public void run(@Nullable String params) {
     runRecordResendingJob();
   }
 
@@ -138,5 +144,10 @@ public class RecordResendingJob {
       requestEntries.add(new DeleteMessageBatchRequestEntry(index, receiptHandle));
     }
     sqs.deleteMessageBatch(new DeleteMessageBatchRequest(queueUrl, requestEntries));
+  }
+
+  @Override
+  public boolean isCurrentlyRunning() {
+    return false;
   }
 }

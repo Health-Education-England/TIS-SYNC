@@ -2,23 +2,23 @@ package uk.nhs.tis.sync.job;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
-import uk.nhs.tis.sync.event.JobExecutionEvent;
-import uk.nhs.tis.sync.model.EntityData;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jmx.export.annotation.ManagedOperation;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
+import uk.nhs.tis.sync.event.JobExecutionEvent;
+import uk.nhs.tis.sync.model.EntityData;
 
-public abstract class TrustAdminSyncJobTemplate<ENTITY> {
+public abstract class TrustAdminSyncJobTemplate<E> implements RunnableJob {
 
   private static final Logger LOG = LoggerFactory.getLogger(TrustAdminSyncJobTemplate.class);
 
@@ -37,6 +37,10 @@ public abstract class TrustAdminSyncJobTemplate<ENTITY> {
   @ManagedOperation(description = "The current elapsed time of the current sync job")
   public String elapsedTime() {
     return mainStopWatch != null ? mainStopWatch.toString() : "0s";
+  }
+
+  public void run(String params) {
+    runSyncJob();
   }
 
   protected void runSyncJob() {
@@ -58,20 +62,17 @@ public abstract class TrustAdminSyncJobTemplate<ENTITY> {
   protected abstract List<EntityData> collectData(int pageSize, long lastId, long lastSiteId,
       EntityManager entityManager);
 
-  protected abstract int convertData(int skipped, Set<ENTITY> entitiesToSave,
+  protected abstract int convertData(int skipped, Set<E> entitiesToSave,
       List<EntityData> entityData, EntityManager entityManager);
 
   protected void run() {
-
-    if (applicationEventPublisher != null) {
-      applicationEventPublisher
-          .publishEvent(new JobExecutionEvent(this, "Sync [" + getJobName() + "] started."));
-    }
+    publishJobexecutionEvent(new JobExecutionEvent(this, "Sync [" + getJobName() + "] started."));
     LOG.info("Sync [{}] started", getJobName());
     mainStopWatch = Stopwatch.createStarted();
     Stopwatch stopwatch = Stopwatch.createStarted();
 
-    int skipped = 0, totalRecords = 0;
+    int skipped = 0;
+    int totalRecords = 0;
     long lastEntityId = 0;
     long lastSiteId = 0;
     boolean hasMoreResults = true;
@@ -79,7 +80,7 @@ public abstract class TrustAdminSyncJobTemplate<ENTITY> {
     deleteData();
     stopwatch.reset().start();
 
-    Set<ENTITY> dataToSave = Sets.newHashSet();
+    Set<E> dataToSave = Sets.newHashSet();
 
     while (hasMoreResults) {
       EntityManager entityManager = getEntityManagerFactory().createEntityManager();
@@ -90,8 +91,8 @@ public abstract class TrustAdminSyncJobTemplate<ENTITY> {
 
         List<EntityData> collectedData =
             collectData(getPageSize(), lastEntityId, lastSiteId, entityManager);
-        hasMoreResults = collectedData.size() > 0;
-        LOG.info("Time taken to read chunk : [{}]", stopwatch.toString());
+        hasMoreResults = !collectedData.isEmpty();
+        LOG.info("Time taken to read chunk : [{}]", stopwatch);
 
         if (CollectionUtils.isNotEmpty(collectedData)) {
           lastEntityId = collectedData.get(collectedData.size() - 1).getEntityId();
@@ -112,27 +113,23 @@ public abstract class TrustAdminSyncJobTemplate<ENTITY> {
         if (transaction != null && transaction.isActive()) {
           transaction.rollback();
         }
-        if (applicationEventPublisher != null) {
-          applicationEventPublisher
-              .publishEvent(new JobExecutionEvent(this, getFailureMessage(Optional.ofNullable(getJobName()), e)));
-        }
-        throw e;
+        publishJobexecutionEvent(new JobExecutionEvent(this,
+            getFailureMessage(Optional.ofNullable(getJobName()), e)));
+        throw new RuntimeException("Fatal Exception for job " + getJobName(), e);
       } finally {
         if (entityManager != null && entityManager.isOpen()) {
           entityManager.close();
         }
       }
-      LOG.info("Time taken to save chunk : [{}]", stopwatch.toString());
+      LOG.info("Time taken to save chunk : [{}]", stopwatch);
     }
     stopwatch.reset().start();
     LOG.info("Sync job [{}] finished. Total time taken {} for processing [{}] records",
-        getJobName(), mainStopWatch.stop().toString(), totalRecords);
+        getJobName(), mainStopWatch.stop(), totalRecords);
     LOG.info("Skipped records {}", skipped);
     mainStopWatch = null;
-    if (applicationEventPublisher != null) {
-      applicationEventPublisher
-          .publishEvent(new JobExecutionEvent(this, getSuccessMessage(Optional.ofNullable(getJobName()))));
-    }
+    publishJobexecutionEvent(
+        new JobExecutionEvent(this, getSuccessMessage(Optional.ofNullable(getJobName()))));
   }
 
   protected String getSuccessMessage(Optional<String> jobName) {
@@ -140,7 +137,13 @@ public abstract class TrustAdminSyncJobTemplate<ENTITY> {
   }
 
   protected String getFailureMessage(Optional<String> jobName, Exception e) {
-    return "<!channel> Sync [" + jobName.orElse(getJobName()) + "] failed with exception [" + e.getMessage() + "].";
+    return "<!channel> Sync [" + jobName.orElse(getJobName()) + "] failed with exception ["
+        + e.getMessage() + "].";
   }
 
+  private void publishJobexecutionEvent(JobExecutionEvent event) {
+    if (applicationEventPublisher != null) {
+      applicationEventPublisher.publishEvent(event);
+    }
+  }
 }

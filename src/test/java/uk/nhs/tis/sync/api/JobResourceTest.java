@@ -131,7 +131,7 @@ class JobResourceTest {
   @ParameterizedTest(name = "Should return 'just started' status when personRecordStatusJob is triggered with \"{0}\".")
   @ValueSource(strings = {
       "ANY",
-      "AWS",
+      "NONE",
       "2022-01-01",
       ""
   })
@@ -154,7 +154,7 @@ class JobResourceTest {
       "01/01/2020",
       "2022-02-30",
   })
-  void shouldReturnErrorWhenPersonRecordStatusJobWithCorrectArg(String arg)
+  void shouldReturnErrorWhenPersonRecordStatusJobWithInvalidArg(String arg)
       throws Exception {
     when(personRecordStatusJob.isCurrentlyRunning())
         .thenReturn(false);
@@ -162,7 +162,7 @@ class JobResourceTest {
     String requestParam = String.format("{date:\"%s\"}", arg);
 
     doThrow(new IllegalArgumentException(String.format("The date is not correct: %s", arg)))
-        .when(personRecordStatusJob).personRecordStatusJob(requestParam);
+        .when(personRecordStatusJob).run(requestParam);
 
     mockMvc.perform(put("/api/job/personRecordStatusJob")
             .contentType(MediaType.APPLICATION_JSON)

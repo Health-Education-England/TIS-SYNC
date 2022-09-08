@@ -5,6 +5,7 @@ import com.transformuk.hee.tis.tcs.service.job.person.PersonView;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import javax.annotation.Nullable;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.collections4.CollectionUtils;
 import org.elasticsearch.index.IndexNotFoundException;
@@ -14,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.document.Document;
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jmx.export.annotation.ManagedOperation;
@@ -21,14 +24,16 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.event.JobExecutionEvent;
+import uk.nhs.tis.sync.job.RunnableJob;
 import uk.nhs.tis.sync.service.PersonElasticSearchService;
 import uk.nhs.tis.sync.service.impl.PersonViewRowMapper;
 
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonElasticSearchJob",
     description = "Service that clears the persons index in ES and repopulates the data")
-public class PersonElasticSearchSyncJob {
+public class PersonElasticSearchSyncJob implements RunnableJob {
 
+  private static final String JOB_NAME = "Person sync job";
   private static final Logger LOG = LoggerFactory.getLogger(PersonElasticSearchSyncJob.class);
   private static final String ES_INDEX = "persons";
   private static final int FIFTEEN_MIN = 15 * 60 * 1000;
@@ -65,10 +70,15 @@ public class PersonElasticSearchSyncJob {
 
   protected void runSyncJob() {
     if (mainStopWatch != null) {
-      LOG.info("Sync job [{}] already running, exiting this execution", getJobName());
+      LOG.info("Sync job [{}] already running, exiting this execution", JOB_NAME);
       return;
     }
     CompletableFuture.runAsync(this::run);
+  }
+
+  @Override
+  public void run(@Nullable String params) {
+    personElasticSearchSync();
   }
 
   @Scheduled(cron = "${application.cron.personElasticSearchJob}")
@@ -79,10 +89,6 @@ public class PersonElasticSearchSyncJob {
     runSyncJob();
   }
 
-  private String getJobName() {
-    return "Person sync job";
-  }
-
   private int getPageSize() {
     return pageSize;
   }
@@ -90,7 +96,7 @@ public class PersonElasticSearchSyncJob {
   private void deleteIndex() {
     LOG.info("deleting person es index");
     try {
-      elasticSearchOperations.deleteIndex(ES_INDEX);
+      elasticSearchOperations.indexOps(IndexCoordinates.of(ES_INDEX)).delete();
     } catch (IndexNotFoundException e) {
       LOG.info("Could not delete an index that does not exist, continuing");
     }
@@ -116,10 +122,10 @@ public class PersonElasticSearchSyncJob {
 
     if (applicationEventPublisher != null) {
       applicationEventPublisher
-          .publishEvent(new JobExecutionEvent(this, "Sync [" + getJobName() + "] started."));
+          .publishEvent(new JobExecutionEvent(this, "Sync [" + JOB_NAME + "] started."));
     }
     try {
-      LOG.info("Sync [{}] started", getJobName());
+      LOG.info("Sync [{}] started", JOB_NAME);
       mainStopWatch = Stopwatch.createStarted();
       Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -136,9 +142,9 @@ public class PersonElasticSearchSyncJob {
         List<PersonView> collectedData = collectData(page, getPageSize());
         page++;
 
-        hasMoreResults = collectedData.size() > 0;
+        hasMoreResults = !collectedData.isEmpty();
 
-        LOG.info("Time taken to read chunk : [{}]", stopwatch.toString());
+        LOG.info("Time taken to read chunk : [{}]", stopwatch);
         if (CollectionUtils.isNotEmpty(collectedData)) {
           totalRecords += collectedData.size();
         }
@@ -146,31 +152,33 @@ public class PersonElasticSearchSyncJob {
 
         personElasticSearchService.saveDocuments(collectedData);
 
-        LOG.info("Time taken to save chunk : [{}]", stopwatch.toString());
+        LOG.info("Time taken to save chunk : [{}]", stopwatch);
       }
       elasticSearchOperations.indexOps(PersonView.class).refresh();
       stopwatch.reset().start();
       LOG.info("Sync job [{}] finished. Total time taken {} for processing [{}] records",
-          getJobName(), mainStopWatch.stop().toString(), totalRecords);
+          JOB_NAME, mainStopWatch.stop(), totalRecords);
       mainStopWatch = null;
       if (applicationEventPublisher != null) {
         applicationEventPublisher
-            .publishEvent(new JobExecutionEvent(this, "Sync [" + getJobName() + "] finished."));
+            .publishEvent(new JobExecutionEvent(this, "Sync [" + JOB_NAME + "] finished."));
       }
     } catch (Exception e) {
       LOG.error(e.getLocalizedMessage(), e);
       mainStopWatch = null;
       if (applicationEventPublisher != null) {
         applicationEventPublisher.publishEvent(new JobExecutionEvent(this, "<!channel> Sync ["
-            + getJobName() + "] failed with exception [" + e.getMessage() + "]."));
+            + JOB_NAME + "] failed with exception [" + e.getMessage() + "]."));
       }
     }
   }
 
   private void createIndex() {
     LOG.info("creating and updating mappings");
-    elasticSearchOperations.createIndex(ES_INDEX);
-    elasticSearchOperations.putMapping(PersonView.class);
+    elasticSearchOperations.indexOps(IndexCoordinates.of(ES_INDEX)).create();
+    Document mapping = elasticSearchOperations.indexOps(IndexCoordinates.of(ES_INDEX))
+        .createMapping(PersonView.class);
+    elasticSearchOperations.indexOps(IndexCoordinates.of(ES_INDEX)).putMapping(mapping);
   }
 
 }

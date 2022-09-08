@@ -50,7 +50,7 @@ class PersonRecordStatusJobIntegrationTest {
   @ParameterizedTest(name = "Should return run job when it is triggered with \"{0}\".")
   @ValueSource(strings = {
       "ANY",
-      "AWS",
+      "NONE",
       "2022-01-01",
       ""
   })
@@ -77,7 +77,7 @@ class PersonRecordStatusJobIntegrationTest {
       "2022-02-30",
   })
   void testJobShouldThrowExceptionWithIncorrectArg(String arg) {
-    Exception exception = assertThrows(IllegalArgumentException.class, () -> job.personRecordStatusJob(arg));
+    Exception exception = assertThrows(IllegalArgumentException.class, () -> job.run(arg));
     String errMsg = exception.getMessage();
     assertThat("should the sync job is not currently running",
         job.isCurrentlyRunning(), CoreMatchers.not(true));
