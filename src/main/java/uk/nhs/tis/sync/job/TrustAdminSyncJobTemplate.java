@@ -39,10 +39,6 @@ public abstract class TrustAdminSyncJobTemplate<E> implements RunnableJob {
     return mainStopWatch != null ? mainStopWatch.toString() : "0s";
   }
 
-  public void run(String params) {
-    runSyncJob();
-  }
-
   protected void runSyncJob() {
     if (mainStopWatch != null) {
       LOG.info("Sync job [{}] already running, exiting this execution", getJobName());
@@ -70,6 +66,10 @@ public abstract class TrustAdminSyncJobTemplate<E> implements RunnableJob {
 
   protected abstract int convertData(int skipped, Set<E> entitiesToSave,
       List<EntityData> entityData, EntityManager entityManager);
+
+  public void run(String params) {
+    runSyncJob();
+  }
 
   protected void run() {
     publishJobexecutionEvent(new JobExecutionEvent(this, "Sync [" + getJobName() + "] started."));

@@ -18,7 +18,7 @@ import uk.nhs.tis.sync.event.JobExecutionEvent;
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonOwnerRebuildJob",
     description = "Job that clears and recreates the PersonOwner table")
-public class PersonOwnerRebuildJob implements Runnable, RunnableJob {
+public class PersonOwnerRebuildJob implements RunnableJob {
 
   private static final Logger LOG = LoggerFactory.getLogger(PersonOwnerRebuildJob.class);
 
@@ -41,17 +41,12 @@ public class PersonOwnerRebuildJob implements Runnable, RunnableJob {
     runSyncJob();
   }
 
-  @Override
-  public void run(@Nullable String params) {
-    personOwnerRebuildJob();
-  }
-
   protected void runSyncJob() {
     if (mainStopWatch != null) {
       LOG.info("Sync job [{}] already running, exiting this execution", JOB_NAME);
       return;
     }
-    CompletableFuture.runAsync(this).exceptionally(t -> {
+    CompletableFuture.runAsync(this::run).exceptionally(t -> {
       LOG.error(t.getMessage(), t);
       if (applicationEventPublisher != null) {
         applicationEventPublisher.publishEvent(new JobExecutionEvent(this, "<!channel> Sync ["
@@ -61,7 +56,12 @@ public class PersonOwnerRebuildJob implements Runnable, RunnableJob {
     });
   }
 
-  public void run() {
+  @Override
+  public void run(@Nullable String params) {
+    personOwnerRebuildJob();
+  }
+
+  protected void run() {
     try {
       LOG.info("Sync [{}] started", JOB_NAME);
       if (applicationEventPublisher != null) {

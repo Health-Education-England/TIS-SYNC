@@ -61,6 +61,11 @@ public class PersonRecordStatusJob implements RunnableJob {
     this.objectMapper = objectMapper;
   }
 
+  @Override
+  public void run(String params) {
+    personRecordStatusJob(params);
+  }
+
   @Scheduled(cron = "${application.cron.personRecordStatusJob}")
   @SchedulerLock(name = "personRecordStatusScheduledTask", lockAtLeastFor = FIFTEEN_MIN,
       lockAtMostFor = FIFTEEN_MIN)
@@ -68,11 +73,6 @@ public class PersonRecordStatusJob implements RunnableJob {
       description = "Run sync of the PersonTrust table with Person to Placement TrainingBody")
   public void personRecordStatusJob() {
     runSyncJob(null);
-  }
-
-  @Override
-  public void run(String params) {
-    personRecordStatusJob(params);
   }
 
   /**
