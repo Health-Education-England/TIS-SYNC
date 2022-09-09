@@ -48,7 +48,13 @@ public abstract class TrustAdminSyncJobTemplate<E> implements RunnableJob {
       LOG.info("Sync job [{}] already running, exiting this execution", getJobName());
       return;
     }
-    CompletableFuture.runAsync(this::run);
+    CompletableFuture.runAsync(this::run)
+        .exceptionally(t -> {
+          publishJobexecutionEvent(
+              new JobExecutionEvent(this, getFailureMessage(Optional.ofNullable(getJobName()), t)));
+          LOG.error("Job run ended due an Exception", t);
+          return null;
+        });
   }
 
   protected abstract String getJobName();
@@ -82,10 +88,12 @@ public abstract class TrustAdminSyncJobTemplate<E> implements RunnableJob {
 
     Set<E> dataToSave = Sets.newHashSet();
 
-    while (hasMoreResults) {
-      EntityManager entityManager = getEntityManagerFactory().createEntityManager();
-      EntityTransaction transaction = null;
-      try {
+    EntityManager entityManager = null;
+
+    EntityTransaction transaction = null;
+    try {
+      while (hasMoreResults) {
+        entityManager = getEntityManagerFactory().createEntityManager();
         transaction = entityManager.getTransaction();
         transaction.begin();
 
@@ -106,37 +114,30 @@ public abstract class TrustAdminSyncJobTemplate<E> implements RunnableJob {
         dataToSave.clear();
 
         transaction.commit();
-        entityManager.close();
-      } catch (Exception e) {
-        LOG.error("An error occurred while running the scheduled job", e);
-        mainStopWatch = null;
-        if (transaction != null && transaction.isActive()) {
-          transaction.rollback();
-        }
-        publishJobexecutionEvent(new JobExecutionEvent(this,
-            getFailureMessage(Optional.ofNullable(getJobName()), e)));
-        throw new RuntimeException("Fatal Exception for job " + getJobName(), e);
-      } finally {
-        if (entityManager != null && entityManager.isOpen()) {
-          entityManager.close();
-        }
+        LOG.info("Time taken to save chunk : [{}]", stopwatch);
+        stopwatch.reset().start();
       }
-      LOG.info("Time taken to save chunk : [{}]", stopwatch);
+      LOG.info("Sync job [{}] finished. Total time taken {} for processing [{}] records",
+          getJobName(), mainStopWatch.stop(), totalRecords);
+      LOG.info("Skipped records {}", skipped);
+      publishJobexecutionEvent(
+          new JobExecutionEvent(this, getSuccessMessage(Optional.ofNullable(getJobName()))));
+    } finally {
+      mainStopWatch = null;
+      if (transaction != null && transaction.isActive()) {
+        transaction.rollback();
+      }
+      if (entityManager != null && entityManager.isOpen()) {
+        entityManager.close();
+      }
     }
-    stopwatch.reset().start();
-    LOG.info("Sync job [{}] finished. Total time taken {} for processing [{}] records",
-        getJobName(), mainStopWatch.stop(), totalRecords);
-    LOG.info("Skipped records {}", skipped);
-    mainStopWatch = null;
-    publishJobexecutionEvent(
-        new JobExecutionEvent(this, getSuccessMessage(Optional.ofNullable(getJobName()))));
   }
 
   protected String getSuccessMessage(Optional<String> jobName) {
     return "Sync [" + jobName.orElse(getJobName()) + "] completed successfully.";
   }
 
-  protected String getFailureMessage(Optional<String> jobName, Exception e) {
+  protected String getFailureMessage(Optional<String> jobName, Throwable e) {
     return "<!channel> Sync [" + jobName.orElse(getJobName()) + "] failed with exception ["
         + e.getMessage() + "].";
   }

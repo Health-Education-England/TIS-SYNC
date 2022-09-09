@@ -76,23 +76,25 @@ public class PersonRecordStatusJob implements RunnableJob {
   }
 
   /**
-   * trigger the personRecordStatusJob with the specified date.
+   * Trigger the personRecordStatusJob with the specified date.
    *
-   * @param jsonParams can be "ANY", "NONE", empty or a date in format yyyy-MM-dd
+   * @param jsonParams The only recognised property is `dateOverride`.  The value can be "ANY",
+   *                   "NONE", empty or a date in format yyyy-MM-dd
    */
   public void personRecordStatusJob(String jsonParams) {
     LOG.debug("Received run params [{}]", jsonParams);
-    String date;
-    if (StringUtils.isEmpty(jsonParams)) {
-      //Normalise all empty values to null
-      date = null;
-    } else {
+    String date = null;
+    if (StringUtils.isNotEmpty(jsonParams)) {
       try {
         date = objectMapper.readTree(jsonParams).get("dateOverride").textValue();
         validateDateParamFormat(date);
         LOG.debug("Got validated date [{}]", date);
-      } catch (JsonProcessingException | DateTimeParseException e) {
-        String errorMsg = String.format("The date is not correct: %s", jsonParams);
+      } catch (JsonProcessingException e) {
+        String errorMsg = "Unable to extract the dateOverride property";
+        LOG.error(errorMsg, e);
+        throw new IllegalArgumentException(errorMsg);
+      } catch (DateTimeParseException e) {
+        String errorMsg = String.format("The date is not correct: %s", date);
         LOG.error(errorMsg, e);
         throw new IllegalArgumentException(errorMsg);
       }
@@ -163,7 +165,13 @@ public class PersonRecordStatusJob implements RunnableJob {
       LOG.info("Sync job [{}] already running, exiting this execution", getJobName());
       return;
     }
-    CompletableFuture.runAsync(() -> runRecordStatusSync(dateOption));
+    CompletableFuture.runAsync(() -> runRecordStatusSync(dateOption))
+        .exceptionally(t -> {
+          publishJobexecutionEvent(
+              new JobExecutionEvent(this, getFailureMessage(Optional.ofNullable(getJobName()), t)));
+          LOG.error("Job run ended due an Exception", t);
+          return null;
+        });
   }
 
   private void runRecordStatusSync(String dateOption) {
@@ -182,10 +190,11 @@ public class PersonRecordStatusJob implements RunnableJob {
     mainStopWatch = Stopwatch.createStarted();
     Stopwatch stopwatch = Stopwatch.createStarted();
 
-    while (hasMoreResults) {
-      EntityManager entityManager = getEntityManagerFactory().createEntityManager();
-      EntityTransaction transaction = null;
-      try {
+    EntityManager entityManager = null;
+    EntityTransaction transaction = null;
+    try {
+      while (hasMoreResults) {
+        entityManager = getEntityManagerFactory().createEntityManager();
         transaction = entityManager.getTransaction();
         transaction.begin();
 
@@ -210,29 +219,24 @@ public class PersonRecordStatusJob implements RunnableJob {
 
         transaction.commit();
         entityManager.close();
-      } catch (Exception e) {
-        LOG.error("An error occurred while running the scheduled job", e);
-        mainStopWatch = null;
-        if (transaction != null && transaction.isActive()) {
-          transaction.rollback();
-        }
-        publishJobexecutionEvent(
-            new JobExecutionEvent(this, getFailureMessage(Optional.ofNullable(getJobName()), e)));
-        throw new RuntimeException("Fatal Exception running " + getJobName(), e);
-      } finally {
-        if (entityManager != null && entityManager.isOpen()) {
-          entityManager.close();
-        }
+        LOG.info("Time taken to save chunk : [{}]", stopwatch);
+        stopwatch.reset().start();
       }
-      LOG.info("Time taken to save chunk : [{}]", stopwatch);
-      stopwatch.reset().start();
+      LOG.info("Sync job [{}] finished. Total time taken {} for processing [{}] records",
+          getJobName(), mainStopWatch.stop(), totalRecords);
+      LOG.info("Skipped records {}", skipped);
+      mainStopWatch = null;
+      publishJobexecutionEvent(
+          new JobExecutionEvent(this, getSuccessMessage(Optional.ofNullable(getJobName()))));
+    } finally {
+      mainStopWatch = null;
+      if (transaction != null && transaction.isActive()) {
+        transaction.rollback();
+      }
+      if (entityManager != null && entityManager.isOpen()) {
+        entityManager.close();
+      }
     }
-    LOG.info("Sync job [{}] finished. Total time taken {} for processing [{}] records",
-        getJobName(), mainStopWatch.stop(), totalRecords);
-    LOG.info("Skipped records {}", skipped);
-    mainStopWatch = null;
-    publishJobexecutionEvent(
-        new JobExecutionEvent(this, getSuccessMessage(Optional.ofNullable(getJobName()))));
   }
 
   private String buildQueryForDate(LocalDate dateOfChange) {
@@ -251,24 +255,20 @@ public class PersonRecordStatusJob implements RunnableJob {
     if (StringUtils.equalsIgnoreCase(dateToUse, NO_DATE_OVERRIDE)) {
       dateToUse = dateOfChangeOverride;
     }
-    return getDateOfChanges(dateToUse);
-  }
-
-  private LocalDate getDateOfChanges(String dateInUse) {
-    if (StringUtils.isEmpty(dateInUse)) {
+    if (StringUtils.isEmpty(dateToUse)) {
       return LocalDate.now();
     }
-    if (FULL_SYNC_DATE_STR.equalsIgnoreCase(dateInUse)) {
+    if (FULL_SYNC_DATE_STR.equalsIgnoreCase(dateToUse)) {
       return null;
     }
-    return LocalDate.parse(dateInUse);
+    return LocalDate.parse(dateToUse);
   }
 
   protected String getSuccessMessage(Optional<String> jobName) {
     return "Sync [" + jobName.orElse(getJobName()) + "] completed successfully.";
   }
 
-  protected String getFailureMessage(Optional<String> jobName, Exception e) {
+  protected String getFailureMessage(Optional<String> jobName, Throwable e) {
     return "<!channel> Sync [" + jobName.orElse(getJobName()) + "] failed with exception ["
         + e.getMessage() + "].";
   }

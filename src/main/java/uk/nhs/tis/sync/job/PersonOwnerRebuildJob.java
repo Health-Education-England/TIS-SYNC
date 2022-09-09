@@ -51,7 +51,14 @@ public class PersonOwnerRebuildJob implements Runnable, RunnableJob {
       LOG.info("Sync job [{}] already running, exiting this execution", JOB_NAME);
       return;
     }
-    CompletableFuture.runAsync(this::run);
+    CompletableFuture.runAsync(this).exceptionally(t -> {
+      LOG.error(t.getMessage(), t);
+      if (applicationEventPublisher != null) {
+        applicationEventPublisher.publishEvent(new JobExecutionEvent(this, "<!channel> Sync ["
+            + JOB_NAME + "] failed with exception [" + t.getMessage() + "]."));
+      }
+      return null;
+    });
   }
 
   public void run() {
@@ -72,14 +79,8 @@ public class PersonOwnerRebuildJob implements Runnable, RunnableJob {
         applicationEventPublisher
             .publishEvent(new JobExecutionEvent(this, "Sync [" + JOB_NAME + "] finished."));
       }
-    } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
+    } finally {
       mainStopWatch = null;
-      if (applicationEventPublisher != null) {
-        applicationEventPublisher.publishEvent(new JobExecutionEvent(this, "<!channel> Sync ["
-            + JOB_NAME + "] failed with exception [" + e.getMessage() + "]."));
-      }
-      throw new RuntimeException("Fatal Exception for job " + JOB_NAME, e);
     }
   }
 
