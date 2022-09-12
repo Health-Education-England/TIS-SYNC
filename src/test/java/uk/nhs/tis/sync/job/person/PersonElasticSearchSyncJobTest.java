@@ -1,6 +1,7 @@
 package uk.nhs.tis.sync.job.person;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -11,34 +12,34 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.IndexOperations;
 import org.springframework.data.elasticsearch.core.document.Document;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.nhs.tis.sync.event.JobExecutionEvent;
 import uk.nhs.tis.sync.service.PersonElasticSearchService;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(SpringExtension.class)
 class PersonElasticSearchSyncJobTest {
 
-  @Mock
+  @MockBean
   NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-  @Mock
+  @MockBean
   SqlQuerySupplier sqlQuerySupplier;
-  @Mock
+  @MockBean
   ElasticsearchOperations elasticSearchOperations;
-  @Mock
+  @MockBean
   PersonElasticSearchService personElasticSearchService;
-  @Mock
+  @MockBean
   private ApplicationEventPublisher applicationEventPublisher;
-  @Mock
+  @MockBean
   private IndexOperations mockIndexOps;
   @Captor
-  private ArgumentCaptor<JobExecutionEvent> appEventCaptor;
+  private ArgumentCaptor<JobExecutionEvent> eventCaptor;
   int pageSize = 42;
 
   private PersonElasticSearchSyncJob job;
@@ -57,8 +58,8 @@ class PersonElasticSearchSyncJobTest {
 
   @Test
   void testRunNormallyCompletes() {
-    job.run("foo");
-    verify(applicationEventPublisher).publishEvent(appEventCaptor.capture());
+    job.run();
+    verify(applicationEventPublisher, times(2)).publishEvent(any(JobExecutionEvent.class));
     //TODO Verify capture of "completed" event as the last of several (2?) app events
   }
 }
