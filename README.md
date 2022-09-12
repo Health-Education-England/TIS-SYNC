@@ -18,13 +18,13 @@ The following environmental variables must be provided
 ### Summary of what to run:
 
 | Failed/Out-of-date Job                   |          Managed Bean Name          |                            Method Name |                           Things that need to be done after this has been started |
-| ---------------------------------------- | :---------------------------------: | -------------------------------------: | --------------------------------------------------------------------------------: |
-| **PersonOwnerRebuildJob**                |        PersonOwnerRebuildJob        |                  personOwnerRebuildJob |                                                                              **PersonElasticSearchSyncJob** (assuming only this failed) |
+|------------------------------------------|:-----------------------------------:|---------------------------------------:|----------------------------------------------------------------------------------:|
+| **PersonOwnerRebuildJob**                |        PersonOwnerRebuildJob        |                  personOwnerRebuildJob |                        **PersonElasticSearchSyncJob** (assuming only this failed) |
 | **PersonPlacementEmployingBodyTrustJob** |   PersonPlacementEmployingBodyJob   | doPersonPlacementEmployingBodyFullSync | Re-run **PersonPlacementTrainingBodyTrustJob** and **PersonElasticSearchSyncJob** |
 | **PersonPlacementTrainingBodyTrustJob**  | PersonPlacementTrainingBodyTrustJob |    PersonPlacementTrainingBodyFullSync |                        **PersonElasticSearchSyncJob** (assuming only this failed) |
 | **PostEmployingBodyTrustJob**            |      PostEmployingBodyTrustJob      |         PostEmployingBodyTrustFullSync |                                               Re-run **PostTrainingBodyTrustJob** |
 | **PostTrainingBodyTrustJob**             |      PostTrainingBodyTrustJob       |          PostTrainingBodyTrustFullSync |                                                  none (assuming only this failed) |
-| **PersonRecordStatusJob**  | PersonRecordStatusJob |    personRecordStatusJob |                        **PersonElasticSearchSyncJob** (assuming only this failed) |
+| **PersonRecordStatusJob**                |        PersonRecordStatusJob        |                  personRecordStatusJob |                        **PersonElasticSearchSyncJob** (assuming only this failed) |
 | **PersonElasticSearchSyncJob**           |       PersonElasticSearchJob        |                personElasticSearchSync |                                                                              none |
 
 ### Run jobs on Buttons Page

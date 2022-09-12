@@ -1,9 +1,14 @@
-package uk.nhs.tis.sync.job;
+package uk.nhs.tis.sync.job.person;
+
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.lessThan;
 
 import com.transformuk.hee.tis.tcs.service.repository.PersonElasticSearchRepository;
-import org.hamcrest.CoreMatchers;
+import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -13,7 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.nhs.tis.sync.Application;
-import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class, webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -34,29 +38,28 @@ public class PersonElasticSearchSyncJobIntegrationTest {
   @Before
   public void setUp() throws Exception {
     elasticSearchOperations.deleteIndex(ES_INDEX);
-    Assert.assertThat("should have deleted the index", elasticSearchOperations.indexExists(ES_INDEX), CoreMatchers.is(false));
+    assertThat("should have deleted the index", elasticSearchOperations.indexExists(ES_INDEX),
+        is(false));
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
   }
 
   @Test
-  public void testJobRun() throws Exception {
-    job.personElasticSearchSync();
+  public void testJobRun() {
+    job.run("");
     int maxLoops = 1440, loops = 0;
     //Loop while the job is running up to 2 hours
-    Thread.sleep(5 * 1000L);
-    while (job.isCurrentlyRunning() && loops <= maxLoops) {
-      System.out.println("Job running");
-      Thread.sleep(5 * 1000L);
-      loops++;
-    }
-    Assert.assertThat("should the sync job is not currently running", job.isCurrentlyRunning(), CoreMatchers.not(true));
-    Assert.assertThat("then the sync job should not have timed out", loops > maxLoops, CoreMatchers.not(true));
+    await().atMost(2, TimeUnit.HOURS)
+        .atLeast(5, TimeUnit.SECONDS)
+        .with().pollInterval(5, TimeUnit.SECONDS)
+        .until(() -> !job.isCurrentlyRunning());
+    assertThat("should the sync job is not currently running", job.isCurrentlyRunning(), not(true));
+    assertThat("then the sync job should not have timed out", loops, lessThan(maxLoops));
     long size = repo.count();
-    Assert.assertThat("should have created index in elasticSearch", elasticSearchOperations.indexExists(ES_INDEX), CoreMatchers.is(true));
-    Assert.assertThat("should have synchronized data to elasticSearch", size, CoreMatchers.not(0));
+    assertThat("should have created index in elasticSearch",
+        elasticSearchOperations.indexExists(ES_INDEX), is(true));
+    assertThat("should have synchronized data to elasticSearch", size, not(0));
   }
-
 }

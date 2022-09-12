@@ -1,19 +1,28 @@
 package uk.nhs.tis.sync.api;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import uk.nhs.tis.sync.event.listener.JobRunningListener;
-import uk.nhs.tis.sync.job.*;
+import uk.nhs.tis.sync.job.PersonOwnerRebuildJob;
+import uk.nhs.tis.sync.job.PersonPlacementEmployingBodyTrustJob;
+import uk.nhs.tis.sync.job.PersonPlacementTrainingBodyTrustJob;
+import uk.nhs.tis.sync.job.PersonRecordStatusJob;
+import uk.nhs.tis.sync.job.PostEmployingBodyTrustJob;
+import uk.nhs.tis.sync.job.PostTrainingBodyTrustJob;
+import uk.nhs.tis.sync.job.RunnableJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Controller for triggering jobs manually by devs
@@ -22,13 +31,13 @@ import java.util.concurrent.CompletableFuture;
 @RequestMapping("/api")
 public class JobResource {
 
-  private PersonPlacementEmployingBodyTrustJob personPlacementEmployingBodyTrustJob;
-  private PersonPlacementTrainingBodyTrustJob personPlacementTrainingBodyTrustJob;
-  private PostEmployingBodyTrustJob postEmployingBodyTrustJob;
-  private PostTrainingBodyTrustJob postTrainingBodyTrustJob;
-  private PersonElasticSearchSyncJob personElasticSearchSyncJob;
-  private PersonOwnerRebuildJob personOwnerRebuildJob;
-  private PersonRecordStatusJob personRecordStatusJob;
+  private final PersonPlacementEmployingBodyTrustJob personPlacementEmployingBodyTrustJob;
+  private final PersonPlacementTrainingBodyTrustJob personPlacementTrainingBodyTrustJob;
+  private final PostEmployingBodyTrustJob postEmployingBodyTrustJob;
+  private final PostTrainingBodyTrustJob postTrainingBodyTrustJob;
+  private final PersonElasticSearchSyncJob personElasticSearchSyncJob;
+  private final PersonOwnerRebuildJob personOwnerRebuildJob;
+  private final PersonRecordStatusJob personRecordStatusJob;
 
   @Autowired
   private JobRunningListener jobRunningListener;
@@ -36,12 +45,12 @@ public class JobResource {
   private static final Logger LOG = LoggerFactory.getLogger(JobResource.class);
 
   public JobResource(PersonPlacementEmployingBodyTrustJob personPlacementEmployingBodyTrustJob,
-                     PersonPlacementTrainingBodyTrustJob personPlacementTrainingBodyTrustJob,
-                     PostEmployingBodyTrustJob postEmployingBodyTrustJob,
-                     PostTrainingBodyTrustJob postTrainingBodyTrustJob,
-                     PersonElasticSearchSyncJob personElasticSearchSyncJob,
-                     PersonOwnerRebuildJob personOwnerRebuildJob,
-                     PersonRecordStatusJob personRecordStatusJob) {
+      PersonPlacementTrainingBodyTrustJob personPlacementTrainingBodyTrustJob,
+      PostEmployingBodyTrustJob postEmployingBodyTrustJob,
+      PostTrainingBodyTrustJob postTrainingBodyTrustJob,
+      PersonElasticSearchSyncJob personElasticSearchSyncJob,
+      PersonOwnerRebuildJob personOwnerRebuildJob,
+      PersonRecordStatusJob personRecordStatusJob) {
     this.personPlacementEmployingBodyTrustJob = personPlacementEmployingBodyTrustJob;
     this.personPlacementTrainingBodyTrustJob = personPlacementTrainingBodyTrustJob;
     this.postEmployingBodyTrustJob = postEmployingBodyTrustJob;
@@ -54,15 +63,17 @@ public class JobResource {
   /**
    * GET /jobs/status : Get all the status of all 6 jobs
    *
-   * @return the map of all the status.
-   * eg.{"personPlacementEmployingBodyTrustJob", "true"}, which means personPlacementEmployingBodyTrustJob is currently running.
+   * @return the map of all the status. eg.{"personPlacementEmployingBodyTrustJob", "true"}, which
+   *     means personPlacementEmployingBodyTrustJob is currently running.
    */
   @GetMapping("/jobs/status")
   @PreAuthorize("hasPermission('tis:sync::jobs:', 'View')")
-  public ResponseEntity<Map> getStatus() {
+  public ResponseEntity<Map<String, Boolean>> getStatus() {
     Map<String, Boolean> statusMap = new HashMap<>();
-    statusMap.put("personPlacementEmployingBodyTrustJob", personPlacementEmployingBodyTrustJob.isCurrentlyRunning());
-    statusMap.put("personPlacementTrainingBodyTrustJob", personPlacementTrainingBodyTrustJob.isCurrentlyRunning());
+    statusMap.put("personPlacementEmployingBodyTrustJob",
+        personPlacementEmployingBodyTrustJob.isCurrentlyRunning());
+    statusMap.put("personPlacementTrainingBodyTrustJob",
+        personPlacementTrainingBodyTrustJob.isCurrentlyRunning());
     statusMap.put("postEmployingBodyTrustJob", postEmployingBodyTrustJob.isCurrentlyRunning());
     statusMap.put("postTrainingBodyTrustJob", postTrainingBodyTrustJob.isCurrentlyRunning());
     statusMap.put("personElasticSearchSyncJob", personElasticSearchSyncJob.isCurrentlyRunning());
@@ -77,7 +88,7 @@ public class JobResource {
   @PutMapping("/jobs")
   @PreAuthorize("hasPermission('tis:sync::jobs:', 'Update')")
   public ResponseEntity<Void> runJobsSequentially() {
-    LOG.debug("REST reqeust to run all jobs sequentially");
+    LOG.debug("REST request to run all jobs sequentially");
     CompletableFuture.runAsync(jobRunningListener::runJobs);
     return ResponseEntity.ok().build();
   }
@@ -86,72 +97,58 @@ public class JobResource {
    * PUT /job/:name : Trigger one individual job
    *
    * @param name the name of the job to run
-   * @return status of the requested job :
-   * "already running" - the job has been running before triggering it
-   * "just started" - the job has been started by this request
+   * @return status of the requested job : "already running" - the job has been running before
+   *     triggering it "just started" - the job has been started by this request
    */
   @PutMapping("/job/{name}")
   @PreAuthorize("hasPermission('tis:sync::jobs:', 'Update')")
-  public ResponseEntity<String> runJob(@PathVariable String name) {
-    LOG.debug("REST reqeust to run job: {}", name);
-    final String ALREADY_RUNNING = "{\"status\":\"already running\"}";
-    final String JUST_STARTED = "{\"status\":\"just started\"}";
+  public ResponseEntity<String> runJob(@PathVariable String name,
+      @RequestBody(required = false) String params) {
+    LOG.debug("REST request to run job: {}", name);
 
-    String status = JUST_STARTED;
+    String status;
 
     switch (name) {
       case "personPlacementEmployingBodyTrustJob":
-        if (personPlacementEmployingBodyTrustJob.isCurrentlyRunning()) {
-          status = ALREADY_RUNNING;
-        } else {
-          personPlacementEmployingBodyTrustJob.doPersonPlacementEmployingBodyFullSync();
-        }
+        status = ensureRunning(personPlacementEmployingBodyTrustJob, params);
         break;
       case "personPlacementTrainingBodyTrustJob":
-        if (personPlacementTrainingBodyTrustJob.isCurrentlyRunning()) {
-          status = ALREADY_RUNNING;
-        } else {
-          personPlacementTrainingBodyTrustJob.PersonPlacementTrainingBodyFullSync();
-        }
+        status = ensureRunning(personPlacementTrainingBodyTrustJob, params);
         break;
       case "postEmployingBodyTrustJob":
-        if (postEmployingBodyTrustJob.isCurrentlyRunning()) {
-          status = ALREADY_RUNNING;
-        } else {
-          postEmployingBodyTrustJob.PostEmployingBodyTrustFullSync();
-        }
+        status = ensureRunning(postEmployingBodyTrustJob, params);
         break;
       case "postTrainingBodyTrustJob":
-        if (postTrainingBodyTrustJob.isCurrentlyRunning()) {
-          status = ALREADY_RUNNING;
-        } else {
-          postTrainingBodyTrustJob.PostTrainingBodyTrustFullSync();
-        }
+        status = ensureRunning(postTrainingBodyTrustJob, params);
         break;
       case "personElasticSearchSyncJob":
-        if (personElasticSearchSyncJob.isCurrentlyRunning()) {
-          status = ALREADY_RUNNING;
-        } else {
-          personElasticSearchSyncJob.personElasticSearchSync();
-        }
+        status = ensureRunning(personElasticSearchSyncJob, params);
         break;
       case "personOwnerRebuildJob":
-        if (personOwnerRebuildJob.isCurrentlyRunning()) {
-          status = ALREADY_RUNNING;
-        } else {
-          personOwnerRebuildJob.personOwnerRebuildJob();
-        }
+        status = ensureRunning(personOwnerRebuildJob, params);
         break;
       case "personRecordStatusJob":
-        if (personRecordStatusJob.isCurrentlyRunning()) {
-          status = ALREADY_RUNNING;
-        } else {
-          personRecordStatusJob.personRecordStatusJob();
+        try {
+          status = ensureRunning(personRecordStatusJob, params);
+        } catch (IllegalArgumentException e) {
+          return ResponseEntity.badRequest().body(String.format("{\"error\":\"%s\"}",
+              e.getMessage()));
         }
         break;
       default:
         return ResponseEntity.badRequest().body("{\"error\":\"job not found\"}");
     }
     return ResponseEntity.ok().body(status);
+  }
+
+  private String ensureRunning(RunnableJob job, String params) {
+    final String ALREADY_RUNNING = "{\"status\":\"already running\"}";
+    final String JUST_STARTED = "{\"status\":\"just started\"}";
+    if (job.isCurrentlyRunning()) {
+      return ALREADY_RUNNING;
+    } else {
+      job.run(params);
+      return JUST_STARTED;
+    }
   }
 }
