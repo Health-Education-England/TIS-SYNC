@@ -116,6 +116,7 @@ public abstract class TrustAdminSyncJobTemplate<E> implements RunnableJob {
         transaction.commit();
         LOG.info("Time taken to save chunk : [{}]", stopwatch);
         stopwatch.reset().start();
+        entityManager.close();
       }
       LOG.info("Sync job [{}] finished. Total time taken {} for processing [{}] records",
           getJobName(), mainStopWatch.stop(), totalRecords);
