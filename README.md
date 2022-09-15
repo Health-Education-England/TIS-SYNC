@@ -39,3 +39,10 @@ The following environmental variables must be provided
 INSERT INTO UserRole(userName, roleName) 
 VALUES (YOUR_USER_NAME, "Machine User");
 ```
+#### Run PersonRecordStatusJob with argument
+When clicking the button to run Person Record Status Sync job, a dialog box will be displayed to prompt the user for input an argument.<br />
+You can input one of the following arguments(case-insensitive):
+1. keep it blank: repeat the overnight job
+2. ANY: update all records
+3. date in format YYYY-MM-DD: update for a particular date
+4. NONE: use the parameter "dateOfChangeOverride" in the application.yml which can be set via environment variable(e.g. AWS parameter store)
