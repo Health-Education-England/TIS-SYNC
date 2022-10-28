@@ -1,4 +1,4 @@
-.container-1, .container-2, .container-3, .container-4, .container-5, .container-6, .container-7{
+.container-1, .container-2, .container-3, .container-4, .container-5, .container-6, .container-7, .container-8{
   display:flex;
   border:1px #ccc solid;
   padding:10px;
@@ -83,4 +83,10 @@ button:hover{
   line-height:2;
   color:unset;
   margin-left:unset;
+}
+
+.help text {
+  color:#0072CE;
+  font-size:1.2em;
+  font-weight:bold;
 }
