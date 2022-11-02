@@ -122,6 +122,12 @@ spring:
       max-request-size: 10MB
   cache:
     caffeine.spec: maximumSize=100,expireAfterAccess=1m
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    ssl.enabled: ${RABBITMQ_USE_SSL:false}
 
 server:
   port: 8101
@@ -198,6 +204,7 @@ application:
     postTrainingBodyTrustJob: ${APPLICATION_CRON_POSTTRAININGBODYTRUSTJOB:0 19 1 * * *}
     personElasticSearchJob: ${APPLICATION_CRON_PERSONELASTICSEARCHJOB:0 29 1 * * *}
     personRecordStatusJob: ${APPLICATION_CRON_PERSONRECORDSTATUSJOB:0 0 1 * * *}
+    revalCurrentPmJob: ${APPLICATION_CRON_REVALCURRENTPMJOB:0 39 1 * * *}
     recordResendingJob: ${APPLICATION_CRON_RECORDRESENDINGJOB}
   jobs:
     runOnStartup:
@@ -212,6 +219,10 @@ application:
       streamName: ${AWS_KINESIS_STREAM_NAME}
     sqs:
       queueUrl: ${AWS_SQS_QUEUE_URL}
+  rabbit:
+    reval:
+      exchange: ${REVAL_RABBIT_EXCHANGE:reval.exchange}
+      routingKey.currentpm.nightlysync: ${REVAL_RABBIT_CURRENTPMSYNC_ROUTING_KEY:reval.routingKey.currentpm.nightlysync}
 
 azure:
   accountName: ${CLOUD_BLOB_ACCOUNT_NAME}

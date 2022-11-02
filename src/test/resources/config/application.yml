@@ -93,6 +93,7 @@ application:
     postTrainingBodyTrustJob: ${APP_CRON_POST_TRAINING_BODY:0 19 1 * * *}
     personElasticSearchJob: ${APP_CRON_PERSON_ELASTIC_SEARCH:0 29 1 * * *}
     personRecordStatusJob: ${APPLICATION_CRON_PERSONRECORDSTATUSJOB:0 0 1 * * *}
+    revalCurrentPmJob: ${APPLICATION_CRON_REVALCURRENTPMJOB:0 39 1 * * *}
     recordResendingJob: ${APPLICATION_CRON_RECORDRESENDINGJOB:0 * * * * *}
   jobs:
     runOnStartup:
@@ -105,6 +106,11 @@ application:
       streamName: ${AWS_KINESIS_STREAM_NAME:streamName}
     sqs:
       queueUrl: ${AWS_SQS_QUEUE_URL:queueUrl}
+
+  rabbit:
+    reval:
+      exchange: ${REVAL_RABBIT_EXCHANGE:reval.exchange}
+      routingKey.currentpm.nightlysync: ${REVAL_RABBIT_CURRENTPMSYNC_ROUTING_KEY:reval.routingKey.currentpm.nightlysync}
 
 slack:
   api:

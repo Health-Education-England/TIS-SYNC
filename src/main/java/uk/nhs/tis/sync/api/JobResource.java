@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.nhs.tis.sync.event.listener.JobRunningListener;
+import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
 import uk.nhs.tis.sync.job.PersonOwnerRebuildJob;
 import uk.nhs.tis.sync.job.PersonPlacementEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PersonPlacementTrainingBodyTrustJob;
@@ -38,6 +39,7 @@ public class JobResource {
   private final PersonElasticSearchSyncJob personElasticSearchSyncJob;
   private final PersonOwnerRebuildJob personOwnerRebuildJob;
   private final PersonRecordStatusJob personRecordStatusJob;
+  private final RevalCurrentPmSyncJob revalCurrentPmSyncJob;
 
   @Autowired
   private JobRunningListener jobRunningListener;
@@ -50,7 +52,8 @@ public class JobResource {
       PostTrainingBodyTrustJob postTrainingBodyTrustJob,
       PersonElasticSearchSyncJob personElasticSearchSyncJob,
       PersonOwnerRebuildJob personOwnerRebuildJob,
-      PersonRecordStatusJob personRecordStatusJob) {
+      PersonRecordStatusJob personRecordStatusJob,
+      RevalCurrentPmSyncJob revalCurrentPmSyncJob) {
     this.personPlacementEmployingBodyTrustJob = personPlacementEmployingBodyTrustJob;
     this.personPlacementTrainingBodyTrustJob = personPlacementTrainingBodyTrustJob;
     this.postEmployingBodyTrustJob = postEmployingBodyTrustJob;
@@ -58,6 +61,7 @@ public class JobResource {
     this.personElasticSearchSyncJob = personElasticSearchSyncJob;
     this.personOwnerRebuildJob = personOwnerRebuildJob;
     this.personRecordStatusJob = personRecordStatusJob;
+    this.revalCurrentPmSyncJob = revalCurrentPmSyncJob;
   }
 
   /**
@@ -98,7 +102,7 @@ public class JobResource {
    *
    * @param name the name of the job to run
    * @return status of the requested job : "already running" - the job has been running before
-   *     triggering it "just started" - the job has been started by this request
+   *     triggering it "Just started" - the job has been started by this request
    */
   @PutMapping("/job/{name}")
   @PreAuthorize("hasPermission('tis:sync::jobs:', 'Update')")
@@ -135,15 +139,18 @@ public class JobResource {
               e.getMessage()));
         }
         break;
+      case "revalCurrentPmJob":
+        status = ensureRunning(revalCurrentPmSyncJob, params);
+        break;
       default:
-        return ResponseEntity.badRequest().body("{\"error\":\"job not found\"}");
+        return ResponseEntity.badRequest().body("{\"error\":\"Job not found\"}");
     }
     return ResponseEntity.ok().body(status);
   }
 
   private String ensureRunning(RunnableJob job, String params) {
-    final String ALREADY_RUNNING = "{\"status\":\"already running\"}";
-    final String JUST_STARTED = "{\"status\":\"just started\"}";
+    final String ALREADY_RUNNING = "{\"status\":\"Already running\"}";
+    final String JUST_STARTED = "{\"status\":\"Just started\"}";
     if (job.isCurrentlyRunning()) {
       return ALREADY_RUNNING;
     } else {

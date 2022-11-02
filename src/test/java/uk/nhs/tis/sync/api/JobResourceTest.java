@@ -20,6 +20,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
 import uk.nhs.tis.sync.job.PersonOwnerRebuildJob;
 import uk.nhs.tis.sync.job.PersonPlacementEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PersonPlacementTrainingBodyTrustJob;
@@ -53,6 +54,9 @@ class JobResourceTest {
   @MockBean
   private PersonRecordStatusJob personRecordStatusJob;
 
+  @MockBean
+  private RevalCurrentPmSyncJob revalCurrentPmSyncJob;
+
   private MockMvc mockMvc;
 
   @BeforeEach
@@ -63,7 +67,8 @@ class JobResourceTest {
         postTrainingBodyTrustJob,
         personElasticSearchSyncJob,
         personOwnerRebuildJob,
-        personRecordStatusJob);
+        personRecordStatusJob,
+        revalCurrentPmSyncJob);
     mockMvc = MockMvcBuilders.standaloneSetup(jobResource).build();
   }
 
@@ -98,7 +103,7 @@ class JobResourceTest {
   }
 
   @DisplayName("run a job")
-  @ParameterizedTest(name = "Should return 'just started' status when \"{0}\" is triggered .")
+  @ParameterizedTest(name = "Should return 'Just started' status when \"{0}\" is triggered .")
   @ValueSource(strings = {
       "personPlacementTrainingBodyTrustJob",
       "personPlacementEmployingBodyTrustJob",
@@ -127,11 +132,11 @@ class JobResourceTest {
     mockMvc.perform(put("/api/job/" + name)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.status").value("just started"));
+        .andExpect(jsonPath("$.status").value("Just started"));
   }
 
   @DisplayName("run personRecordStatusJob with correct date argument")
-  @ParameterizedTest(name = "Should return 'just started' status when personRecordStatusJob is triggered with \"{0}\".")
+  @ParameterizedTest(name = "Should return 'Just started' status when personRecordStatusJob is triggered with \"{0}\".")
   @ValueSource(strings = {
       "ANY",
       "NONE",
@@ -148,7 +153,7 @@ class JobResourceTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(jobParams))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.status").value("just started"));
+        .andExpect(jsonPath("$.status").value("Just started"));
     verify(personRecordStatusJob).run(jobParams);
   }
 
@@ -206,7 +211,7 @@ class JobResourceTest {
     mockMvc.perform(put("/api/job/" + name)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.status").value("already running"));
+        .andExpect(jsonPath("$.status").value("Already running"));
   }
 
   @DisplayName("run a nonexistent job")
@@ -215,6 +220,6 @@ class JobResourceTest {
     mockMvc.perform(put("/api/job/" + "nonexistentJob")
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error").value("job not found"));
+        .andExpect(jsonPath("$.error").value("Job not found"));
   }
 }
