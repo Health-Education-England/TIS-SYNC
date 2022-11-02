@@ -24,7 +24,7 @@ import uk.nhs.tis.sync.message.publisher.RabbitMqTcsPmUpdatePublisher;
  */
 @Component
 @ManagedResource(objectName = "sync.mbean:name=RevalCurrentPmSyncJob",
-    description = "Job trigger exporting current ProgrammeMembership from TCS to Reval when nightly date changes")
+    description = "Job message personIds if their programme membership(s) started/ended")
 public class RevalCurrentPmSyncJob extends PersonCurrentPmSyncJobTemplate {
 
   private static final Logger LOG = LoggerFactory.getLogger(RevalCurrentPmSyncJob.class);

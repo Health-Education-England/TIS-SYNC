@@ -24,7 +24,6 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.event.JobExecutionEvent;
-import uk.nhs.tis.sync.message.publisher.RabbitMqTcsPmUpdatePublisher;
 
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonRecordStatusJob",
