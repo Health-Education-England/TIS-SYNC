@@ -47,7 +47,7 @@ public class RevalCurrentPmSyncJob extends PersonCurrentPmSyncJobTemplate {
   @SchedulerLock(name = "revalCurrentPmScheduledTask", lockAtLeastFor = FIFTEEN_MIN,
       lockAtMostFor = FIFTEEN_MIN)
   @ManagedOperation(
-      description = "Get PersonIds from ProgrammeMembership table and sends them to tcs for current PM Sync")
+      description = "send personIds to tcs for reval current programmeMembership sync")
   public void revalCurrentPmSyncJob() {
     runSyncJob(null);
   }

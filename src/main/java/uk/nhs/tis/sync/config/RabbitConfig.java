@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Configuration for RabbitMQ messaging
+ * Configuration for RabbitMQ messaging.
  */
 @ConditionalOnProperty("spring.rabbitmq.host")
 @Configuration

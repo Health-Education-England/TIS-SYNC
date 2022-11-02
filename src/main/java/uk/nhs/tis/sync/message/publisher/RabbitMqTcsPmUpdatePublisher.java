@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
- * publish messages to rabbitMq queues
+ * publish messages to rabbitMq queues.
  */
 @Component
 public class RabbitMqTcsPmUpdatePublisher {

@@ -33,6 +33,9 @@ import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
 public class JobResource {
 
   private static final Logger LOG = LoggerFactory.getLogger(JobResource.class);
+  private static final String ALREADY_RUNNING = "{\"status\":\"Already running\"}";
+  private static final String JUST_STARTED = "{\"status\":\"Just started\"}";
+
   private final PersonPlacementEmployingBodyTrustJob personPlacementEmployingBodyTrustJob;
   private final PersonPlacementTrainingBodyTrustJob personPlacementTrainingBodyTrustJob;
   private final PostEmployingBodyTrustJob postEmployingBodyTrustJob;
@@ -66,7 +69,7 @@ public class JobResource {
    * GET /jobs/status : Get all the status of all 6 jobs
    *
    * @return the map of all the status. eg.{"personPlacementEmployingBodyTrustJob", "true"}, which
-   * means personPlacementEmployingBodyTrustJob is currently running.
+   *     means personPlacementEmployingBodyTrustJob is currently running.
    */
   @GetMapping("/jobs/status")
   @PreAuthorize("hasPermission('tis:sync::jobs:', 'View')")
@@ -100,7 +103,7 @@ public class JobResource {
    *
    * @param name the name of the job to run
    * @return status of the requested job : "already running" - the job has been running before
-   * triggering it "Just started" - the job has been started by this request
+   *     triggering it "Just started" - the job has been started by this request
    */
   @PutMapping("/job/{name}")
   @PreAuthorize("hasPermission('tis:sync::jobs:', 'Update')")
@@ -147,8 +150,6 @@ public class JobResource {
   }
 
   private String ensureRunning(RunnableJob job, String params) {
-    final String ALREADY_RUNNING = "{\"status\":\"Already running\"}";
-    final String JUST_STARTED = "{\"status\":\"Just started\"}";
     if (job.isCurrentlyRunning()) {
       return ALREADY_RUNNING;
     } else {

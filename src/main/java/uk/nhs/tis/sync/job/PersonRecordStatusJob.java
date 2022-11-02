@@ -40,8 +40,7 @@ public class PersonRecordStatusJob extends PersonCurrentPmSyncJobTemplate {
   private String dateOfChangeOverride;
 
   public PersonRecordStatusJob(EntityManagerFactory entityManagerFactory,
-      ObjectMapper objectMapper,
-      RabbitMqTcsPmUpdatePublisher rabbitMqPublisher) {
+      ObjectMapper objectMapper) {
     this.entityManagerFactory = entityManagerFactory;
     this.objectMapper = objectMapper;
   }

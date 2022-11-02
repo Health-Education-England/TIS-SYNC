@@ -23,7 +23,7 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import uk.nhs.tis.sync.event.JobExecutionEvent;
 
 /**
- * abstract template for Jobs which sync data when current programmeMembership changes
+ * abstract template for Jobs which sync data when current programmeMembership changes.
  */
 public abstract class PersonCurrentPmSyncJobTemplate implements RunnableJob {
 
