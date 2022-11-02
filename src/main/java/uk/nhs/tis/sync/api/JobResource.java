@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.nhs.tis.sync.event.listener.JobRunningListener;
-import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
 import uk.nhs.tis.sync.job.PersonOwnerRebuildJob;
 import uk.nhs.tis.sync.job.PersonPlacementEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PersonPlacementTrainingBodyTrustJob;
@@ -24,6 +23,7 @@ import uk.nhs.tis.sync.job.PostEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PostTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.RunnableJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
+import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
 
 /**
  * Controller for triggering jobs manually by devs
@@ -32,6 +32,7 @@ import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
 @RequestMapping("/api")
 public class JobResource {
 
+  private static final Logger LOG = LoggerFactory.getLogger(JobResource.class);
   private final PersonPlacementEmployingBodyTrustJob personPlacementEmployingBodyTrustJob;
   private final PersonPlacementTrainingBodyTrustJob personPlacementTrainingBodyTrustJob;
   private final PostEmployingBodyTrustJob postEmployingBodyTrustJob;
@@ -40,11 +41,8 @@ public class JobResource {
   private final PersonOwnerRebuildJob personOwnerRebuildJob;
   private final PersonRecordStatusJob personRecordStatusJob;
   private final RevalCurrentPmSyncJob revalCurrentPmSyncJob;
-
   @Autowired
   private JobRunningListener jobRunningListener;
-
-  private static final Logger LOG = LoggerFactory.getLogger(JobResource.class);
 
   public JobResource(PersonPlacementEmployingBodyTrustJob personPlacementEmployingBodyTrustJob,
       PersonPlacementTrainingBodyTrustJob personPlacementTrainingBodyTrustJob,
@@ -68,7 +66,7 @@ public class JobResource {
    * GET /jobs/status : Get all the status of all 6 jobs
    *
    * @return the map of all the status. eg.{"personPlacementEmployingBodyTrustJob", "true"}, which
-   *     means personPlacementEmployingBodyTrustJob is currently running.
+   * means personPlacementEmployingBodyTrustJob is currently running.
    */
   @GetMapping("/jobs/status")
   @PreAuthorize("hasPermission('tis:sync::jobs:', 'View')")
@@ -102,7 +100,7 @@ public class JobResource {
    *
    * @param name the name of the job to run
    * @return status of the requested job : "already running" - the job has been running before
-   *     triggering it "Just started" - the job has been started by this request
+   * triggering it "Just started" - the job has been started by this request
    */
   @PutMapping("/job/{name}")
   @PreAuthorize("hasPermission('tis:sync::jobs:', 'Update')")

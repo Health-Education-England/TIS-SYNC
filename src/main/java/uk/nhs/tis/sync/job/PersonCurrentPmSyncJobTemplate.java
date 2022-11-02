@@ -18,19 +18,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import uk.nhs.tis.sync.event.JobExecutionEvent;
 
+/**
+ * abstract template for Jobs which sync data when current programmeMembership changes
+ */
 public abstract class PersonCurrentPmSyncJobTemplate implements RunnableJob {
-
-  private static final Logger LOG = LoggerFactory.getLogger(PersonCurrentPmSyncJobTemplate.class);
 
   protected static final int DEFAULT_PAGE_SIZE = 5000;
   protected static final int FIFTEEN_MIN = 15 * 60 * 1000;
   protected static final String FULL_SYNC_DATE_STR = "ANY";
   protected static final String NO_DATE_OVERRIDE = "NONE";
+  private static final Logger LOG = LoggerFactory.getLogger(PersonCurrentPmSyncJobTemplate.class);
   private static final String BASE_QUERY =
       "SELECT DISTINCT personId FROM ProgrammeMembership" + " WHERE personId > :lastPersonId"
           + " AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')"
@@ -38,9 +39,6 @@ public abstract class PersonCurrentPmSyncJobTemplate implements RunnableJob {
   protected Stopwatch mainStopWatch;
   @Autowired(required = false)
   protected ApplicationEventPublisher applicationEventPublisher;
-
-  @Override
-  public abstract void run(String params);
 
   protected String getJobName() {
     return this.getClass().getSimpleName();

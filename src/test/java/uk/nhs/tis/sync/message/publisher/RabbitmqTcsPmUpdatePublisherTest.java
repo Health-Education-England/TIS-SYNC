@@ -18,7 +18,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
-public class RabbitmqTcsPmUpdatePublisherTest {
+class RabbitmqTcsPmUpdatePublisherTest {
 
   @InjectMocks
   RabbitMqTcsPmUpdatePublisher rabbitMqTcsPmUpdatePublisher;

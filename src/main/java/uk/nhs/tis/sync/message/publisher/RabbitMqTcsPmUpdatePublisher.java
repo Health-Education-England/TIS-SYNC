@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+/**
+ * publish messages to rabbitMq queues
+ */
 @Component
 public class RabbitMqTcsPmUpdatePublisher {
 
@@ -19,7 +22,7 @@ public class RabbitMqTcsPmUpdatePublisher {
   private RabbitTemplate rabbitTemplate;
 
   /**
-   * Publishes message to injected broker interface
+   * Publishes message to injected broker interface.
    *
    * @param message contains message payload
    */

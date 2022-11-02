@@ -18,6 +18,10 @@ import uk.nhs.tis.sync.event.JobExecutionEvent;
 import uk.nhs.tis.sync.job.PersonCurrentPmSyncJobTemplate;
 import uk.nhs.tis.sync.message.publisher.RabbitMqTcsPmUpdatePublisher;
 
+/**
+ * Get personIds whose current programmeMembership changes nightly.
+ * And sends messages to rabbitMq for tcs to fetch
+ */
 @Component
 @ManagedResource(objectName = "sync.mbean:name=RevalCurrentPmSyncJob",
     description = "Job trigger exporting current ProgrammeMembership from TCS to Reval when nightly date changes")
@@ -75,7 +79,7 @@ public class RevalCurrentPmSyncJob extends PersonCurrentPmSyncJobTemplate {
 
         if (CollectionUtils.isNotEmpty(collectedData)) {
           rabbitMqPublisher.publishToBroker(
-              collectedData.stream().map(id -> String.valueOf(id)).collect(
+              collectedData.stream().map(String::valueOf).collect(
                   Collectors.toList()));
           lastEntityId = collectedData.get(collectedData.size() - 1);
           totalRecords += collectedData.size();
