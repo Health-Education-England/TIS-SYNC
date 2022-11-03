@@ -91,7 +91,9 @@ public abstract class PersonCurrentPmSyncJobTemplate<T> implements RunnableJob {
         });
   }
 
-  protected abstract int convertData(Set<T> entitiesToSave, List<Long> entityData, EntityManager entityManager);
+  protected abstract int convertData(Set<T> entitiesToSave, List<Long> entityData,
+      EntityManager entityManager);
+
   protected abstract void handleData(Set<T> dataToSave, EntityManager entityManager);
 
   private void doDataSync(String dateOption) {

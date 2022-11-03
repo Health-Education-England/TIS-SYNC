@@ -6,8 +6,6 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,8 +21,6 @@ import uk.nhs.tis.sync.message.publisher.RabbitMqTcsPmUpdatePublisher;
 @ManagedResource(objectName = "sync.mbean:name=RevalCurrentPmSyncJob",
     description = "Job message personIds if their programme membership(s) started/ended")
 public class RevalCurrentPmSyncJob extends PersonCurrentPmSyncJobTemplate<Long> {
-
-  private static final Logger LOG = LoggerFactory.getLogger(RevalCurrentPmSyncJob.class);
 
   private final RabbitMqTcsPmUpdatePublisher rabbitMqPublisher;
 
