@@ -1,11 +1,9 @@
 package uk.nhs.tis.sync.job.reval;
 
-import com.google.common.base.Stopwatch;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -14,27 +12,23 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import uk.nhs.tis.sync.event.JobExecutionEvent;
 import uk.nhs.tis.sync.job.PersonCurrentPmSyncJobTemplate;
 import uk.nhs.tis.sync.message.publisher.RabbitMqTcsPmUpdatePublisher;
 
 /**
- * Get personIds whose current programmeMembership changes nightly.
- * And sends messages to rabbitMq for tcs to fetch
+ * Get personIds whose current programmeMembership changes nightly. And sends messages to rabbitMq
+ * for tcs to fetch
  */
 @Component
 @ManagedResource(objectName = "sync.mbean:name=RevalCurrentPmSyncJob",
     description = "Job message personIds if their programme membership(s) started/ended")
-public class RevalCurrentPmSyncJob extends PersonCurrentPmSyncJobTemplate {
+public class RevalCurrentPmSyncJob extends PersonCurrentPmSyncJobTemplate<Long> {
 
   private static final Logger LOG = LoggerFactory.getLogger(RevalCurrentPmSyncJob.class);
 
-  private final EntityManagerFactory entityManagerFactory;
   private final RabbitMqTcsPmUpdatePublisher rabbitMqPublisher;
 
-  public RevalCurrentPmSyncJob(EntityManagerFactory entityManagerFactory,
-      RabbitMqTcsPmUpdatePublisher rabbitMqPublisher) {
-    this.entityManagerFactory = entityManagerFactory;
+  public RevalCurrentPmSyncJob(RabbitMqTcsPmUpdatePublisher rabbitMqPublisher) {
     this.rabbitMqPublisher = rabbitMqPublisher;
   }
 
@@ -52,54 +46,18 @@ public class RevalCurrentPmSyncJob extends PersonCurrentPmSyncJobTemplate {
     runSyncJob(null);
   }
 
-  protected EntityManagerFactory getEntityManagerFactory() {
-    return entityManagerFactory;
+  @Override
+  protected int convertData(Set<Long> entitiesToSave, List<Long> entityData,
+      EntityManager entityManager) {
+    entitiesToSave.addAll(entityData);
+    return 0;
   }
 
-  protected String getDateOfChangeOverride() {
-    return null;
-  }
-
-  protected void doDataSync(String queryString) {
-    int totalRecords = 0;
-    long lastEntityId = 0;
-    boolean hasMoreResults = true;
-
-    Stopwatch stopwatch = Stopwatch.createStarted();
-
-    EntityManager entityManager = null;
-    try {
-      while (hasMoreResults) {
-        entityManager = getEntityManagerFactory().createEntityManager();
-
-        List<Long> collectedData =
-            collectData(lastEntityId, queryString, entityManager);
-        hasMoreResults = !collectedData.isEmpty();
-        LOG.info("Time taken to read chunk : [{}]", stopwatch);
-
-        if (CollectionUtils.isNotEmpty(collectedData)) {
-          rabbitMqPublisher.publishToBroker(
-              collectedData.stream().map(String::valueOf).collect(
-                  Collectors.toList()));
-          lastEntityId = collectedData.get(collectedData.size() - 1);
-          totalRecords += collectedData.size();
-        }
-        stopwatch.reset().start();
-
-        entityManager.close();
-        stopwatch.reset().start();
-      }
-      LOG.info("Sync job [{}] finished. Total time taken {} for processing [{}] records",
-          getJobName(), mainStopWatch.stop(), totalRecords);
-      mainStopWatch = null;
-      publishJobexecutionEvent(
-          new JobExecutionEvent(this, getSuccessMessage(Optional.ofNullable(getJobName()))));
-    } finally {
-      mainStopWatch = null;
-
-      if (entityManager != null && entityManager.isOpen()) {
-        entityManager.close();
-      }
+  @Override
+  protected void handleData(Set<Long> dataToSave, EntityManager entityManager) {
+    if (CollectionUtils.isNotEmpty(dataToSave)) {
+      rabbitMqPublisher.publishToBroker(
+          dataToSave.stream().map(String::valueOf).collect(Collectors.toSet()));
     }
   }
 }

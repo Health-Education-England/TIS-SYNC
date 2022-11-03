@@ -4,7 +4,7 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.awaitility.core.ConditionTimeoutException;
 import org.hamcrest.CoreMatchers;
@@ -23,7 +23,6 @@ import uk.nhs.tis.sync.message.publisher.RabbitMqTcsPmUpdatePublisher;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-//?Need this?(classes = Application.class, webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Sql(scripts = {"/scripts/personRows.sql", "/scripts/programmes.sql",
     "/scripts/programmeMemberships.sql"})
 @Sql(scripts = {"/scripts/deleteProgrammeMemberships.sql", "/scripts/deleteProgrammes.sql",
@@ -37,7 +36,7 @@ class RevalCurrentPmSyncJobIntegrationTest {
   RabbitMqTcsPmUpdatePublisher rabbitMqPublisher;
 
   @Captor
-  ArgumentCaptor<List<String>> messageCaptor;
+  ArgumentCaptor<Set<String>> messageCaptor;
 
   @Test
   void testJobRun() {
@@ -57,7 +56,7 @@ class RevalCurrentPmSyncJobIntegrationTest {
     }
 
     verify(rabbitMqPublisher).publishToBroker(messageCaptor.capture());
-    List<String> messages = messageCaptor.getValue();
+    Set<String> messages = messageCaptor.getValue();
     assertThat("should send message for all person whose current PM changes nightly",
         messages.size(), CoreMatchers.is(2));
   }

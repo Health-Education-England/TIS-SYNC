@@ -5,8 +5,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 
-import com.google.common.collect.Lists;
-import java.util.List;
+import com.google.common.collect.Sets;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -33,21 +33,17 @@ class RabbitmqTcsPmUpdatePublisherTest {
   ArgumentCaptor<String> routingKeyNameCaptor;
 
   @Captor
-  ArgumentCaptor<List<String>> messageCaptor;
+  ArgumentCaptor<Set<String>> messageCaptor;
 
   @Test
   void shouldPublishToRabbitMq() {
     String routingKeyName = "routingKeyName";
     String exchangeName = "exchangeName";
 
-    ReflectionTestUtils.setField(
-        rabbitMqTcsPmUpdatePublisher, "routingKey", routingKeyName
-    );
-    ReflectionTestUtils.setField(
-        rabbitMqTcsPmUpdatePublisher, "exchange", exchangeName
-    );
+    ReflectionTestUtils.setField(rabbitMqTcsPmUpdatePublisher, "routingKey", routingKeyName);
+    ReflectionTestUtils.setField(rabbitMqTcsPmUpdatePublisher, "exchange", exchangeName);
 
-    rabbitMqTcsPmUpdatePublisher.publishToBroker(Lists.newArrayList("11111", "22222"));
+    rabbitMqTcsPmUpdatePublisher.publishToBroker(Sets.newHashSet("11111", "22222"));
 
     verify(rabbitTemplate).convertAndSend(
         exchangeNameCaptor.capture(),
@@ -55,7 +51,7 @@ class RabbitmqTcsPmUpdatePublisherTest {
         messageCaptor.capture()
     );
 
-    List<String> messagesPublished = messageCaptor.getValue();
+    Set<String> messagesPublished = messageCaptor.getValue();
     assertThat(messagesPublished, hasItem("11111"));
     assertThat(messagesPublished, hasItem("22222"));
     assertThat(routingKeyNameCaptor.getValue(), is(routingKeyName));

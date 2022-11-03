@@ -1,6 +1,6 @@
 package uk.nhs.tis.sync.message.publisher;
 
-import java.util.List;
+import java.util.Set;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +26,7 @@ public class RabbitMqTcsPmUpdatePublisher {
    *
    * @param message contains message payload
    */
-  public void publishToBroker(List<String> message) {
+  public void publishToBroker(Set<String> message) {
     rabbitTemplate.convertAndSend(exchange, routingKey, message);
   }
 }

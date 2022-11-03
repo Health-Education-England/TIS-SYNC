@@ -2,17 +2,13 @@ package uk.nhs.tis.sync.job;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.Sets;
 import com.transformuk.hee.tis.tcs.service.model.Person;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -23,25 +19,23 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import uk.nhs.tis.sync.event.JobExecutionEvent;
 
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonRecordStatusJob",
     description = "Job set a Person's (Training Record) Status if their programme membership(s) started/ended")
-public class PersonRecordStatusJob extends PersonCurrentPmSyncJobTemplate {
+public class PersonRecordStatusJob extends PersonCurrentPmSyncJobTemplate<Person> {
 
   private static final Logger LOG = LoggerFactory.getLogger(PersonRecordStatusJob.class);
 
-  private final EntityManagerFactory entityManagerFactory;
   private final ObjectMapper objectMapper;
 
-  @Value("${application.jobs.personRecordStatusJob.dateOfChangeOverride}")
-  private String dateOfChangeOverride;
-
-  public PersonRecordStatusJob(EntityManagerFactory entityManagerFactory,
-      ObjectMapper objectMapper) {
-    this.entityManagerFactory = entityManagerFactory;
+  public PersonRecordStatusJob(ObjectMapper objectMapper) {
     this.objectMapper = objectMapper;
+  }
+
+  @Value("${application.jobs.personRecordStatusJob.dateOfChangeOverride}")
+  public void setDateOverride(String dateOfChangeOverride) {
+    this.dateOfChangeOverride = dateOfChangeOverride;
   }
 
   public void run(String params) {
@@ -93,69 +87,25 @@ public class PersonRecordStatusJob extends PersonCurrentPmSyncJobTemplate {
     return LocalDate.parse(dateStr);
   }
 
-  protected EntityManagerFactory getEntityManagerFactory() {
-    return entityManagerFactory;
+  @Override
+  protected int convertData(Set<Person> entitiesToSave, List<Long> entityData,
+      EntityManager entityManager) {
+    int entities = entityData.size();
+    entityData.stream().map(id -> entityManager.find(Person.class, id))
+        .filter(Objects::nonNull)
+        .filter(p -> p.getStatus() != p.programmeMembershipsStatus())
+        .forEach(p -> {
+          p.setStatus(p.programmeMembershipsStatus());
+          entitiesToSave.add(p);
+        });
+    return entities - entitiesToSave.size();
   }
 
-  protected String getDateOfChangeOverride() {
-    return dateOfChangeOverride;
-  }
-
-  protected void doDataSync(String queryString) {
-    int skipped = 0;
-    int totalRecords = 0;
-    long lastEntityId = 0;
-    boolean hasMoreResults = true;
-    Set<Person> dataToSave = Sets.newHashSet();
-
-    Stopwatch stopwatch = Stopwatch.createStarted();
-
-    EntityManager entityManager = null;
-    EntityTransaction transaction = null;
-    try {
-      while (hasMoreResults) {
-        entityManager = getEntityManagerFactory().createEntityManager();
-        transaction = entityManager.getTransaction();
-        transaction.begin();
-
-        List<Long> collectedData =
-            collectData(lastEntityId, queryString, entityManager);
-        hasMoreResults = !collectedData.isEmpty();
-        LOG.info("Time taken to read chunk : [{}]", stopwatch);
-
-        if (CollectionUtils.isNotEmpty(collectedData)) {
-          lastEntityId = collectedData.get(collectedData.size() - 1);
-          totalRecords += collectedData.size();
-          skipped += convertData(dataToSave, collectedData, entityManager);
-        }
-        stopwatch.reset().start();
-        if (CollectionUtils.isNotEmpty(dataToSave)) {
-          dataToSave.forEach(entityManager::persist);
-          entityManager.flush();
-        }
-        LOG.debug("Collected {} records and attempted to process {}.", collectedData.size(),
-            dataToSave.size());
-        dataToSave.clear();
-
-        transaction.commit();
-        entityManager.close();
-        LOG.info("Time taken to save chunk : [{}]", stopwatch);
-        stopwatch.reset().start();
-      }
-      LOG.info("Sync job [{}] finished. Total time taken {} for processing [{}] records",
-          getJobName(), mainStopWatch.stop(), totalRecords);
-      LOG.info("Skipped records {}", skipped);
-      mainStopWatch = null;
-      publishJobexecutionEvent(
-          new JobExecutionEvent(this, getSuccessMessage(Optional.ofNullable(getJobName()))));
-    } finally {
-      mainStopWatch = null;
-      if (transaction != null && transaction.isActive()) {
-        transaction.rollback();
-      }
-      if (entityManager != null && entityManager.isOpen()) {
-        entityManager.close();
-      }
+  @Override
+  protected void handleData(Set<Person> dataToSave, EntityManager entityManager) {
+    if (CollectionUtils.isNotEmpty(dataToSave)) {
+      dataToSave.forEach(entityManager::persist);
+      entityManager.flush();
     }
   }
 }
