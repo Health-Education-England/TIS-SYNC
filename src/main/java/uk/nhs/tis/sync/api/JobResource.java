@@ -69,7 +69,7 @@ public class JobResource {
    * GET /jobs/status : Get all the status of 7 jobs.  Others are shortrunning
    *
    * @return map of the status for most jobs. eg. {"personPlacementEmployingBodyTrustJob", "true"},
-   * which means personPlacementEmployingBodyTrustJob is currently running.
+   *     which means personPlacementEmployingBodyTrustJob is currently running.
    */
   @GetMapping("/jobs/status")
   @PreAuthorize("hasPermission('tis:sync::jobs:', 'View')")
