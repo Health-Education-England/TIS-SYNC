@@ -89,6 +89,8 @@ class JobResourceTest {
         .thenReturn(false);
     when(personRecordStatusJob.isCurrentlyRunning())
         .thenReturn(false);
+    when(revalCurrentPmSyncJob.isCurrentlyRunning())
+        .thenReturn(false);
 
     mockMvc.perform(get("/api/jobs/status")
             .contentType(MediaType.APPLICATION_JSON))
@@ -99,6 +101,7 @@ class JobResourceTest {
         .andExpect(jsonPath("$.personElasticSearchSyncJob").value(false))
         .andExpect(jsonPath("$.personOwnerRebuildJob").value(false))
         .andExpect(jsonPath("$.personRecordStatusJob").value(false))
+        .andExpect(jsonPath("$.revalCurrentPmJob").value(false))
         .andExpect(status().isOk());
   }
 
@@ -111,7 +114,8 @@ class JobResourceTest {
       "postTrainingBodyTrustJob",
       "personElasticSearchSyncJob",
       "personOwnerRebuildJob",
-      "personRecordStatusJob"
+      "personRecordStatusJob",
+      "revalCurrentPmJob"
   })
   void shouldReturnJustStartedWhenAJobTriggered(String name) throws Exception {
     when(personPlacementTrainingBodyTrustJob.isCurrentlyRunning())
@@ -127,6 +131,8 @@ class JobResourceTest {
     when(personOwnerRebuildJob.isCurrentlyRunning())
         .thenReturn(false);
     when(personRecordStatusJob.isCurrentlyRunning())
+        .thenReturn(false);
+    when(revalCurrentPmSyncJob.isCurrentlyRunning())
         .thenReturn(false);
 
     mockMvc.perform(put("/api/job/" + name)
@@ -190,7 +196,8 @@ class JobResourceTest {
       "postTrainingBodyTrustJob",
       "personElasticSearchSyncJob",
       "personOwnerRebuildJob",
-      "personRecordStatusJob"
+      "personRecordStatusJob",
+      "revalCurrentPmJob"
   })
   void shouldReturnAlreadyRunningWhenTriggerARunningJob(String name) throws Exception {
     when(personPlacementTrainingBodyTrustJob.isCurrentlyRunning())
@@ -206,6 +213,8 @@ class JobResourceTest {
     when(personOwnerRebuildJob.isCurrentlyRunning())
         .thenReturn(true);
     when(personRecordStatusJob.isCurrentlyRunning())
+        .thenReturn(true);
+    when(revalCurrentPmSyncJob.isCurrentlyRunning())
         .thenReturn(true);
 
     mockMvc.perform(put("/api/job/" + name)

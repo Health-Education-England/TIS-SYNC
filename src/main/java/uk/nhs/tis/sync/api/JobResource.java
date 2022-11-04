@@ -66,7 +66,7 @@ public class JobResource {
   }
 
   /**
-   * GET /jobs/status : Get all the status of 7 jobs.  Others are shortrunning
+   * GET /jobs/status : Get all the status of 8 jobs.
    *
    * @return map of the status for most jobs. eg. {"personPlacementEmployingBodyTrustJob", "true"},
    *     which means personPlacementEmployingBodyTrustJob is currently running.
@@ -84,6 +84,7 @@ public class JobResource {
     statusMap.put("personElasticSearchSyncJob", personElasticSearchSyncJob.isCurrentlyRunning());
     statusMap.put("personOwnerRebuildJob", personOwnerRebuildJob.isCurrentlyRunning());
     statusMap.put("personRecordStatusJob", personRecordStatusJob.isCurrentlyRunning());
+    statusMap.put("revalCurrentPmJob", revalCurrentPmSyncJob.isCurrentlyRunning());
     return ResponseEntity.ok().body(statusMap);
   }
 
@@ -102,7 +103,7 @@ public class JobResource {
    * PUT /job/:name : Trigger one individual job
    *
    * @param name the name of the job to run
-   * @return status of the requested job : "already running" - the job has been running before
+   * @return status of the requested job : "Already running" - the job has been running before
    *     triggering it "Just started" - the job has been started by this request
    */
   @PutMapping("/job/{name}")
