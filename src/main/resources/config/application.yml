@@ -222,7 +222,7 @@ application:
   rabbit:
     reval:
       exchange: ${REVAL_RABBIT_EXCHANGE:reval.exchange}
-      routingKey.currentpm.nightlysync: ${REVAL_RABBIT_CURRENTPMSYNC_ROUTING_KEY:reval.routingKey.currentpm.nightlysync}
+      routingKey.currentpm.update: ${REVAL_RABBIT_CURRENTPMUPDATE_ROUTING_KEY:reval.currentpm.update}
 
 azure:
   accountName: ${CLOUD_BLOB_ACCOUNT_NAME}

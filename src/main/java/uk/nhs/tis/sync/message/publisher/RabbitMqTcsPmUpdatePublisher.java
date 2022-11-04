@@ -15,7 +15,7 @@ public class RabbitMqTcsPmUpdatePublisher {
   @Value("${application.rabbit.reval.exchange}")
   private String exchange;
 
-  @Value("${application.rabbit.reval.routingKey.currentpm.nightlysync}")
+  @Value("${application.rabbit.reval.routingKey.currentpm.update}")
   private String routingKey;
 
   @Autowired
