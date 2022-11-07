@@ -9,7 +9,18 @@ function runJob() {
     };
 
   fetch(url, requestParams)
-    .then(response => response.json());
+    .then(response => response.json())
+    .then(responseJson => updateStatusAfterTriggerJob(responseJson, jobName));
+}
+
+// After clicking any button of "Run job", set status from the response
+function updateStatusAfterTriggerJob(response, jobName) {
+  if (response.status) {
+    console.log(response);
+    const statusElement = document.getElementById(jobName + "_status");
+    statusElement.innerHTML = response.status;
+    statusElement.classList.add("running-text");
+  }
 }
 
 function handleErrors(response) {
@@ -47,7 +58,8 @@ function runPersonStatusSyncJob() {
     .then(handleErrors)
     .catch(errPromise => {
       errPromise.then(errObj => window.alert(errObj.error));
-    });
+    })
+    .then(responseJson => updateStatusAfterTriggerJob(responseJson, jobName));
 }
 
 function validateDateFormat(param) {
@@ -90,8 +102,18 @@ function getStatus() {
           }
 
           statusElement.innerHTML = jobStatus;
-        })
+        });
+        // set status and tooltip for revalCurrmentPMJob
+        setStatusForRevalCurrentPMJob();
     });
+}
+
+function setStatusForRevalCurrentPMJob() {
+  const revalCurrentPmJobElement = document.getElementById("revalCurrentPmJob_status");
+  // revalCurrentPmJob sends personIds to tcs and trigger
+  revalCurrentPmJobElement.innerHTML = "Unknown";
+  revalCurrentPmJobElement.setAttribute("title", "Please check tcs/reval/rabbitMQ if this job is currently running");
+  revalCurrentPmJobElement.classList.remove("running-text");
 }
 
 function registerListeners() {
@@ -104,6 +126,7 @@ function registerListeners() {
   document.getElementById("personRecordStatusJob").addEventListener("click", runPersonStatusSyncJob);
   document.getElementById("runAllJobs").addEventListener("click", runAllJobs);
   document.getElementById("getStatus").addEventListener("click", getStatus);
+  document.getElementById("revalCurrentPmJob").addEventListener("click", runJob);
 }
 
 window.addEventListener("load", registerListeners);

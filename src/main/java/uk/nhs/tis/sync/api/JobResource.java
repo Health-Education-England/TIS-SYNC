@@ -23,6 +23,7 @@ import uk.nhs.tis.sync.job.PostEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PostTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.RunnableJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
+import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
 
 /**
  * Controller for triggering jobs manually by devs
@@ -31,6 +32,10 @@ import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
 @RequestMapping("/api")
 public class JobResource {
 
+  private static final Logger LOG = LoggerFactory.getLogger(JobResource.class);
+  private static final String ALREADY_RUNNING = "{\"status\":\"Already running\"}";
+  private static final String JUST_STARTED = "{\"status\":\"Just started\"}";
+
   private final PersonPlacementEmployingBodyTrustJob personPlacementEmployingBodyTrustJob;
   private final PersonPlacementTrainingBodyTrustJob personPlacementTrainingBodyTrustJob;
   private final PostEmployingBodyTrustJob postEmployingBodyTrustJob;
@@ -38,11 +43,9 @@ public class JobResource {
   private final PersonElasticSearchSyncJob personElasticSearchSyncJob;
   private final PersonOwnerRebuildJob personOwnerRebuildJob;
   private final PersonRecordStatusJob personRecordStatusJob;
-
+  private final RevalCurrentPmSyncJob revalCurrentPmSyncJob;
   @Autowired
   private JobRunningListener jobRunningListener;
-
-  private static final Logger LOG = LoggerFactory.getLogger(JobResource.class);
 
   public JobResource(PersonPlacementEmployingBodyTrustJob personPlacementEmployingBodyTrustJob,
       PersonPlacementTrainingBodyTrustJob personPlacementTrainingBodyTrustJob,
@@ -50,7 +53,8 @@ public class JobResource {
       PostTrainingBodyTrustJob postTrainingBodyTrustJob,
       PersonElasticSearchSyncJob personElasticSearchSyncJob,
       PersonOwnerRebuildJob personOwnerRebuildJob,
-      PersonRecordStatusJob personRecordStatusJob) {
+      PersonRecordStatusJob personRecordStatusJob,
+      RevalCurrentPmSyncJob revalCurrentPmSyncJob) {
     this.personPlacementEmployingBodyTrustJob = personPlacementEmployingBodyTrustJob;
     this.personPlacementTrainingBodyTrustJob = personPlacementTrainingBodyTrustJob;
     this.postEmployingBodyTrustJob = postEmployingBodyTrustJob;
@@ -58,13 +62,14 @@ public class JobResource {
     this.personElasticSearchSyncJob = personElasticSearchSyncJob;
     this.personOwnerRebuildJob = personOwnerRebuildJob;
     this.personRecordStatusJob = personRecordStatusJob;
+    this.revalCurrentPmSyncJob = revalCurrentPmSyncJob;
   }
 
   /**
-   * GET /jobs/status : Get all the status of all 6 jobs
+   * GET /jobs/status : Get all the status of 8 jobs.
    *
-   * @return the map of all the status. eg.{"personPlacementEmployingBodyTrustJob", "true"}, which
-   *     means personPlacementEmployingBodyTrustJob is currently running.
+   * @return map of the status for most jobs. eg. {"personPlacementEmployingBodyTrustJob", "true"},
+   *     which means personPlacementEmployingBodyTrustJob is currently running.
    */
   @GetMapping("/jobs/status")
   @PreAuthorize("hasPermission('tis:sync::jobs:', 'View')")
@@ -79,6 +84,7 @@ public class JobResource {
     statusMap.put("personElasticSearchSyncJob", personElasticSearchSyncJob.isCurrentlyRunning());
     statusMap.put("personOwnerRebuildJob", personOwnerRebuildJob.isCurrentlyRunning());
     statusMap.put("personRecordStatusJob", personRecordStatusJob.isCurrentlyRunning());
+    statusMap.put("revalCurrentPmJob", revalCurrentPmSyncJob.isCurrentlyRunning());
     return ResponseEntity.ok().body(statusMap);
   }
 
@@ -97,8 +103,8 @@ public class JobResource {
    * PUT /job/:name : Trigger one individual job
    *
    * @param name the name of the job to run
-   * @return status of the requested job : "already running" - the job has been running before
-   *     triggering it "just started" - the job has been started by this request
+   * @return status of the requested job : "Already running" - the job has been running before
+   *     triggering it "Just started" - the job has been started by this request
    */
   @PutMapping("/job/{name}")
   @PreAuthorize("hasPermission('tis:sync::jobs:', 'Update')")
@@ -135,15 +141,16 @@ public class JobResource {
               e.getMessage()));
         }
         break;
+      case "revalCurrentPmJob":
+        status = ensureRunning(revalCurrentPmSyncJob, params);
+        break;
       default:
-        return ResponseEntity.badRequest().body("{\"error\":\"job not found\"}");
+        return ResponseEntity.badRequest().body("{\"error\":\"Job not found\"}");
     }
     return ResponseEntity.ok().body(status);
   }
 
   private String ensureRunning(RunnableJob job, String params) {
-    final String ALREADY_RUNNING = "{\"status\":\"already running\"}";
-    final String JUST_STARTED = "{\"status\":\"just started\"}";
     if (job.isCurrentlyRunning()) {
       return ALREADY_RUNNING;
     } else {
