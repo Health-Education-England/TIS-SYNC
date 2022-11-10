@@ -67,8 +67,8 @@ class JobResourceTest {
         postTrainingBodyTrustJob,
         personElasticSearchSyncJob,
         personOwnerRebuildJob,
-        personRecordStatusJob,
-        revalCurrentPmSyncJob);
+        personRecordStatusJob);
+    jobResource.setRevalCurrentPmSyncJob(revalCurrentPmSyncJob);
     mockMvc = MockMvcBuilders.standaloneSetup(jobResource).build();
   }
 
@@ -200,6 +200,7 @@ class JobResourceTest {
       "revalCurrentPmJob"
   })
   void shouldReturnAlreadyRunningWhenTriggerARunningJob(String name) throws Exception {
+
     when(personPlacementTrainingBodyTrustJob.isCurrentlyRunning())
         .thenReturn(true);
     when(personPlacementEmployingBodyTrustJob.isCurrentlyRunning())

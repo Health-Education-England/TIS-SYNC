@@ -3,9 +3,11 @@ package uk.nhs.tis.sync.api;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,6 +37,7 @@ public class JobResource {
   private static final Logger LOG = LoggerFactory.getLogger(JobResource.class);
   private static final String ALREADY_RUNNING = "{\"status\":\"Already running\"}";
   private static final String JUST_STARTED = "{\"status\":\"Just started\"}";
+  private static final String JOB_NOT_FOUND = "{\"error\":\"Job not found\"}";
 
   private final PersonPlacementEmployingBodyTrustJob personPlacementEmployingBodyTrustJob;
   private final PersonPlacementTrainingBodyTrustJob personPlacementTrainingBodyTrustJob;
@@ -43,9 +46,11 @@ public class JobResource {
   private final PersonElasticSearchSyncJob personElasticSearchSyncJob;
   private final PersonOwnerRebuildJob personOwnerRebuildJob;
   private final PersonRecordStatusJob personRecordStatusJob;
-  private final RevalCurrentPmSyncJob revalCurrentPmSyncJob;
+  private RevalCurrentPmSyncJob revalCurrentPmSyncJob;
   @Autowired
   private JobRunningListener jobRunningListener;
+  @Autowired
+  private Environment environment;
 
   public JobResource(PersonPlacementEmployingBodyTrustJob personPlacementEmployingBodyTrustJob,
       PersonPlacementTrainingBodyTrustJob personPlacementTrainingBodyTrustJob,
@@ -53,8 +58,8 @@ public class JobResource {
       PostTrainingBodyTrustJob postTrainingBodyTrustJob,
       PersonElasticSearchSyncJob personElasticSearchSyncJob,
       PersonOwnerRebuildJob personOwnerRebuildJob,
-      PersonRecordStatusJob personRecordStatusJob,
-      RevalCurrentPmSyncJob revalCurrentPmSyncJob) {
+      PersonRecordStatusJob personRecordStatusJob
+      ) {
     this.personPlacementEmployingBodyTrustJob = personPlacementEmployingBodyTrustJob;
     this.personPlacementTrainingBodyTrustJob = personPlacementTrainingBodyTrustJob;
     this.postEmployingBodyTrustJob = postEmployingBodyTrustJob;
@@ -62,6 +67,10 @@ public class JobResource {
     this.personElasticSearchSyncJob = personElasticSearchSyncJob;
     this.personOwnerRebuildJob = personOwnerRebuildJob;
     this.personRecordStatusJob = personRecordStatusJob;
+  }
+
+  @Autowired(required = false)
+  public void setRevalCurrentPmSyncJob(RevalCurrentPmSyncJob revalCurrentPmSyncJob) {
     this.revalCurrentPmSyncJob = revalCurrentPmSyncJob;
   }
 
@@ -84,8 +93,16 @@ public class JobResource {
     statusMap.put("personElasticSearchSyncJob", personElasticSearchSyncJob.isCurrentlyRunning());
     statusMap.put("personOwnerRebuildJob", personOwnerRebuildJob.isCurrentlyRunning());
     statusMap.put("personRecordStatusJob", personRecordStatusJob.isCurrentlyRunning());
-    statusMap.put("revalCurrentPmJob", revalCurrentPmSyncJob.isCurrentlyRunning());
+    if (revalCurrentPmSyncJob != null) {
+      statusMap.put("revalCurrentPmJob", revalCurrentPmSyncJob.isCurrentlyRunning());
+    }
     return ResponseEntity.ok().body(statusMap);
+  }
+
+  @GetMapping("/sys/profile")
+  public ResponseEntity<String> getSysProfile() {
+    String[] profiles = environment.getActiveProfiles();
+    return ResponseEntity.ok(StringUtils.join(profiles, ";"));
   }
 
   /**
@@ -142,10 +159,14 @@ public class JobResource {
         }
         break;
       case "revalCurrentPmJob":
-        status = ensureRunning(revalCurrentPmSyncJob, params);
+        if (revalCurrentPmSyncJob != null) {
+          status = ensureRunning(revalCurrentPmSyncJob, params);
+        } else {
+          return ResponseEntity.badRequest().body(JOB_NOT_FOUND);
+        }
         break;
       default:
-        return ResponseEntity.badRequest().body("{\"error\":\"Job not found\"}");
+        return ResponseEntity.badRequest().body(JOB_NOT_FOUND);
     }
     return ResponseEntity.ok().body(status);
   }

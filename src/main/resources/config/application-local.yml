@@ -14,6 +14,12 @@ spring:
       uris: ${ES_URLS:http://localhost:9200}
   jpa:
     show_sql: false
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    ssl.enabled: ${RABBITMQ_USE_SSL:false}
 
 logging:
   file: ${LOG_DIR:${HOME}}/sync.log
