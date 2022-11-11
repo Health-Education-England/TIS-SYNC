@@ -3,11 +3,10 @@ package uk.nhs.tis.sync.api;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,8 +48,8 @@ public class JobResource {
   private RevalCurrentPmSyncJob revalCurrentPmSyncJob;
   @Autowired
   private JobRunningListener jobRunningListener;
-  @Autowired
-  private Environment environment;
+  @Value("${spring.profiles.active:}")
+  private String activeProfile;
 
   public JobResource(PersonPlacementEmployingBodyTrustJob personPlacementEmployingBodyTrustJob,
       PersonPlacementTrainingBodyTrustJob personPlacementTrainingBodyTrustJob,
@@ -59,7 +58,7 @@ public class JobResource {
       PersonElasticSearchSyncJob personElasticSearchSyncJob,
       PersonOwnerRebuildJob personOwnerRebuildJob,
       PersonRecordStatusJob personRecordStatusJob
-      ) {
+  ) {
     this.personPlacementEmployingBodyTrustJob = personPlacementEmployingBodyTrustJob;
     this.personPlacementTrainingBodyTrustJob = personPlacementTrainingBodyTrustJob;
     this.postEmployingBodyTrustJob = postEmployingBodyTrustJob;
@@ -101,8 +100,7 @@ public class JobResource {
 
   @GetMapping("/sys/profile")
   public ResponseEntity<String> getSysProfile() {
-    String[] profiles = environment.getActiveProfiles();
-    return ResponseEntity.ok(StringUtils.join(profiles, ";"));
+    return ResponseEntity.ok(this.activeProfile);
   }
 
   /**

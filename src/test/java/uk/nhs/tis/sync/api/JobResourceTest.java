@@ -1,10 +1,13 @@
 package uk.nhs.tis.sync.api;
 
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,6 +21,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
@@ -59,9 +63,11 @@ class JobResourceTest {
 
   private MockMvc mockMvc;
 
+  private JobResource jobResource;
+
   @BeforeEach
   void setup() {
-    JobResource jobResource = new JobResource(personPlacementEmployingBodyTrustJob,
+    jobResource = new JobResource(personPlacementEmployingBodyTrustJob,
         personPlacementTrainingBodyTrustJob,
         postEmployingBodyTrustJob,
         postTrainingBodyTrustJob,
@@ -72,7 +78,7 @@ class JobResourceTest {
     mockMvc = MockMvcBuilders.standaloneSetup(jobResource).build();
   }
 
-  @DisplayName("get Status")
+  @DisplayName("get all Status")
   @Test
   void shouldReturnAllStatusWhenGetStatus() throws Exception {
     when(personPlacementEmployingBodyTrustJob.isCurrentlyRunning())
@@ -102,6 +108,37 @@ class JobResourceTest {
         .andExpect(jsonPath("$.personOwnerRebuildJob").value(false))
         .andExpect(jsonPath("$.personRecordStatusJob").value(false))
         .andExpect(jsonPath("$.revalCurrentPmJob").value(false))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void shouldNotReturnStatusForRevalCurrentSyncWhenJobNotAvailable() throws Exception {
+    jobResource.setRevalCurrentPmSyncJob(null);
+    when(personPlacementEmployingBodyTrustJob.isCurrentlyRunning())
+        .thenReturn(false);
+    when(personPlacementTrainingBodyTrustJob.isCurrentlyRunning())
+        .thenReturn(true);
+    when(postEmployingBodyTrustJob.isCurrentlyRunning())
+        .thenReturn(false);
+    when(postTrainingBodyTrustJob.isCurrentlyRunning())
+        .thenReturn(false);
+    when(personElasticSearchSyncJob.isCurrentlyRunning())
+        .thenReturn(false);
+    when(personOwnerRebuildJob.isCurrentlyRunning())
+        .thenReturn(false);
+    when(personRecordStatusJob.isCurrentlyRunning())
+        .thenReturn(false);
+
+    mockMvc.perform(get("/api/jobs/status")
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$", hasKey("personPlacementEmployingBodyTrustJob")))
+        .andExpect(jsonPath("$", hasKey("personPlacementTrainingBodyTrustJob")))
+        .andExpect(jsonPath("$", hasKey("postEmployingBodyTrustJob")))
+        .andExpect(jsonPath("$", hasKey("postTrainingBodyTrustJob")))
+        .andExpect(jsonPath("$", hasKey("personElasticSearchSyncJob")))
+        .andExpect(jsonPath("$", hasKey("personOwnerRebuildJob")))
+        .andExpect(jsonPath("$", hasKey("personRecordStatusJob")))
+        .andExpect(jsonPath("$", not(hasKey("revalCurrentPmSyncJob"))))
         .andExpect(status().isOk());
   }
 
@@ -139,6 +176,16 @@ class JobResourceTest {
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("Just started"));
+  }
+
+  @Test
+  void shouldReturnErrorWhenRevalCurrentSyncIsTriggeredButNotAvailable() throws Exception {
+    jobResource.setRevalCurrentPmSyncJob(null);
+
+    mockMvc.perform(put("/api/job/revalCurrentPmJob")
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value("Job not found"));
   }
 
   @DisplayName("run personRecordStatusJob with correct date argument")
@@ -231,5 +278,14 @@ class JobResourceTest {
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error").value("Job not found"));
+  }
+
+  @Test
+  void shouldGetSysProfile() throws Exception {
+    ReflectionTestUtils.setField(jobResource, "activeProfile", "prod,nimdta");
+    mockMvc.perform(get("/api/sys/profile")
+            .contentType(MediaType.TEXT_PLAIN))
+        .andExpect(status().isOk())
+        .andExpect(content().string("prod,nimdta"));
   }
 }
