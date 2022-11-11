@@ -48,12 +48,16 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
   @Autowired
   private PersonElasticSearchSyncJob personElasticSearchSyncJob;
 
-  @Autowired
   private RevalCurrentPmSyncJob revalCurrentPmSyncJob;
 
   private LocalTime earliest;
 
   private LocalTime latest;
+
+  @Autowired(required = false)
+  public void setRevalCurrentPmSyncJob(RevalCurrentPmSyncJob revalCurrentPmSyncJob) {
+    this.revalCurrentPmSyncJob = revalCurrentPmSyncJob;
+  }
 
   @Override
   public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -95,10 +99,12 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
       do {
         Thread.sleep(SLEEP_DURATION);
       } while (personElasticSearchSyncJob.isCurrentlyRunning());
-      revalCurrentPmSyncJob.revalCurrentPmSyncJob();
-      do {
-        Thread.sleep(SLEEP_DURATION);
-      } while (revalCurrentPmSyncJob.isCurrentlyRunning());
+      if (revalCurrentPmSyncJob != null) {
+        revalCurrentPmSyncJob.revalCurrentPmSyncJob();
+        do {
+          Thread.sleep(SLEEP_DURATION);
+        } while (revalCurrentPmSyncJob.isCurrentlyRunning());
+      }
     } catch (InterruptedException e) {
       LOG.error(e.getMessage(), e);
     }

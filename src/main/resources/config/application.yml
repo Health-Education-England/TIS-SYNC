@@ -123,11 +123,11 @@ spring:
   cache:
     caffeine.spec: maximumSize=100,expireAfterAccess=1m
   rabbitmq:
-    host: ${RABBITMQ_HOST:localhost}
-    port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USERNAME:guest}
-    password: ${RABBITMQ_PASSWORD:guest}
-    ssl.enabled: ${RABBITMQ_USE_SSL:false}
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+    ssl.enabled: ${RABBITMQ_USE_SSL}
 
 server:
   port: 8101

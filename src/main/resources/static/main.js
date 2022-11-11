@@ -116,7 +116,22 @@ function setStatusForRevalCurrentPMJob() {
   revalCurrentPmJobElement.classList.remove("running-text");
 }
 
+function fetchSysProfile() {
+  var profile = "default";
+  const url = window.location.origin + window.location.pathname + "api/sys/profile";
+
+  fetch(url)
+    .then(response => response.text())
+    .then(data => {
+      profile = data;
+      if (profile.indexOf("nimdta") === -1) {
+        document.getElementById("reval-panel").classList.remove("hidden");
+      }
+    });
+}
+
 function registerListeners() {
+  fetchSysProfile();
   document.getElementById("personOwnerRebuildJob").addEventListener("click", runJob);
   document.getElementById("personPlacementEmployingBodyTrustJob").addEventListener("click", runJob);
   document.getElementById("personPlacementTrainingBodyTrustJob").addEventListener("click", runJob);

@@ -10,8 +10,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.nhs.tis.sync.job.PersonOwnerRebuildJob;
-import uk.nhs.tis.sync.job.RecordResendingJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
+import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -24,6 +24,8 @@ public class JobRunningListenerTest {
   private PersonElasticSearchSyncJob personElasticSearchSyncJob;
   @MockBean
   private PersonOwnerRebuildJob personOwnerRebuildJob;
+  @MockBean
+  private RevalCurrentPmSyncJob revalCurrentPmSyncJob;
 
   @Autowired
   JobRunningListener testClass;
@@ -32,10 +34,12 @@ public class JobRunningListenerTest {
   public void testRunJobs() {
     when(personOwnerRebuildJob.isCurrentlyRunning()).thenReturn(false);
     when(personElasticSearchSyncJob.isCurrentlyRunning()).thenReturn(false);
+    when(revalCurrentPmSyncJob.isCurrentlyRunning()).thenReturn(false);
     testClass.runJobs();
     verify(personOwnerRebuildJob).personOwnerRebuildJob();
     verify(personOwnerRebuildJob).isCurrentlyRunning();
     verify(personElasticSearchSyncJob).personElasticSearchSync();
     verify(personElasticSearchSyncJob).isCurrentlyRunning();
+    verify(revalCurrentPmSyncJob).isCurrentlyRunning();
   }
 }
