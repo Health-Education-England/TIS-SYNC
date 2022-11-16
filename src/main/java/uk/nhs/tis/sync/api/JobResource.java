@@ -3,8 +3,7 @@ package uk.nhs.tis.sync.api;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -31,9 +30,9 @@ import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
  */
 @RestController
 @RequestMapping("/api")
+@Slf4j
 public class JobResource {
 
-  private static final Logger LOG = LoggerFactory.getLogger(JobResource.class);
   private static final String ALREADY_RUNNING = "{\"status\":\"Already running\"}";
   private static final String JUST_STARTED = "{\"status\":\"Just started\"}";
   private static final String JOB_NOT_FOUND = "{\"error\":\"Job not found\"}";
@@ -57,8 +56,7 @@ public class JobResource {
       PostTrainingBodyTrustJob postTrainingBodyTrustJob,
       PersonElasticSearchSyncJob personElasticSearchSyncJob,
       PersonOwnerRebuildJob personOwnerRebuildJob,
-      PersonRecordStatusJob personRecordStatusJob
-  ) {
+      PersonRecordStatusJob personRecordStatusJob) {
     this.personPlacementEmployingBodyTrustJob = personPlacementEmployingBodyTrustJob;
     this.personPlacementTrainingBodyTrustJob = personPlacementTrainingBodyTrustJob;
     this.postEmployingBodyTrustJob = postEmployingBodyTrustJob;
@@ -100,7 +98,7 @@ public class JobResource {
 
   @GetMapping("/sys/profile")
   public ResponseEntity<String> getSysProfile() {
-    return ResponseEntity.ok(this.activeProfile);
+    return ResponseEntity.ok(activeProfile);
   }
 
   /**
@@ -109,7 +107,7 @@ public class JobResource {
   @PutMapping("/jobs")
   @PreAuthorize("hasPermission('tis:sync::jobs:', 'Update')")
   public ResponseEntity<Void> runJobsSequentially() {
-    LOG.debug("REST request to run all jobs sequentially");
+    log.debug("REST request to run all jobs sequentially");
     CompletableFuture.runAsync(jobRunningListener::runJobs);
     return ResponseEntity.ok().build();
   }
@@ -125,7 +123,7 @@ public class JobResource {
   @PreAuthorize("hasPermission('tis:sync::jobs:', 'Update')")
   public ResponseEntity<String> runJob(@PathVariable String name,
       @RequestBody(required = false) String params) {
-    LOG.debug("REST request to run job: {}", name);
+    log.debug("REST request to run job: {}", name);
 
     String status;
 

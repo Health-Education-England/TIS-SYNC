@@ -3,6 +3,7 @@ package uk.nhs.tis.sync.api;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -24,7 +25,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
+import uk.nhs.tis.sync.event.listener.JobRunningListener;
 import uk.nhs.tis.sync.job.PersonOwnerRebuildJob;
 import uk.nhs.tis.sync.job.PersonPlacementEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PersonPlacementTrainingBodyTrustJob;
@@ -32,8 +33,9 @@ import uk.nhs.tis.sync.job.PersonRecordStatusJob;
 import uk.nhs.tis.sync.job.PostEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PostTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
+import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
 
-@DisplayName("JobResource")
+@DisplayName("JobResourceTest")
 @ExtendWith(SpringExtension.class)
 class JobResourceTest {
 
@@ -287,5 +289,14 @@ class JobResourceTest {
             .contentType(MediaType.TEXT_PLAIN))
         .andExpect(status().isOk())
         .andExpect(content().string("prod,nimdta"));
+  }
+
+  @Test
+  void shouldRunAll() throws Exception {
+    final JobRunningListener mockJobListener = mock(JobRunningListener.class);
+    ReflectionTestUtils.setField(jobResource, "jobRunningListener", mockJobListener);
+    mockMvc.perform(put("/api/jobs"))
+        .andExpect(status().isOk());
+    verify(mockJobListener).runJobs();
   }
 }

@@ -24,12 +24,13 @@ public class RabbitConfig {
   }
 
   /**
-   * Rabbit template for setting message to RabbitMQ.
+   * Rabbit template for sending messages to RabbitMQ.
    */
   @Bean
-  public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory) {
+  public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory,
+      MessageConverter jsonMessageConverter) {
     final RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-    rabbitTemplate.setMessageConverter(jsonMessageConverter());
+    rabbitTemplate.setMessageConverter(jsonMessageConverter);
     rabbitTemplate.containerAckMode(AcknowledgeMode.AUTO);
     return rabbitTemplate;
   }

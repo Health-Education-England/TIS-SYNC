@@ -1,7 +1,10 @@
 package uk.nhs.tis.sync.job.reval;
 
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.Mockito.verify;
 
 import java.util.Set;
@@ -49,7 +52,7 @@ class RevalCurrentPmSyncJobIntegrationTest {
           .with()
           .pollInterval(1, TimeUnit.SECONDS)
           .until(() -> !job.isCurrentlyRunning());
-      assertThat("should not be currently running",
+      assertThat("Job should not be currently running",
           job.isCurrentlyRunning(), CoreMatchers.is(false));
     } catch (ConditionTimeoutException e) {
       Assert.fail("the sync job should not have timed out");
@@ -59,5 +62,8 @@ class RevalCurrentPmSyncJobIntegrationTest {
     Set<String> messages = messageCaptor.getValue();
     assertThat("should send message for all person whose current PM changes nightly",
         messages.size(), CoreMatchers.is(2));
+    assertThat("Should have messages for Persons '1' and '2'", messages,
+        containsInAnyOrder("1", "2"));
+    assertThat("Should not have a message for Person '3'", messages, not(contains(("3"))));
   }
 }
