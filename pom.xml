@@ -11,7 +11,7 @@
   </parent>
   <groupId>uk.nhs.tis</groupId>
   <artifactId>sync</artifactId>
-  <version>1.19.1</version>
+  <version>1.19.2</version>
   <packaging>jar</packaging>
   <name>sync</name>
   <description>Separate Microservice for synchronisation</description>
@@ -34,7 +34,8 @@
     <sonar.organization>health-education-england</sonar.organization>
     <sonar.projectKey>Health-Education-England_TIS-SYNC</sonar.projectKey>
 
-    <sonar.java.checkstyle.reportPaths>${project.build.directory}/checkstyle-result.xml</sonar.java.checkstyle.reportPaths>
+    <sonar.java.checkstyle.reportPaths>${project.build.directory}/checkstyle-result.xml
+    </sonar.java.checkstyle.reportPaths>
 
     <spock.version>1.1-groovy-2.4</spock.version>
     <!-- Spring properties -->
@@ -171,7 +172,8 @@
     <dependency>
       <groupId>com.hubspot.slack</groupId>
       <artifactId>slack-java-client</artifactId>
-      <version>1.12</version> <!-- 1.7+ resolves invalid as_user parameter for new Slack app calls  -->
+      <version>1.12
+      </version> <!-- 1.7+ resolves invalid as_user parameter for new Slack app calls  -->
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>

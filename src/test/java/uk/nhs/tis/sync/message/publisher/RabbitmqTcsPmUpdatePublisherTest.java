@@ -1,6 +1,6 @@
 package uk.nhs.tis.sync.message.publisher;
 
-import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
@@ -52,8 +52,7 @@ class RabbitmqTcsPmUpdatePublisherTest {
     );
 
     Set<String> messagesPublished = messageCaptor.getValue();
-    assertThat(messagesPublished, hasItem("11111"));
-    assertThat(messagesPublished, hasItem("22222"));
+    assertThat(messagesPublished, hasItems("11111", "22222"));
     assertThat(routingKeyNameCaptor.getValue(), is(routingKeyName));
     assertThat(exchangeNameCaptor.getValue(), is(exchangeName));
   }
