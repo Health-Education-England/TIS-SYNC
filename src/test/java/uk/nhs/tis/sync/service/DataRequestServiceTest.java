@@ -1,11 +1,13 @@
 package uk.nhs.tis.sync.service;
 
 import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.transformuk.hee.tis.reference.api.dto.GradeDTO;
@@ -14,6 +16,7 @@ import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
 import com.transformuk.hee.tis.tcs.api.dto.ContactDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
+import com.transformuk.hee.tis.tcs.api.dto.CurriculumMembershipDTO;
 import com.transformuk.hee.tis.tcs.api.dto.GdcDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.GmcDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PersonDTO;
@@ -30,16 +33,19 @@ import com.transformuk.hee.tis.tcs.api.enumeration.PostSpecialtyType;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
+import uk.nhs.tis.sync.dto.CurriculumMembershipWrapperDto;
 
 class DataRequestServiceTest {
 
@@ -302,6 +308,76 @@ class DataRequestServiceTest {
   }
 
   @Test
+  void shouldReturnProgrammeMembershipWhenProgrammeMembershipFound() {
+    UUID pmUuid = UUID.randomUUID();
+    ProgrammeMembershipDTO programmeMembership = new ProgrammeMembershipDTO();
+    programmeMembership.setUuid(pmUuid);
+    when(tcsService.getProgrammeMembershipByUuid(pmUuid)).thenReturn(programmeMembership);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "ProgrammeMembership");
+      put("uuid", pmUuid.toString());
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(1));
+    assertThat("Unexpected DTO type.", retrievedDtos.get(0), sameInstance(programmeMembership));
+  }
+
+  @Test
+  void shouldReturnEmptyWhenProgrammeMembershipRequestNotIncludesUuid() {
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "ProgrammeMembership");
+      put("id", "50");
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(0));
+    verifyNoInteractions(tcsService);
+  }
+
+  @Test
+  void shouldReturnEmptyWhenProgrammeMembershipRequestIncludesInvalidUuid() {
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "ProgrammeMembership");
+      put("uuid", "50");
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(0));
+    verifyNoInteractions(tcsService);
+  }
+
+  @Test
+  void shouldReturnEmptyWhenProgrammeMembershipNotFound() {
+    UUID pmUuid = UUID.randomUUID();
+    when(tcsService.getProgrammeMembershipByUuid(pmUuid)).thenReturn(null);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "ProgrammeMembership");
+      put("uuid", pmUuid.toString());
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(0));
+  }
+
+  @Test
+  void shouldReturnEmptyWhenExceptionThrownGettingProgrammeMembership() {
+    UUID pmUuid = UUID.randomUUID();
+    when(tcsService.getProgrammeMembershipByUuid(pmUuid)).thenThrow(
+        new RuntimeException("Expected exception."));
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "ProgrammeMembership");
+      put("uuid", pmUuid.toString());
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(0));
+  }
+
+  @Test
   void shouldReturnCurriculumWhenCurriculumFound() {
     CurriculumDTO expectedDto = new CurriculumDTO();
     when(tcsService.getCurriculumById(50L))
@@ -343,6 +419,130 @@ class DataRequestServiceTest {
     List<Object> curriculums = service.retrieveDtos(message);
 
     assertThat("Unexpected DTO count.", curriculums.size(), is(0));
+  }
+
+  @Test
+  void shouldReturnCurriculumMembershipWhenCurriculumMembershipFound() {
+    UUID pmUuid = UUID.randomUUID();
+    ProgrammeMembershipDTO programmeMembership = new ProgrammeMembershipDTO();
+    programmeMembership.setUuid(pmUuid);
+    when(tcsService.getProgrammeMembershipByUuid(pmUuid)).thenReturn(programmeMembership);
+
+    CurriculumMembershipDTO curriculumMembership = new CurriculumMembershipDTO();
+    curriculumMembership.setId(50L);
+    programmeMembership.setCurriculumMemberships(Collections.singletonList(curriculumMembership));
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "CurriculumMembership");
+      put("programmeMembershipUuid", pmUuid.toString());
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(1));
+    assertThat("Unexpected DTO type.", retrievedDtos.get(0), instanceOf(
+        CurriculumMembershipWrapperDto.class));
+
+    CurriculumMembershipWrapperDto curriculumMembershipWrapperDto = (CurriculumMembershipWrapperDto) retrievedDtos.get(
+        0);
+    assertThat("Unexpected programme membership UUID.",
+        curriculumMembershipWrapperDto.getProgrammeMembershipUuid(), is(pmUuid));
+    assertThat("Unexpected curriculum membership count.",
+        curriculumMembershipWrapperDto.getCurriculumMembership(),
+        sameInstance(curriculumMembership));
+  }
+
+  @Test
+  void shouldReturnCurriculumMembershipsWhenCurriculumMembershipsFound() {
+    UUID pmUuid = UUID.randomUUID();
+    ProgrammeMembershipDTO programmeMembership = new ProgrammeMembershipDTO();
+    programmeMembership.setUuid(pmUuid);
+    when(tcsService.getProgrammeMembershipByUuid(pmUuid)).thenReturn(programmeMembership);
+
+    CurriculumMembershipDTO curriculumMembership1 = new CurriculumMembershipDTO();
+    curriculumMembership1.setId(50L);
+    CurriculumMembershipDTO curriculumMembership2 = new CurriculumMembershipDTO();
+    curriculumMembership2.setId(60L);
+    programmeMembership.setCurriculumMemberships(
+        Arrays.asList(curriculumMembership1, curriculumMembership2));
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "CurriculumMembership");
+      put("programmeMembershipUuid", pmUuid.toString());
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(2));
+    assertThat("Unexpected DTO type.", retrievedDtos.get(0), instanceOf(
+        CurriculumMembershipWrapperDto.class));
+
+    CurriculumMembershipWrapperDto curriculumMembershipWrapperDto1 = (CurriculumMembershipWrapperDto) retrievedDtos.get(
+        0);
+    assertThat("Unexpected programme membership UUID.",
+        curriculumMembershipWrapperDto1.getProgrammeMembershipUuid(), is(pmUuid));
+    assertThat("Unexpected curriculum membership count.",
+        curriculumMembershipWrapperDto1.getCurriculumMembership(),
+        sameInstance(curriculumMembership1));
+
+    CurriculumMembershipWrapperDto curriculumMembershipWrapperDto2 = (CurriculumMembershipWrapperDto) retrievedDtos.get(
+        1);
+    assertThat("Unexpected programme membership UUID.",
+        curriculumMembershipWrapperDto2.getProgrammeMembershipUuid(), is(pmUuid));
+    assertThat("Unexpected curriculum membership count.",
+        curriculumMembershipWrapperDto2.getCurriculumMembership(),
+        sameInstance(curriculumMembership2));
+  }
+
+  @Test
+  void shouldReturnEmptyWhenCurriculumMembershipRequestNotIncludesProgrammeMembershipUuid() {
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "CurriculumMembership");
+      put("id", "50");
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(0));
+    verifyNoInteractions(tcsService);
+  }
+
+  @Test
+  void shouldReturnEmptyWhenCurriculumMembershipRequestIncludesInvalidProgrammeMembershipUuid() {
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "CurriculumMembership");
+      put("programmeMembershipUuid", "50");
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(0));
+    verifyNoInteractions(tcsService);
+  }
+
+  @Test
+  void shouldReturnEmptyWhenCurriculumMembershipNotFound() {
+    UUID pmUuid = UUID.randomUUID();
+    when(tcsService.getProgrammeMembershipByUuid(pmUuid)).thenReturn(null);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "CurriculumMembership");
+      put("programmeMembershipUuid", pmUuid.toString());
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(0));
+  }
+
+  @Test
+  void shouldReturnEmptyWhenExceptionThrownGettingCurriculumMemberships() {
+    UUID pmUuid = UUID.randomUUID();
+    when(tcsService.getProgrammeMembershipByUuid(pmUuid)).thenThrow(
+        new RuntimeException("Expected exception."));
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "CurriculumMembership");
+      put("programmeMembershipUuid", pmUuid.toString());
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(0));
   }
 
   @Test
