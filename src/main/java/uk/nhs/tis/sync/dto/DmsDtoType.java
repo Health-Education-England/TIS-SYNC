@@ -19,6 +19,7 @@ import com.transformuk.hee.tis.tcs.api.dto.SpecialtyDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import uk.nhs.tis.sync.mapper.CurriculumMapper;
+import uk.nhs.tis.sync.mapper.CurriculumMembershipMapper;
 import uk.nhs.tis.sync.mapper.DmsMapper;
 import uk.nhs.tis.sync.mapper.GradeMapper;
 import uk.nhs.tis.sync.mapper.PersonMapper;
@@ -42,6 +43,8 @@ public enum DmsDtoType {
 
   CONTACT_DETAILS(ContactDetailsDTO.class, "tcs", "ContactDetails", null),
   CURRICULUM(CurriculumDTO.class, "tcs", "Curriculum", CurriculumMapper.class),
+  CURRICULUM_MEMBERSHIP(CurriculumMembershipWrapperDto.class, "tcs", "CurriculumMembership",
+      CurriculumMembershipMapper.class),
   GDC_DETAILS(GdcDetailsDTO.class, "tcs", "GdcDetails", null),
   GMC_DETAILS(GmcDetailsDTO.class, "tcs", "GmcDetails", null),
   GRADE(GradeDTO.class, "reference", "Grade", GradeMapper.class),
@@ -52,7 +55,7 @@ public enum DmsDtoType {
       PlacementSpecialtyMapper.class),
   POST(PostDTO.class, "tcs", "Post", PostMapper.class),
   PROGRAMME(ProgrammeDTO.class, "tcs", "Programme", ProgrammeMapper.class),
-  PROGRAMME_MEMBERSHIP(ProgrammeMembershipDTO.class, "tcs", "CurriculumMembership",
+  PROGRAMME_MEMBERSHIP(ProgrammeMembershipDTO.class, "tcs", "ProgrammeMembership",
       ProgrammeMembershipMapper.class),
   QUALIFICATION(QualificationDTO.class, "tcs", "Qualification", QualificationMapper.class),
   SITE(SiteDTO.class, "reference", "Site", SiteMapper.class),

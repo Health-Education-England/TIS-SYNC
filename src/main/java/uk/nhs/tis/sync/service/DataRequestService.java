@@ -4,6 +4,7 @@ import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
 import com.transformuk.hee.tis.tcs.api.dto.PersonDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementSpecialtyDTO;
+import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.PostSpecialtyType;
 import com.transformuk.hee.tis.tcs.client.service.impl.TcsServiceImpl;
 import java.util.ArrayList;
@@ -11,21 +12,25 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.nhs.tis.sync.dto.CurriculumMembershipWrapperDto;
 
 @Slf4j
 @Service
 public class DataRequestService {
 
   private static final String TABLE_CURRICULUM = "Curriculum";
+  private static final String TABLE_CURRICULUM_MEMBERSHIP = "CurriculumMembership";
   private static final String TABLE_GRADE = "Grade";
   private static final String TABLE_PERSON = "Person";
   private static final String TABLE_PLACEMENT = "Placement";
   private static final String TABLE_PLACEMENT_SPECIALTY = "PlacementSpecialty";
   private static final String TABLE_POST = "Post";
   private static final String TABLE_PROGRAMME = "Programme";
+  private static final String TABLE_PROGRAMME_MEMBERSHIP = "ProgrammeMembership";
   private static final String TABLE_SPECIALTY = "Specialty";
   private static final String TABLE_SITE = "Site";
   private static final String TABLE_TRUST = "Trust";
@@ -51,6 +56,22 @@ public class DataRequestService {
       if (table.equals(TABLE_PLACEMENT_SPECIALTY) && message.containsKey("placementId")) {
         long placementId = Long.parseLong(message.get("placementId"));
         return createNonNullList(retrievePlacementSpecialty(placementId));
+      }
+
+      if (table.equals(TABLE_PROGRAMME_MEMBERSHIP) && message.containsKey("uuid")) {
+        UUID uuid = UUID.fromString(message.get("uuid"));
+        return createNonNullList(tcsServiceImpl.getProgrammeMembershipByUuid(uuid));
+      }
+
+      if (table.equals(TABLE_CURRICULUM_MEMBERSHIP) && message.containsKey(
+          "programmeMembershipUuid")) {
+        UUID uuid = UUID.fromString(message.get("programmeMembershipUuid"));
+        ProgrammeMembershipDTO programmeMembership = tcsServiceImpl.getProgrammeMembershipByUuid(
+            uuid);
+
+        return programmeMembership.getCurriculumMemberships().stream()
+            .map(cm -> new CurriculumMembershipWrapperDto(uuid, cm))
+            .collect(Collectors.toList());
       }
 
       if (message.containsKey("id")) {
