@@ -40,6 +40,7 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
@@ -384,13 +385,16 @@ class DmsRecordAssemblerTest {
     programmeMembershipDto.setTrainingNumber(trainingNumberDto);
     programmeMembershipDto.setTrainingPathway("a training pathway");
     programmeMembershipDto.setProgrammeMembershipType(ProgrammeMembershipType.SUBSTANTIVE);
-    programmeMembershipDto.setProgrammeStartDate(LocalDate.of(2021, 1, 1));
-    programmeMembershipDto.setProgrammeEndDate(LocalDate.of(2022, 2, 2));
+    LocalDate startDate = LocalDate.of(2021, 1, 1);
+    programmeMembershipDto.setProgrammeStartDate(startDate);
+    LocalDate endDate = LocalDate.of(2022, 2, 2);
+    programmeMembershipDto.setProgrammeEndDate(endDate);
     programmeMembershipDto.setLeavingReason("a leaving reason");
     programmeMembershipDto.setLeavingDestination("a leaving destination");
     programmeMembershipDto.setCurriculumMemberships(
         Collections.singletonList((curriculumMembershipDto)));
-    programmeMembershipDto.setAmendedDate(LocalDateTime.of(2021, 1, 1, 1, 1, 1));
+    LocalDateTime amendedDate = LocalDateTime.of(2021, 1, 1, 1, 1, 1);
+    programmeMembershipDto.setAmendedDate(amendedDate);
 
     List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
         singletonList(programmeMembershipDto));
@@ -413,15 +417,15 @@ class DmsRecordAssemblerTest {
         programmeMembershipDmsDto.getProgrammeMembershipType(),
         is(ProgrammeMembershipType.SUBSTANTIVE.toString()));
     assertThat("Unexpected programme start date.",
-        programmeMembershipDmsDto.getProgrammeStartDate(), is("2021-01-01"));
+        programmeMembershipDmsDto.getProgrammeStartDate(), is(startDate));
     assertThat("Unexpected programme end date.", programmeMembershipDmsDto.getProgrammeEndDate(),
-        is("2022-02-02"));
+        is(endDate));
     assertThat("Unexpected leaving reason.", programmeMembershipDmsDto.getLeavingReason(),
         is("a leaving reason"));
     assertThat("Unexpected training pathway.", programmeMembershipDmsDto.getTrainingPathway(),
         is("a training pathway"));
     assertThat("Unexpected amended date.", programmeMembershipDmsDto.getAmendedDate(),
-        is(LocalDateTime.of(2021, 1, 1, 1, 1, 1).toString()));
+        is(amendedDate.toInstant(ZoneOffset.UTC)));
     assertThat("Unexpected leaving destination.", programmeMembershipDmsDto.getLeavingDestination(),
         is("a leaving destination"));
 
