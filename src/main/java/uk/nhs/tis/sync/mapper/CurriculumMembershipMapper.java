@@ -19,7 +19,8 @@ public interface CurriculumMembershipMapper extends
   @Mapping(target = "id", source = "curriculumMembership.id")
   @Mapping(target = "curriculumStartDate", source = "curriculumMembership.curriculumStartDate")
   @Mapping(target = "curriculumEndDate", source = "curriculumMembership.curriculumEndDate")
-  @Mapping(target = "curriculumCompletionDate", source = "curriculumMembership.curriculumCompletionDate")
+  @Mapping(target = "curriculumCompletionDate",
+      source = "curriculumMembership.curriculumCompletionDate")
   @Mapping(target = "periodOfGrace", source = "curriculumMembership.periodOfGrace")
   @Mapping(target = "curriculumId", source = "curriculumMembership.curriculumId")
   @Mapping(target = "intrepidId", source = "curriculumMembership.intrepidId")

@@ -2,6 +2,9 @@ package uk.nhs.tis.sync.mapper;
 
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeMembershipDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.ProgrammeMembershipType;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import uk.nhs.tis.sync.dto.ProgrammeMembershipDmsDto;
@@ -39,5 +42,15 @@ public interface ProgrammeMembershipMapper extends
    */
   default String map(ProgrammeMembershipType source) {
     return source == null ? null : source.toString();
+  }
+
+  /**
+   * Maps a LocalDateTime to Instant, assumes UTC.
+   *
+   * @param source The local date time to map.
+   * @return The Instant value of the local date time.
+   */
+  default Instant map(LocalDateTime source) {
+    return source == null ? null : source.toInstant(ZoneOffset.UTC);
   }
 }

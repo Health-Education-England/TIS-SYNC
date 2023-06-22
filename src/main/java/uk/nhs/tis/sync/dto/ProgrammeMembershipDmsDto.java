@@ -1,6 +1,8 @@
 package uk.nhs.tis.sync.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 import lombok.Data;
 
@@ -18,10 +20,10 @@ public class ProgrammeMembershipDmsDto {
   private String rotation;
   private String trainingNumberId;
   private String programmeMembershipType;
-  private String programmeStartDate;
-  private String programmeEndDate;
+  private LocalDate programmeStartDate;
+  private LocalDate programmeEndDate;
   private String leavingReason;
   private String trainingPathway;
-  private String amendedDate;
+  private Instant amendedDate;
   private String leavingDestination;
 }
