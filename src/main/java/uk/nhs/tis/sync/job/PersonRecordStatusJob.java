@@ -29,6 +29,10 @@ public class PersonRecordStatusJob extends PersonDateChangeCaptureSyncJobTemplat
   private static final int FIFTEEN_MIN = 15 * 60 * 1000;
   private static final int DEFAULT_PAGE_SIZE = 5000;
   private static final Logger LOG = LoggerFactory.getLogger(PersonRecordStatusJob.class);
+  private static final String BASE_QUERY =
+      "SELECT DISTINCT personId FROM ProgrammeMembership" + " WHERE personId > :lastPersonId"
+          + " AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')"
+          + " ORDER BY personId LIMIT :pageSize";
 
   private final ObjectMapper objectMapper;
 
