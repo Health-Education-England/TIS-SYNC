@@ -28,7 +28,7 @@ public class RevalCurrentPlacementSyncJob extends PersonDateChangeCaptureSyncJob
 
   private static final int FIFTEEN_MIN = 15 * 60 * 1000;
   private static final int DEFAULT_PAGE_SIZE = 5000;
-  private final static String BASE_QUERY =
+  private static final String BASE_QUERY =
       "SELECT DISTINCT traineeId FROM Placement" + " WHERE traineeId > :lastPersonId"
           + " AND (dateFrom = ':endDate' OR DateTo = ':startDate')"
           + " ORDER BY personId LIMIT :pageSize";

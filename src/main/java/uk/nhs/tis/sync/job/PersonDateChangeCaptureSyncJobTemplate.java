@@ -4,7 +4,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
 import java.math.BigInteger;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -31,7 +30,8 @@ public abstract class PersonDateChangeCaptureSyncJobTemplate<T> implements Runna
 
   protected static final String FULL_SYNC_DATE_STR = "ANY";
   protected static final String NO_DATE_OVERRIDE = "NONE";
-  private static final Logger LOG = LoggerFactory.getLogger(PersonDateChangeCaptureSyncJobTemplate.class);
+  private static final Logger LOG = LoggerFactory.getLogger(
+      PersonDateChangeCaptureSyncJobTemplate.class);
   protected Stopwatch mainStopWatch;
 
   protected String dateOfChangeOverride;
@@ -43,9 +43,12 @@ public abstract class PersonDateChangeCaptureSyncJobTemplate<T> implements Runna
   protected ApplicationEventPublisher applicationEventPublisher;
 
   protected abstract String buildQueryForDate(LocalDate dateOfChange);
+
   protected abstract String getJobName();
+
   protected abstract int convertData(Set<T> entitiesToSave, List<Long> entityData,
       EntityManager entityManager);
+
   protected abstract void handleData(Set<T> dataToSave, EntityManager entityManager);
 
   protected List<Long> collectData(long lastPersonId, String queryString,
