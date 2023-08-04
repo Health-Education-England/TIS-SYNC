@@ -22,7 +22,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.nhs.tis.sync.message.publisher.RabbitMqTcsPmUpdatePublisher;
+import uk.nhs.tis.sync.message.publisher.RabbitMqTcsRevalTraineeUpdatePublisher;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -36,7 +36,7 @@ class RevalCurrentPmSyncJobIntegrationTest {
   RevalCurrentPmSyncJob job;
 
   @SpyBean
-  RabbitMqTcsPmUpdatePublisher rabbitMqPublisher;
+  RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher;
 
   @Captor
   ArgumentCaptor<Set<String>> messageCaptor;

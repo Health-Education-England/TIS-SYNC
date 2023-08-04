@@ -94,6 +94,7 @@ application:
     personElasticSearchJob: ${APP_CRON_PERSON_ELASTIC_SEARCH:0 29 1 * * *}
     personRecordStatusJob: ${APPLICATION_CRON_PERSONRECORDSTATUSJOB:0 0 1 * * *}
     revalCurrentPmJob: ${APPLICATION_CRON_REVALCURRENTPMJOB:0 39 1 * * *}
+    revalCurrentPlacementJob: ${APPLICATION_CRON_REVALCURRENTPLACEMENTJOB:0 49 1 * * *}
     recordResendingJob: ${APPLICATION_CRON_RECORDRESENDINGJOB:0 * * * * *}
   jobs:
     runOnStartup:
@@ -110,7 +111,7 @@ application:
   rabbit:
     reval:
       exchange: ${REVAL_RABBIT_EXCHANGE:reval.exchange}
-      routingKey.currentpm.update: ${REVAL_RABBIT_CURRENTPMUPDATE_ROUTING_KEY:reval.currentpm.update}
+      routingKey.trainee.update: ${REVAL_RABBIT_TRAINEEUPDATE_ROUTING_KEY:reval.trainee.update}
 
 slack:
   api:

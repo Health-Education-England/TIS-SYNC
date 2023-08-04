@@ -21,7 +21,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 class RabbitmqTcsPmUpdatePublisherTest {
 
   @InjectMocks
-  RabbitMqTcsPmUpdatePublisher rabbitMqTcsPmUpdatePublisher;
+  RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqTcsRevalTraineeUpdatePublisher;
 
   @Mock
   RabbitTemplate rabbitTemplate;
@@ -40,10 +40,10 @@ class RabbitmqTcsPmUpdatePublisherTest {
     String routingKeyName = "routingKeyName";
     String exchangeName = "exchangeName";
 
-    ReflectionTestUtils.setField(rabbitMqTcsPmUpdatePublisher, "routingKey", routingKeyName);
-    ReflectionTestUtils.setField(rabbitMqTcsPmUpdatePublisher, "exchange", exchangeName);
+    ReflectionTestUtils.setField(rabbitMqTcsRevalTraineeUpdatePublisher, "routingKey", routingKeyName);
+    ReflectionTestUtils.setField(rabbitMqTcsRevalTraineeUpdatePublisher, "exchange", exchangeName);
 
-    rabbitMqTcsPmUpdatePublisher.publishToBroker(Sets.newHashSet("11111", "22222"));
+    rabbitMqTcsRevalTraineeUpdatePublisher.publishToBroker(Sets.newHashSet("11111", "22222"));
 
     verify(rabbitTemplate).convertAndSend(
         exchangeNameCaptor.capture(),

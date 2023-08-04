@@ -25,19 +25,13 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import uk.nhs.tis.sync.event.JobExecutionEvent;
 
 /**
- * abstract template for Jobs which sync data when current programmeMembership changes.
+ * abstract template for Jobs which sync data when start and end dates have passed.
  */
-public abstract class PersonCurrentPmSyncJobTemplate<T> implements RunnableJob {
+public abstract class PersonDateChangeCaptureSyncJobTemplate<T> implements RunnableJob {
 
-  protected static final int DEFAULT_PAGE_SIZE = 5000;
-  protected static final int FIFTEEN_MIN = 15 * 60 * 1000;
   protected static final String FULL_SYNC_DATE_STR = "ANY";
   protected static final String NO_DATE_OVERRIDE = "NONE";
-  private static final Logger LOG = LoggerFactory.getLogger(PersonCurrentPmSyncJobTemplate.class);
-  private static final String BASE_QUERY =
-      "SELECT DISTINCT personId FROM ProgrammeMembership" + " WHERE personId > :lastPersonId"
-          + " AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')"
-          + " ORDER BY personId LIMIT :pageSize";
+  private static final Logger LOG = LoggerFactory.getLogger(PersonDateChangeCaptureSyncJobTemplate.class);
   protected Stopwatch mainStopWatch;
 
   protected String dateOfChangeOverride;
@@ -48,13 +42,11 @@ public abstract class PersonCurrentPmSyncJobTemplate<T> implements RunnableJob {
   @Autowired(required = false)
   protected ApplicationEventPublisher applicationEventPublisher;
 
-  protected String getJobName() {
-    return this.getClass().getSimpleName();
-  }
-
-  protected int getPageSize() {
-    return DEFAULT_PAGE_SIZE;
-  }
+  protected abstract String buildQueryForDate(LocalDate dateOfChange);
+  protected abstract String getJobName();
+  protected abstract int convertData(Set<T> entitiesToSave, List<Long> entityData,
+      EntityManager entityManager);
+  protected abstract void handleData(Set<T> dataToSave, EntityManager entityManager);
 
   protected List<Long> collectData(long lastPersonId, String queryString,
       EntityManager entityManager) {
@@ -90,11 +82,6 @@ public abstract class PersonCurrentPmSyncJobTemplate<T> implements RunnableJob {
           return null;
         });
   }
-
-  protected abstract int convertData(Set<T> entitiesToSave, List<Long> entityData,
-      EntityManager entityManager);
-
-  protected abstract void handleData(Set<T> dataToSave, EntityManager entityManager);
 
   private void doDataSync(String dateOption) {
     // Configure run
@@ -153,18 +140,6 @@ public abstract class PersonCurrentPmSyncJobTemplate<T> implements RunnableJob {
       if (entityManager != null && entityManager.isOpen()) {
         entityManager.close();
       }
-    }
-  }
-
-  private String buildQueryForDate(LocalDate dateOfChange) {
-    if (dateOfChange != null) {
-      String startDate = dateOfChange.format(DateTimeFormatter.ISO_LOCAL_DATE);
-      String endDate = dateOfChange.minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
-      return BASE_QUERY.replace(":endDate", endDate).replace(":startDate", startDate)
-          .replace(":pageSize", "" + getPageSize());
-    } else {
-      return BASE_QUERY.replace(":pageSize", "" + getPageSize())
-          .replace(" AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')", "");
     }
   }
 

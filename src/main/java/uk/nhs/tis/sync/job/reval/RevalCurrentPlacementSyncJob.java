@@ -22,25 +22,25 @@ import uk.nhs.tis.sync.message.publisher.RabbitMqTcsRevalTraineeUpdatePublisher;
  */
 @Profile("!nimdta")
 @Component
-@ManagedResource(objectName = "sync.mbean:name=RevalCurrentPmSyncJob",
+@ManagedResource(objectName = "sync.mbean:name=RevalCurrentPlacementSyncJob",
     description = "Job message personIds if their programme membership(s) started/ended")
-public class RevalCurrentPmSyncJob extends PersonDateChangeCaptureSyncJobTemplate<Long> {
+public class RevalCurrentPlacementSyncJob extends PersonDateChangeCaptureSyncJobTemplate<Long> {
 
-  private static final int DEFAULT_PAGE_SIZE = 5000;
   private static final int FIFTEEN_MIN = 15 * 60 * 1000;
-  private static final String BASE_QUERY =
-      "SELECT DISTINCT personId FROM ProgrammeMembership" + " WHERE personId > :lastPersonId"
-          + " AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')"
+  private static final int DEFAULT_PAGE_SIZE = 5000;
+  private final static String BASE_QUERY =
+      "SELECT DISTINCT traineeId FROM Placement" + " WHERE traineeId > :lastPersonId"
+          + " AND (dateFrom = ':endDate' OR DateTo = ':startDate')"
           + " ORDER BY personId LIMIT :pageSize";
   private final RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher;
 
-  public RevalCurrentPmSyncJob(RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher) {
+  public RevalCurrentPlacementSyncJob(RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher) {
     this.rabbitMqPublisher = rabbitMqPublisher;
   }
 
   @Override
   public void run(String params) {
-    revalCurrentPmSyncJob();
+    revalCurrentPlacementSyncJob();
   }
 
   @Profile("!nimdta")
@@ -49,7 +49,7 @@ public class RevalCurrentPmSyncJob extends PersonDateChangeCaptureSyncJobTemplat
       lockAtMostFor = FIFTEEN_MIN)
   @ManagedOperation(
       description = "send personIds to tcs for reval current programmeMembership sync")
-  public void revalCurrentPmSyncJob() {
+  public void revalCurrentPlacementSyncJob() {
     runSyncJob(null);
   }
 
