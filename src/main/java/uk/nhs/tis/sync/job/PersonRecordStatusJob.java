@@ -128,9 +128,5 @@ public class PersonRecordStatusJob extends PersonDateChangeCaptureSyncJobTemplat
           .replace(" AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')", "");
     }
   }
-
-  @Override
-  protected String getJobName() {
-    return this.getClass().getSimpleName();
-  }
+  
 }

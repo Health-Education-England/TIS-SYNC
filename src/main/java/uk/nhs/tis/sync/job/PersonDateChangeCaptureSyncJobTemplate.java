@@ -44,12 +44,14 @@ public abstract class PersonDateChangeCaptureSyncJobTemplate<T> implements Runna
 
   protected abstract String buildQueryForDate(LocalDate dateOfChange);
 
-  protected abstract String getJobName();
-
   protected abstract int convertData(Set<T> entitiesToSave, List<Long> entityData,
       EntityManager entityManager);
 
   protected abstract void handleData(Set<T> dataToSave, EntityManager entityManager);
+
+  protected String getJobName() {
+    return this.getClass().getSimpleName();
+  }
 
   protected List<Long> collectData(long lastPersonId, String queryString,
       EntityManager entityManager) {

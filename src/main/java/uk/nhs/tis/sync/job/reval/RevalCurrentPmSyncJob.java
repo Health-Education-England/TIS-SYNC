@@ -81,9 +81,4 @@ public class RevalCurrentPmSyncJob extends PersonDateChangeCaptureSyncJobTemplat
     }
   }
 
-  @Override
-  protected String getJobName() {
-    return this.getClass().getSimpleName();
-  }
-
 }

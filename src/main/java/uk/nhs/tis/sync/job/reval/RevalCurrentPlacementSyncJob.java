@@ -44,11 +44,11 @@ public class RevalCurrentPlacementSyncJob extends PersonDateChangeCaptureSyncJob
   }
 
   @Profile("!nimdta")
-  @Scheduled(cron = "${application.cron.revalCurrentPmJob}")
-  @SchedulerLock(name = "revalCurrentPmScheduledTask", lockAtLeastFor = FIFTEEN_MIN,
+  @Scheduled(cron = "${application.cron.revalCurrentPlacementJob}")
+  @SchedulerLock(name = "revalCurrentPlacementScheduledTask", lockAtLeastFor = FIFTEEN_MIN,
       lockAtMostFor = FIFTEEN_MIN)
   @ManagedOperation(
-      description = "send personIds to tcs for reval current programmeMembership sync")
+      description = "send personIds to tcs for reval current placement sync")
   public void revalCurrentPlacementSyncJob() {
     runSyncJob(null);
   }
@@ -77,13 +77,9 @@ public class RevalCurrentPlacementSyncJob extends PersonDateChangeCaptureSyncJob
           .replace(":pageSize", "" + DEFAULT_PAGE_SIZE);
     } else {
       return BASE_QUERY.replace(":pageSize", "" + DEFAULT_PAGE_SIZE)
-          .replace(" AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')", "");
+          .replace(" AND (dateTo = ':endDate' OR dateFrom = ':startDate')", "");
     }
   }
 
-  @Override
-  protected String getJobName() {
-    return this.getClass().getSimpleName();
-  }
 
 }
