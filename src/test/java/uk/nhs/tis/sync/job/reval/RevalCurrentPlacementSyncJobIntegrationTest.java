@@ -26,8 +26,6 @@ import uk.nhs.tis.sync.message.publisher.RabbitMqTcsRevalTraineeUpdatePublisher;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@Sql(scripts = {"/scripts/placements.sql"})
-@Sql(scripts = {"/scripts/deletePlacements.sql"}, executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 class RevalCurrentPlacementSyncJobIntegrationTest {
 
   @Autowired
