@@ -80,7 +80,7 @@ class JobResourceTest {
         personOwnerRebuildJob,
         personRecordStatusJob);
     jobResource.setRevalCurrentPmSyncJob(revalCurrentPmSyncJob);
-    jobResource.setRevalCurrentPlacementSyncJob((revalCurrentPlacementSyncJob);
+    jobResource.setRevalCurrentPlacementSyncJob((revalCurrentPlacementSyncJob));
     mockMvc = MockMvcBuilders.standaloneSetup(jobResource).build();
   }
 
