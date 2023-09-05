@@ -28,6 +28,8 @@ import uk.nhs.tis.sync.event.JobExecutionEvent;
  */
 public abstract class PersonDateChangeCaptureSyncJobTemplate<T> implements RunnableJob {
 
+  protected static final int DEFAULT_PAGE_SIZE = 5000;
+  protected static final int FIFTEEN_MIN = 15 * 60 * 1000;
   protected static final String FULL_SYNC_DATE_STR = "ANY";
   protected static final String NO_DATE_OVERRIDE = "NONE";
   private static final Logger LOG = LoggerFactory.getLogger(
