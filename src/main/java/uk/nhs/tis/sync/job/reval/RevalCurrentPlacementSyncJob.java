@@ -25,9 +25,6 @@ import uk.nhs.tis.sync.message.publisher.RabbitMqTcsRevalTraineeUpdatePublisher;
 @ManagedResource(objectName = "sync.mbean:name=RevalCurrentPlacementSyncJob",
     description = "Job message personIds if their programme membership(s) started/ended")
 public class RevalCurrentPlacementSyncJob extends PersonDateChangeCaptureSyncJobTemplate<Long> {
-
-  private static final int FIFTEEN_MIN = 15 * 60 * 1000;
-  private static final int DEFAULT_PAGE_SIZE = 5000;
   private static final String BASE_QUERY =
       "SELECT DISTINCT traineeId FROM Placement" + " WHERE traineeId > :lastPersonId"
           + " AND (dateFrom = ':endDate' OR DateTo = ':startDate')"

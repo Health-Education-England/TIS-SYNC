@@ -26,8 +26,6 @@ import uk.nhs.tis.sync.message.publisher.RabbitMqTcsRevalTraineeUpdatePublisher;
     description = "Job message personIds if their programme membership(s) started/ended")
 public class RevalCurrentPmSyncJob extends PersonDateChangeCaptureSyncJobTemplate<Long> {
 
-  private static final int DEFAULT_PAGE_SIZE = 5000;
-  private static final int FIFTEEN_MIN = 15 * 60 * 1000;
   private static final String BASE_QUERY =
       "SELECT DISTINCT personId FROM ProgrammeMembership" + " WHERE personId > :lastPersonId"
           + " AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')"

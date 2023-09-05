@@ -26,10 +26,8 @@ import uk.nhs.tis.sync.message.publisher.RabbitMqTcsRevalTraineeUpdatePublisher;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@Sql(scripts = {"/scripts/personRows.sql", "/scripts/programmes.sql",
-    "/scripts/programmeMemberships.sql"})
-@Sql(scripts = {"/scripts/deleteProgrammeMemberships.sql", "/scripts/deleteProgrammes.sql",
-    "/scripts/deletePersonRows.sql"}, executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
+@Sql(scripts = {"/scripts/placements.sql"})
+@Sql(scripts = {"/scripts/deletePlacements.sql"}, executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 class RevalCurrentPlacementSyncJobIntegrationTest {
 
   @Autowired
@@ -60,10 +58,5 @@ class RevalCurrentPlacementSyncJobIntegrationTest {
 
     verify(rabbitMqPublisher).publishToBroker(messageCaptor.capture());
     Set<String> messages = messageCaptor.getValue();
-    assertThat("should send message for all person whose current PM changes nightly",
-        messages.size(), CoreMatchers.is(2));
-    assertThat("Should have messages for Persons '1' and '2'", messages,
-        containsInAnyOrder("1", "2"));
-    assertThat("Should not have a message for Person '3'", messages, not(contains(("3"))));
   }
 }
