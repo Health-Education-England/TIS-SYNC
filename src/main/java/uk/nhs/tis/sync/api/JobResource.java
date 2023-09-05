@@ -58,7 +58,7 @@ public class JobResource {
       PostTrainingBodyTrustJob postTrainingBodyTrustJob,
       PersonElasticSearchSyncJob personElasticSearchSyncJob,
       PersonOwnerRebuildJob personOwnerRebuildJob,
-      PersonRecordStatusJob personRecordStatusJob,) {
+      PersonRecordStatusJob personRecordStatusJob) {
     this.personPlacementEmployingBodyTrustJob = personPlacementEmployingBodyTrustJob;
     this.personPlacementTrainingBodyTrustJob = personPlacementTrainingBodyTrustJob;
     this.postEmployingBodyTrustJob = postEmployingBodyTrustJob;
