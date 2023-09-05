@@ -23,6 +23,7 @@ import uk.nhs.tis.sync.job.PostEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PostTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.RunnableJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
+import uk.nhs.tis.sync.job.reval.RevalCurrentPlacementSyncJob;
 import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
 
 /**
@@ -45,6 +46,7 @@ public class JobResource {
   private final PersonOwnerRebuildJob personOwnerRebuildJob;
   private final PersonRecordStatusJob personRecordStatusJob;
   private RevalCurrentPmSyncJob revalCurrentPmSyncJob;
+  private RevalCurrentPlacementSyncJob revalCurrentPlacementSyncJob;
   @Autowired
   private JobRunningListener jobRunningListener;
   @Value("${spring.profiles.active:}")
@@ -56,7 +58,7 @@ public class JobResource {
       PostTrainingBodyTrustJob postTrainingBodyTrustJob,
       PersonElasticSearchSyncJob personElasticSearchSyncJob,
       PersonOwnerRebuildJob personOwnerRebuildJob,
-      PersonRecordStatusJob personRecordStatusJob) {
+      PersonRecordStatusJob personRecordStatusJob,) {
     this.personPlacementEmployingBodyTrustJob = personPlacementEmployingBodyTrustJob;
     this.personPlacementTrainingBodyTrustJob = personPlacementTrainingBodyTrustJob;
     this.postEmployingBodyTrustJob = postEmployingBodyTrustJob;
@@ -69,6 +71,11 @@ public class JobResource {
   @Autowired(required = false)
   public void setRevalCurrentPmSyncJob(RevalCurrentPmSyncJob revalCurrentPmSyncJob) {
     this.revalCurrentPmSyncJob = revalCurrentPmSyncJob;
+  }
+
+  @Autowired(required = false)
+  public void setRevalCurrentPlacementSyncJob(RevalCurrentPlacementSyncJob revalCurrentPlacementSyncJob) {
+    this.revalCurrentPlacementSyncJob = revalCurrentPlacementSyncJob;
   }
 
   /**
@@ -92,6 +99,9 @@ public class JobResource {
     statusMap.put("personRecordStatusJob", personRecordStatusJob.isCurrentlyRunning());
     if (revalCurrentPmSyncJob != null) {
       statusMap.put("revalCurrentPmJob", revalCurrentPmSyncJob.isCurrentlyRunning());
+    }
+    if (revalCurrentPlacementSyncJob != null) {
+      statusMap.put("revalCurrentPlacementJob", revalCurrentPlacementSyncJob.isCurrentlyRunning());
     }
     return ResponseEntity.ok().body(statusMap);
   }
@@ -157,6 +167,13 @@ public class JobResource {
       case "revalCurrentPmJob":
         if (revalCurrentPmSyncJob != null) {
           status = ensureRunning(revalCurrentPmSyncJob, params);
+        } else {
+          return ResponseEntity.badRequest().body(JOB_NOT_FOUND);
+        }
+        break;
+      case "revalCurrentPlacementJob":
+        if (revalCurrentPlacementSyncJob != null) {
+          status = ensureRunning(revalCurrentPlacementSyncJob, params);
         } else {
           return ResponseEntity.badRequest().body(JOB_NOT_FOUND);
         }
