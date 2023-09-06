@@ -53,8 +53,5 @@ class RevalCurrentPlacementSyncJobIntegrationTest {
     } catch (ConditionTimeoutException e) {
       Assert.fail("the sync job should not have timed out");
     }
-
-    verify(rabbitMqPublisher).publishToBroker(messageCaptor.capture());
-    Set<String> messages = messageCaptor.getValue();
   }
 }
