@@ -17,13 +17,13 @@ import uk.nhs.tis.sync.job.PersonDateChangeCaptureSyncJobTemplate;
 import uk.nhs.tis.sync.message.publisher.RabbitMqTcsRevalTraineeUpdatePublisher;
 
 /**
- * Get personIds whose current programmeMembership changes nightly. And sends messages to rabbitMq
+ * Get personIds whose current placement changes nightly. And sends messages to rabbitMq
  * for tcs to fetch
  */
 @Profile("!nimdta")
 @Component
 @ManagedResource(objectName = "sync.mbean:name=RevalCurrentPlacementSyncJob",
-    description = "Job message personIds if their programme membership(s) started/ended")
+    description = "Job message personIds if their placement(s) started/ended")
 public class RevalCurrentPlacementSyncJob extends PersonDateChangeCaptureSyncJobTemplate<Long> {
   private static final String BASE_QUERY =
       "SELECT DISTINCT traineeId FROM Placement" + " WHERE traineeId > :lastPersonId"
@@ -77,6 +77,4 @@ public class RevalCurrentPlacementSyncJob extends PersonDateChangeCaptureSyncJob
           .replace(" AND (dateTo = ':endDate' OR dateFrom = ':startDate')", "");
     }
   }
-
-
 }
