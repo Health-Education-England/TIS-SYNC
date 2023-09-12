@@ -28,7 +28,7 @@ public class RevalCurrentPlacementSyncJob extends PersonDateChangeCaptureSyncJob
   private static final String BASE_QUERY =
       "SELECT DISTINCT traineeId FROM Placement" + " WHERE traineeId > :lastPersonId"
           + " AND (dateFrom = ':endDate' OR DateTo = ':startDate')"
-          + " ORDER BY personId LIMIT :pageSize";
+          + " ORDER BY traineeId LIMIT :pageSize";
   private final RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher;
 
   public RevalCurrentPlacementSyncJob(RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher) {

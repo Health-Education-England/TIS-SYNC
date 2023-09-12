@@ -223,7 +223,7 @@ application:
   rabbit:
     reval:
       exchange: ${REVAL_RABBIT_EXCHANGE:reval.exchange}
-      routingKey.trainee.update: ${REVAL_RABBIT_TRAINEEUPDATE_ROUTING_KEY:reval.trianee.update}
+      routingKey.trainee.update: ${REVAL_RABBIT_TRAINEEUPDATE_ROUTING_KEY:reval.trainee.update}
 
 azure:
   accountName: ${CLOUD_BLOB_ACCOUNT_NAME}
