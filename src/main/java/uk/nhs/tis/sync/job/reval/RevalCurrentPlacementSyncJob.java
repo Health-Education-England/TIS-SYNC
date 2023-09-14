@@ -67,14 +67,9 @@ public class RevalCurrentPlacementSyncJob extends PersonDateChangeCaptureSyncJob
 
   @Override
   protected String buildQueryForDate(LocalDate dateOfChange) {
-    if (dateOfChange != null) {
-      String startDate = dateOfChange.format(DateTimeFormatter.ISO_LOCAL_DATE);
-      String endDate = dateOfChange.minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
-      return BASE_QUERY.replace(":endDate", endDate).replace(":startDate", startDate)
+          String today = dateOfChange.format(DateTimeFormatter.ISO_LOCAL_DATE);
+      String yesterday = dateOfChange.minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
+      return BASE_QUERY.replace(":endDate", yesterday).replace(":startDate", today)
           .replace(":pageSize", "" + DEFAULT_PAGE_SIZE);
-    } else {
-      return BASE_QUERY.replace(":pageSize", "" + DEFAULT_PAGE_SIZE)
-          .replace(" AND (dateTo = ':endDate' OR dateFrom = ':startDate')", "");
-    }
   }
 }
