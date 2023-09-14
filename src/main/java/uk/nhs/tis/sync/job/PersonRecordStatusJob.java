@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.transformuk.hee.tis.tcs.service.model.Person;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Objects;
@@ -23,9 +24,13 @@ import org.springframework.stereotype.Component;
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonRecordStatusJob",
     description = "Job set a Person's (Training Record) Status if their programme membership(s) started/ended")
-public class PersonRecordStatusJob extends PersonCurrentPmSyncJobTemplate<Person> {
+public class PersonRecordStatusJob extends PersonDateChangeCaptureSyncJobTemplate<Person> {
 
   private static final Logger LOG = LoggerFactory.getLogger(PersonRecordStatusJob.class);
+  private static final String BASE_QUERY =
+      "SELECT DISTINCT personId FROM ProgrammeMembership" + " WHERE personId > :lastPersonId"
+          + " AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')"
+          + " ORDER BY personId LIMIT :pageSize";
 
   private final ObjectMapper objectMapper;
 
@@ -108,4 +113,18 @@ public class PersonRecordStatusJob extends PersonCurrentPmSyncJobTemplate<Person
       entityManager.flush();
     }
   }
+
+  @Override
+  protected String buildQueryForDate(LocalDate dateOfChange) {
+    if (dateOfChange != null) {
+      String startDate = dateOfChange.format(DateTimeFormatter.ISO_LOCAL_DATE);
+      String endDate = dateOfChange.minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
+      return BASE_QUERY.replace(":endDate", endDate).replace(":startDate", startDate)
+          .replace(":pageSize", "" + DEFAULT_PAGE_SIZE);
+    } else {
+      return BASE_QUERY.replace(":pageSize", "" + DEFAULT_PAGE_SIZE)
+          .replace(" AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')", "");
+    }
+  }
+  
 }

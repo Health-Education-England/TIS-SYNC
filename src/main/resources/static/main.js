@@ -104,16 +104,19 @@ function getStatus() {
           statusElement.innerHTML = jobStatus;
         });
         // set status and tooltip for revalCurrmentPMJob
-        setStatusForRevalCurrentPMJob();
+        setStatusForRevalCurrentFieldJobs();
     });
 }
 
-function setStatusForRevalCurrentPMJob() {
-  const revalCurrentPmJobElement = document.getElementById("revalCurrentPmJob_status");
-  // revalCurrentPmJob sends personIds to tcs and trigger
-  revalCurrentPmJobElement.innerHTML = "Unknown";
-  revalCurrentPmJobElement.setAttribute("title", "Please check tcs/reval/rabbitMQ if this job is currently running");
-  revalCurrentPmJobElement.classList.remove("running-text");
+function setStatusForRevalCurrentFieldJobs() {
+  const elements = [document.getElementById("revalCurrentPmJob_status"), document.getElementById("revalCurrentPlacementJob_status")];
+  // these jobs send personIds to tcs and trigger
+  elements.forEach((el) => {
+      el.innerHTML = "Unknown";
+      el.setAttribute("title", "Please check tcs/reval/rabbitMQ if this job is currently running");
+      el.classList.remove("running-text");
+  })
+
 }
 
 function fetchSysProfile() {
@@ -142,6 +145,7 @@ function registerListeners() {
   document.getElementById("runAllJobs").addEventListener("click", runAllJobs);
   document.getElementById("getStatus").addEventListener("click", getStatus);
   document.getElementById("revalCurrentPmJob").addEventListener("click", runJob);
+  document.getElementById("revalCurrentPlacementJob").addEventListener("click", runJob);
 }
 
 window.addEventListener("load", registerListeners);

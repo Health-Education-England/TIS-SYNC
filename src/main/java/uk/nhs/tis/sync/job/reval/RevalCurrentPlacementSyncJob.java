@@ -17,37 +17,36 @@ import uk.nhs.tis.sync.job.PersonDateChangeCaptureSyncJobTemplate;
 import uk.nhs.tis.sync.message.publisher.RabbitMqTcsRevalTraineeUpdatePublisher;
 
 /**
- * Get personIds whose current programmeMembership changes nightly. And sends messages to rabbitMq
+ * Get personIds whose current placement changes nightly. And sends messages to rabbitMq
  * for tcs to fetch
  */
 @Profile("!nimdta")
 @Component
-@ManagedResource(objectName = "sync.mbean:name=RevalCurrentPmSyncJob",
-    description = "Job message personIds if their programme membership(s) started/ended")
-public class RevalCurrentPmSyncJob extends PersonDateChangeCaptureSyncJobTemplate<Long> {
-
+@ManagedResource(objectName = "sync.mbean:name=RevalCurrentPlacementSyncJob",
+    description = "Job message personIds if their placement(s) started/ended")
+public class RevalCurrentPlacementSyncJob extends PersonDateChangeCaptureSyncJobTemplate<Long> {
   private static final String BASE_QUERY =
-      "SELECT DISTINCT personId FROM ProgrammeMembership" + " WHERE personId > :lastPersonId"
-          + " AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')"
-          + " ORDER BY personId LIMIT :pageSize";
+      "SELECT DISTINCT traineeId FROM Placement" + " WHERE traineeId > :lastPersonId"
+          + " AND (dateFrom = ':endDate' OR DateTo = ':startDate')"
+          + " ORDER BY traineeId LIMIT :pageSize";
   private final RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher;
 
-  public RevalCurrentPmSyncJob(RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher) {
+  public RevalCurrentPlacementSyncJob(RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher) {
     this.rabbitMqPublisher = rabbitMqPublisher;
   }
 
   @Override
   public void run(String params) {
-    revalCurrentPmSyncJob();
+    revalCurrentPlacementSyncJob();
   }
 
   @Profile("!nimdta")
-  @Scheduled(cron = "${application.cron.revalCurrentPmJob}")
-  @SchedulerLock(name = "revalCurrentPmScheduledTask", lockAtLeastFor = FIFTEEN_MIN,
+  @Scheduled(cron = "${application.cron.revalCurrentPlacementJob}")
+  @SchedulerLock(name = "revalCurrentPlacementScheduledTask", lockAtLeastFor = FIFTEEN_MIN,
       lockAtMostFor = FIFTEEN_MIN)
   @ManagedOperation(
-      description = "send personIds to tcs for reval current programmeMembership sync")
-  public void revalCurrentPmSyncJob() {
+      description = "send personIds to tcs for reval current placement sync")
+  public void revalCurrentPlacementSyncJob() {
     runSyncJob(null);
   }
 
@@ -75,8 +74,7 @@ public class RevalCurrentPmSyncJob extends PersonDateChangeCaptureSyncJobTemplat
           .replace(":pageSize", "" + DEFAULT_PAGE_SIZE);
     } else {
       return BASE_QUERY.replace(":pageSize", "" + DEFAULT_PAGE_SIZE)
-          .replace(" AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')", "");
+          .replace(" AND (dateTo = ':endDate' OR dateFrom = ':startDate')", "");
     }
   }
-
 }

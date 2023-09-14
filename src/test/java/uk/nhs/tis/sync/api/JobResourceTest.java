@@ -33,6 +33,7 @@ import uk.nhs.tis.sync.job.PersonRecordStatusJob;
 import uk.nhs.tis.sync.job.PostEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PostTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
+import uk.nhs.tis.sync.job.reval.RevalCurrentPlacementSyncJob;
 import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
 
 @DisplayName("JobResourceTest")
@@ -62,6 +63,8 @@ class JobResourceTest {
 
   @MockBean
   private RevalCurrentPmSyncJob revalCurrentPmSyncJob;
+  @MockBean
+  private RevalCurrentPlacementSyncJob revalCurrentPlacementSyncJob;
 
   private MockMvc mockMvc;
 
@@ -77,6 +80,7 @@ class JobResourceTest {
         personOwnerRebuildJob,
         personRecordStatusJob);
     jobResource.setRevalCurrentPmSyncJob(revalCurrentPmSyncJob);
+    jobResource.setRevalCurrentPlacementSyncJob((revalCurrentPlacementSyncJob));
     mockMvc = MockMvcBuilders.standaloneSetup(jobResource).build();
   }
 
@@ -116,6 +120,7 @@ class JobResourceTest {
   @Test
   void shouldNotReturnStatusForRevalCurrentSyncWhenJobNotAvailable() throws Exception {
     jobResource.setRevalCurrentPmSyncJob(null);
+    jobResource.setRevalCurrentPlacementSyncJob(null);
     when(personPlacementEmployingBodyTrustJob.isCurrentlyRunning())
         .thenReturn(false);
     when(personPlacementTrainingBodyTrustJob.isCurrentlyRunning())
@@ -181,10 +186,20 @@ class JobResourceTest {
   }
 
   @Test
-  void shouldReturnErrorWhenRevalCurrentSyncIsTriggeredButNotAvailable() throws Exception {
+  void shouldReturnErrorWhenRevalCurrentPMSyncIsTriggeredButNotAvailable() throws Exception {
     jobResource.setRevalCurrentPmSyncJob(null);
 
     mockMvc.perform(put("/api/job/revalCurrentPmJob")
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value("Job not found"));
+  }
+
+  @Test
+  void shouldReturnErrorWhenRevalCurrentPlacementSyncIsTriggeredButNotAvailable() throws Exception {
+    jobResource.setRevalCurrentPlacementSyncJob(null);
+
+    mockMvc.perform(put("/api/job/revalCurrentPlacementJob")
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error").value("Job not found"));

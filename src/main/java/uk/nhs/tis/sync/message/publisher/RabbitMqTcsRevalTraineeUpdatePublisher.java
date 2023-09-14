@@ -12,12 +12,12 @@ import org.springframework.stereotype.Component;
  */
 @Profile("!nimdta")
 @Component
-public class RabbitMqTcsPmUpdatePublisher {
+public class RabbitMqTcsRevalTraineeUpdatePublisher {
 
   @Value("${application.rabbit.reval.exchange}")
   private String exchange;
 
-  @Value("${application.rabbit.reval.routingKey.currentpm.update}")
+  @Value("${application.rabbit.reval.routingKey.trainee.update}")
   private String routingKey;
 
   @Autowired
