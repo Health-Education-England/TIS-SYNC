@@ -27,7 +27,7 @@ import uk.nhs.tis.sync.message.publisher.RabbitMqTcsRevalTraineeUpdatePublisher;
 public class RevalCurrentPlacementSyncJob extends PersonDateChangeCaptureSyncJobTemplate<Long> {
   private static final String BASE_QUERY =
       "SELECT DISTINCT traineeId FROM Placement" + " WHERE traineeId > :lastPersonId"
-          + " AND (dateFrom = ':endDate' OR DateTo = ':startDate')"
+          + " AND (dateFrom = ':today' OR dateTo = ':yesterday')"
           + " ORDER BY traineeId LIMIT :pageSize";
   private final RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher;
 
@@ -67,14 +67,9 @@ public class RevalCurrentPlacementSyncJob extends PersonDateChangeCaptureSyncJob
 
   @Override
   protected String buildQueryForDate(LocalDate dateOfChange) {
-    if (dateOfChange != null) {
-      String startDate = dateOfChange.format(DateTimeFormatter.ISO_LOCAL_DATE);
-      String endDate = dateOfChange.minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
-      return BASE_QUERY.replace(":endDate", endDate).replace(":startDate", startDate)
+    String today = dateOfChange.format(DateTimeFormatter.ISO_LOCAL_DATE);
+    String yesterday = dateOfChange.minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
+    return BASE_QUERY.replace(":yesterday", yesterday).replace(":today", today)
           .replace(":pageSize", "" + DEFAULT_PAGE_SIZE);
-    } else {
-      return BASE_QUERY.replace(":pageSize", "" + DEFAULT_PAGE_SIZE)
-          .replace(" AND (dateTo = ':endDate' OR dateFrom = ':startDate')", "");
-    }
   }
 }
