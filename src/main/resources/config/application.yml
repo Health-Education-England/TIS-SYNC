@@ -207,6 +207,7 @@ application:
     revalCurrentPmJob: ${APPLICATION_CRON_REVALCURRENTPMJOB:0 39 1 * * *}
     revalCurrentPlacementJob: ${APPLICATION_CRON_REVALCURRENTPLACEMENTJOB:0 49 1 * * *}
     recordResendingJob: ${APPLICATION_CRON_RECORDRESENDINGJOB}
+    postFundingSyncJob: ${APPLICATION_CRON_POSTFUNDINGSYNCJOB:0 0 3 * * *}
   jobs:
     runOnStartup:
       earliest: ${APPLICATION_JOBS_RUNONSTARTUP_EARLIEST:00:00}

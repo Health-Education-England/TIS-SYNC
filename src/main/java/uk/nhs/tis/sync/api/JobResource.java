@@ -23,6 +23,7 @@ import uk.nhs.tis.sync.job.PostEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PostTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.RunnableJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
+import uk.nhs.tis.sync.job.PostFundingSyncJob;
 import uk.nhs.tis.sync.job.reval.RevalCurrentPlacementSyncJob;
 import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
 
@@ -47,6 +48,7 @@ public class JobResource {
   private final PersonRecordStatusJob personRecordStatusJob;
   private RevalCurrentPmSyncJob revalCurrentPmSyncJob;
   private RevalCurrentPlacementSyncJob revalCurrentPlacementSyncJob;
+  private PostFundingSyncJob postFundingSyncJob;
   @Autowired
   private JobRunningListener jobRunningListener;
   @Value("${spring.profiles.active:}")
@@ -79,6 +81,11 @@ public class JobResource {
     this.revalCurrentPlacementSyncJob = revalCurrentPlacementSyncJob;
   }
 
+  @Autowired(required = false)
+  public void setPostFundingSyncJob(PostFundingSyncJob postFundingSyncJob) {
+    this.postFundingSyncJob = postFundingSyncJob;
+  }
+
   /**
    * GET /jobs/status : Get all the status of 8 jobs.
    *
@@ -103,6 +110,9 @@ public class JobResource {
     }
     if (revalCurrentPlacementSyncJob != null) {
       statusMap.put("revalCurrentPlacementJob", revalCurrentPlacementSyncJob.isCurrentlyRunning());
+    }
+    if (postFundingSyncJob != null) {
+      statusMap.put("postFundingSyncJob", postFundingSyncJob.isCurrentlyRunning());
     }
     return ResponseEntity.ok().body(statusMap);
   }
@@ -175,6 +185,13 @@ public class JobResource {
       case "revalCurrentPlacementJob":
         if (revalCurrentPlacementSyncJob != null) {
           status = ensureRunning(revalCurrentPlacementSyncJob, params);
+        } else {
+          return ResponseEntity.badRequest().body(JOB_NOT_FOUND);
+        }
+        break;
+      case "postFundingSyncJob":
+        if (postFundingSyncJob != null) {
+          status = ensureRunning(postFundingSyncJob, params);
         } else {
           return ResponseEntity.badRequest().body(JOB_NOT_FOUND);
         }

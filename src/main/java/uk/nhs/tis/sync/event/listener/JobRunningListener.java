@@ -18,6 +18,7 @@ import uk.nhs.tis.sync.job.PersonRecordStatusJob;
 import uk.nhs.tis.sync.job.PostEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PostTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
+import uk.nhs.tis.sync.job.PostFundingSyncJob;
 import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
 
 @Component
@@ -49,6 +50,8 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
   private PersonElasticSearchSyncJob personElasticSearchSyncJob;
 
   private RevalCurrentPmSyncJob revalCurrentPmSyncJob;
+
+  private PostFundingSyncJob postFundingSyncJob;
 
   private LocalTime earliest;
 
@@ -104,6 +107,12 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
         do {
           Thread.sleep(SLEEP_DURATION);
         } while (revalCurrentPmSyncJob.isCurrentlyRunning());
+      }
+      if (postFundingSyncJob != null) {
+        postFundingSyncJob.postFundingSyncJob();
+        do {
+          Thread.sleep(SLEEP_DURATION);
+        } while (postFundingSyncJob.isCurrentlyRunning());
       }
     } catch (InterruptedException e) {
       LOG.error(e.getMessage(), e);
