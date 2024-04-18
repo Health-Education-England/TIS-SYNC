@@ -62,6 +62,11 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
     this.revalCurrentPmSyncJob = revalCurrentPmSyncJob;
   }
 
+  @Autowired(required = false)
+  public void setPostFundingSyncJob(PostFundingSyncJob postFundingSyncJob) {
+    this.postFundingSyncJob = postFundingSyncJob;
+  }
+
   @Override
   public void onApplicationEvent(ApplicationReadyEvent event) {
     LOG.debug("Received event for an {}", event.getClass().getSimpleName());

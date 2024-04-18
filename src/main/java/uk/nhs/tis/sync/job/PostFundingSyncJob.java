@@ -10,13 +10,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.persistence.EntityManager;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jmx.export.annotation.ManagedOperation;
+import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 @Component
+@ManagedResource(objectName = "sync.mbean:name=PostFundingSyncJob",
+    description = "Job for updating funding status for posts")
 public class PostFundingSyncJob extends PersonDateChangeCaptureSyncJobTemplate<Post> {
 
   private static final Logger LOG = LoggerFactory.getLogger(PostFundingSyncJob.class);
@@ -40,6 +44,7 @@ public class PostFundingSyncJob extends PersonDateChangeCaptureSyncJobTemplate<P
   }
 
   @Scheduled(cron = "${application.cron.postFundingSyncJob}")
+  @ManagedOperation(description = "update post funding status")
   public void postFundingSyncJob() {
     super.runSyncJob(null);
   }

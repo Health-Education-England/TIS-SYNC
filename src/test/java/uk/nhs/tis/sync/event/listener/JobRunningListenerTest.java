@@ -38,13 +38,14 @@ public class JobRunningListenerTest {
     when(personOwnerRebuildJob.isCurrentlyRunning()).thenReturn(false);
     when(personElasticSearchSyncJob.isCurrentlyRunning()).thenReturn(false);
     when(revalCurrentPmSyncJob.isCurrentlyRunning()).thenReturn(false);
-    when(personOwnerRebuildJob.isCurrentlyRunning()).thenReturn(false);
+    when(postFundingSyncJob.isCurrentlyRunning()).thenReturn(false);
     testClass.runJobs();
     verify(personOwnerRebuildJob).personOwnerRebuildJob();
     verify(personOwnerRebuildJob).isCurrentlyRunning();
     verify(personElasticSearchSyncJob).personElasticSearchSync();
     verify(personElasticSearchSyncJob).isCurrentlyRunning();
     verify(revalCurrentPmSyncJob).isCurrentlyRunning();
+    verify(postFundingSyncJob).postFundingSyncJob();
     verify(postFundingSyncJob).isCurrentlyRunning();
   }
 }
