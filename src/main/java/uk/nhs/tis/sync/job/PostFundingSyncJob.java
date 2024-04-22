@@ -26,11 +26,11 @@ public class PostFundingSyncJob extends PersonDateChangeCaptureSyncJobTemplate<P
   private static final Logger LOG = LoggerFactory.getLogger(PostFundingSyncJob.class);
 
   private static final String BASE_QUERY = "SELECT DISTINCT p.id FROM Post p"
-      + "JOIN ( SELECT postId FROM PostFunding"
-      + "WHERE startDate IS NOT NULL AND (endDate = ':endDate' OR endDate IS NULL)"
-      + "GROUP BY postId"
-      + "HAVING COUNT(id) > 0)"
-      + "pf ON p.id = pf.postId ORDER BY p.id LIMIT :pageSize";
+      + " JOIN ( SELECT postId FROM PostFunding"
+      + " WHERE startDate IS NOT NULL AND (endDate = ':endDate' OR endDate IS NULL)"
+      + " GROUP BY postId"
+      + " HAVING COUNT(id) > 0)"
+      + " pf ON p.id = pf.postId ORDER BY p.id LIMIT :pageSize";
 
   private final ObjectMapper objectMapper;
 
@@ -74,7 +74,6 @@ public class PostFundingSyncJob extends PersonDateChangeCaptureSyncJobTemplate<P
             entitiesToSave.add(post);
           }
         });
-
     return entities - entitiesToSave.size();
   }
 
