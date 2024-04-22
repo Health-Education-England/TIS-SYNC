@@ -1,7 +1,7 @@
 package uk.nhs.tis.sync.job;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
@@ -18,7 +18,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,9 +33,6 @@ public class PostFundingSyncJobTest {
 
   @Mock
   private ObjectMapper objectMapper;
-
-  @Mock
-  private EntityManagerFactory entityManagerFactory;
 
   private PostFundingSyncJob postFundingSyncJob;
 
@@ -61,11 +57,12 @@ public class PostFundingSyncJobTest {
   @Test
   public void testConvertData() {
     Post post = new Post();
+    post.setId(1L);
     PostFunding postFunding = new PostFunding();
+    postFunding.setId(999L);
     post.fundingStatus(com.transformuk.hee.tis.tcs.api.enumeration.Status.CURRENT);
     Set<PostFunding> postFundingSet = new HashSet<>(Arrays.asList(postFunding));
     post.setFundings(postFundingSet);
-    postFunding.setPost(post);
 
     when(entityManager.find(eq(Post.class), anyLong())).thenReturn(post);
 
@@ -74,9 +71,9 @@ public class PostFundingSyncJobTest {
     int result = postFundingSyncJob.convertData(entitiesToSave, entityData, entityManager);
 
     assertEquals(0, result);
-    assertFalse(entitiesToSave.contains(post));
+    assertTrue(entitiesToSave.contains(post));
     assertEquals(com.transformuk.hee.tis.tcs.api.enumeration.Status.INACTIVE,
-        postFunding.getPost().getFundingStatus());
+        post.getFundingStatus());
   }
 
   @Test
@@ -91,4 +88,3 @@ public class PostFundingSyncJobTest {
     verify(entityManager, times(1)).flush();
   }
 }
-

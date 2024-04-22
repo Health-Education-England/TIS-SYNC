@@ -85,5 +85,3 @@ public class PostFundingSyncJob extends PersonDateChangeCaptureSyncJobTemplate<P
     }
   }
 }
-
-
