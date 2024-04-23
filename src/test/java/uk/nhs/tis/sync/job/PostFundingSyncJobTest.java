@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import com.transformuk.hee.tis.tcs.service.model.Post;
 import com.transformuk.hee.tis.tcs.service.model.PostFunding;
 import java.time.LocalDate;
@@ -72,8 +73,30 @@ public class PostFundingSyncJobTest {
 
     assertEquals(0, result);
     assertTrue(entitiesToSave.contains(post));
-    assertEquals(com.transformuk.hee.tis.tcs.api.enumeration.Status.INACTIVE,
-        post.getFundingStatus());
+    assertEquals(Status.INACTIVE, post.getFundingStatus());
+  }
+
+  @Test
+  public void testPostFundingWillRemainCurrentWithMulitiplePostFunding() {
+    Post post = new Post();
+    post.setId(1L);
+    PostFunding postFunding1 = new PostFunding();
+    postFunding1.setId(999L);
+    PostFunding postFunding2 = new PostFunding();
+    postFunding2.setId(1000L);
+    post.fundingStatus(com.transformuk.hee.tis.tcs.api.enumeration.Status.CURRENT);
+    Set<PostFunding> postFundingSet = new HashSet<>(Arrays.asList(postFunding1, postFunding2));
+    post.setFundings(postFundingSet);
+
+    when(entityManager.find(eq(Post.class), anyLong())).thenReturn(post);
+
+    Set<Post> entitiesToSave = new HashSet<>();
+    List<Long> entityData = Arrays.asList(1L);
+    int result = postFundingSyncJob.convertData(entitiesToSave, entityData, entityManager);
+
+    assertEquals(0, result);
+    assertTrue(entitiesToSave.contains(post));
+    assertEquals(Status.CURRENT, post.getFundingStatus());
   }
 
   @Test
