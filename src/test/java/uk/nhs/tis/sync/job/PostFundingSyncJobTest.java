@@ -27,7 +27,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
-public class PostFundingSyncJobTest {
+class PostFundingSyncJobTest {
 
   @Mock
   private EntityManager entityManager;
@@ -44,7 +44,7 @@ public class PostFundingSyncJobTest {
   }
 
   @Test
-  public void testBuildQueryForDate() {
+  void testBuildQueryForDate() {
     LocalDate dateOfChange = LocalDate.now();
     String expectedQuery =
         "SELECT DISTINCT p.id FROM Post p JOIN ( SELECT postId FROM PostFunding WHERE startDate IS NOT NULL AND (endDate = '"
@@ -56,12 +56,12 @@ public class PostFundingSyncJobTest {
   }
 
   @Test
-  public void testConvertData() {
+  void testConvertData() {
     Post post = new Post();
     post.setId(1L);
     PostFunding postFunding = new PostFunding();
     postFunding.setId(999L);
-    post.fundingStatus(com.transformuk.hee.tis.tcs.api.enumeration.Status.CURRENT);
+    post.fundingStatus(Status.CURRENT);
     Set<PostFunding> postFundingSet = new HashSet<>(Arrays.asList(postFunding));
     post.setFundings(postFundingSet);
 
@@ -77,14 +77,14 @@ public class PostFundingSyncJobTest {
   }
 
   @Test
-  public void testPostFundingWillRemainCurrentWithMulitiplePostFunding() {
+  void testPostFundingWillRemainCurrentWithMulitiplePostFunding() {
     Post post = new Post();
     post.setId(1L);
     PostFunding postFunding1 = new PostFunding();
     postFunding1.setId(999L);
     PostFunding postFunding2 = new PostFunding();
     postFunding2.setId(1000L);
-    post.fundingStatus(com.transformuk.hee.tis.tcs.api.enumeration.Status.CURRENT);
+    post.fundingStatus(Status.CURRENT);
     Set<PostFunding> postFundingSet = new HashSet<>(Arrays.asList(postFunding1, postFunding2));
     post.setFundings(postFundingSet);
 
@@ -100,7 +100,7 @@ public class PostFundingSyncJobTest {
   }
 
   @Test
-  public void testHandleData() {
+  void testHandleData() {
     Post post = new Post();
     Set<Post> dataToSave = new HashSet<>();
     dataToSave.add(post);

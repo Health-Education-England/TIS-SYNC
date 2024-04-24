@@ -18,6 +18,11 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+/**
+ * Job for updating funding status for posts. This class extends the
+ * PersonDateChangeCaptureSyncJobTemplate and provides functionality to synchronize post funding
+ * status based on specified criteria.
+ */
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PostFundingSyncJob",
     description = "Job for updating funding status for posts")
