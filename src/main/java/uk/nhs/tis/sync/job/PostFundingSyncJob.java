@@ -1,15 +1,14 @@
 package uk.nhs.tis.sync.job;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import com.transformuk.hee.tis.tcs.service.model.Post;
 import com.transformuk.hee.tis.tcs.service.model.PostFunding;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import javax.persistence.EntityManager;
+import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,22 +25,20 @@ import org.springframework.stereotype.Component;
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PostFundingSyncJob",
     description = "Job for updating funding status for posts")
-public class PostFundingSyncJob extends PersonDateChangeCaptureSyncJobTemplate<Post> {
+public class PostFundingSyncJob extends PostFundingSyncJobTemplate<Post> {
 
   private static final Logger LOG = LoggerFactory.getLogger(PostFundingSyncJob.class);
 
-  private static final String BASE_QUERY = "SELECT DISTINCT p.id FROM Post p"
-      + " JOIN ( SELECT postId FROM PostFunding"
-      + " WHERE startDate IS NOT NULL AND (endDate = ':endDate' OR endDate IS NULL)"
-      + " GROUP BY postId"
-      + " HAVING COUNT(id) > 0)"
-      + " pf ON p.id = pf.postId ORDER BY p.id LIMIT :pageSize";
-
-  private final ObjectMapper objectMapper;
-
-  public PostFundingSyncJob(ObjectMapper objectMapper) {
-    this.objectMapper = objectMapper;
-  }
+  private static final String BASE_QUERY = "SELECT DISTINCT p.id FROM Post p "
+      + " JOIN ( "
+      + " SELECT postId "
+      + "  FROM PostFunding "
+      + "      WHERE postId > :lastPostId "
+      + "      AND startDate IS NOT NULL "
+      + "      AND (endDate = ':endDate' OR endDate IS NULL) "
+      + " GROUP BY postId "
+      + " ) pf ON p.id = pf.postId "
+      + " ORDER BY p.id LIMIT :pageSize ";
 
   @Override
   public void run(String params) {
@@ -49,7 +46,9 @@ public class PostFundingSyncJob extends PersonDateChangeCaptureSyncJobTemplate<P
   }
 
   @Scheduled(cron = "${application.cron.postFundingSyncJob}")
-  @ManagedOperation(description = "update post funding status")
+  @SchedulerLock(name = "postFundingScheduledTask", lockAtLeastFor = FIFTEEN_MIN,
+      lockAtMostFor = FIFTEEN_MIN)
+  @ManagedOperation(description = "Update post funding status")
   public void postFundingSyncJob() {
     super.runSyncJob(null);
   }
@@ -64,21 +63,28 @@ public class PostFundingSyncJob extends PersonDateChangeCaptureSyncJobTemplate<P
   protected int convertData(Set<Post> entitiesToSave, List<Long> entityData,
       EntityManager entityManager) {
     int entities = entityData.size();
-    entityData.stream()
-        .map(id -> entityManager.find(Post.class, id))
-        .filter(Objects::nonNull)
-        .forEach(post -> {
-          // check if the post has multiple post fundings
-          Set<PostFunding> postFundings = post.getFundings();
-          if (postFundings.size() > 1) {
-            // if the post has multiple post fundings, do nothing
-            entitiesToSave.add(post);
-          } else if (postFundings.size() == 1) {
-            // if the post has a single post funding, set its status to "INACTIVE"
-            post.setFundingStatus(Status.INACTIVE);
-            entitiesToSave.add(post);
-          }
-        });
+    for (Long id : entityData) {
+      Post post = entityManager.find(Post.class, id);
+      if (post != null) {
+        // Explicitly load PostFunding entities without triggering further lazy loading
+        List<PostFunding> fundings = entityManager.createQuery(
+            "SELECT pf FROM PostFunding pf WHERE pf.post.id = :postId",
+            PostFunding.class)
+            .setParameter("postId", post.getId())
+            .getResultList();
+
+        if (fundings.size() > 1) {
+          // If there are multiple fundings, save the current post
+          entitiesToSave.add(post);
+        } else if (fundings.size() == 1) {
+          // If there's a single funding, update status to inactive and save
+          PostFunding funding = fundings.get(0);
+          LOG.info("Funding for the post {} is {} ", post.toString(), funding.toString());
+          post.setFundingStatus(Status.INACTIVE);
+          entitiesToSave.add(post);
+        }
+      }
+    }
     return entities - entitiesToSave.size();
   }
 

@@ -216,16 +216,6 @@ class JobResourceTest {
         .andExpect(jsonPath("$.error").value("Job not found"));
   }
 
-  @Test
-  void shouldReturnErrorWhenPostFundingSyncJobIsTriggeredButNotAvailable() throws Exception {
-    jobResource.setPostFundingSyncJob(null);
-
-    mockMvc.perform(put("/api/job/postFundingSyncJob")
-        .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error").value("Job not found"));
-  }
-
   @DisplayName("run personRecordStatusJob with correct date argument")
   @ParameterizedTest(name = "Should return 'Just started' status when personRecordStatusJob is triggered with \"{0}\".")
   @ValueSource(strings = {

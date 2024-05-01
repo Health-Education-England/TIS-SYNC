@@ -81,7 +81,7 @@ public class JobResource {
     this.revalCurrentPlacementSyncJob = revalCurrentPlacementSyncJob;
   }
 
-  @Autowired(required = false)
+  @Autowired
   public void setPostFundingSyncJob(PostFundingSyncJob postFundingSyncJob) {
     this.postFundingSyncJob = postFundingSyncJob;
   }
@@ -111,9 +111,7 @@ public class JobResource {
     if (revalCurrentPlacementSyncJob != null) {
       statusMap.put("revalCurrentPlacementJob", revalCurrentPlacementSyncJob.isCurrentlyRunning());
     }
-    if (postFundingSyncJob != null) {
-      statusMap.put("postFundingSyncJob", postFundingSyncJob.isCurrentlyRunning());
-    }
+    statusMap.put("postFundingSyncJob", postFundingSyncJob.isCurrentlyRunning());
     return ResponseEntity.ok().body(statusMap);
   }
 
@@ -190,11 +188,7 @@ public class JobResource {
         }
         break;
       case "postFundingSyncJob":
-        if (postFundingSyncJob != null) {
-          status = ensureRunning(postFundingSyncJob, params);
-        } else {
-          return ResponseEntity.badRequest().body(JOB_NOT_FOUND);
-        }
+        status = ensureRunning(postFundingSyncJob, params);
         break;
       default:
         return ResponseEntity.badRequest().body(JOB_NOT_FOUND);

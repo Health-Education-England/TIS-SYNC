@@ -62,7 +62,7 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
     this.revalCurrentPmSyncJob = revalCurrentPmSyncJob;
   }
 
-  @Autowired(required = false)
+  @Autowired
   public void setPostFundingSyncJob(PostFundingSyncJob postFundingSyncJob) {
     this.postFundingSyncJob = postFundingSyncJob;
   }
@@ -113,12 +113,10 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
           Thread.sleep(SLEEP_DURATION);
         } while (revalCurrentPmSyncJob.isCurrentlyRunning());
       }
-      if (postFundingSyncJob != null) {
-        postFundingSyncJob.postFundingSyncJob();
-        do {
-          Thread.sleep(SLEEP_DURATION);
-        } while (postFundingSyncJob.isCurrentlyRunning());
-      }
+      postFundingSyncJob.postFundingSyncJob();
+      do {
+        Thread.sleep(SLEEP_DURATION);
+      } while (postFundingSyncJob.isCurrentlyRunning());
     } catch (InterruptedException e) {
       LOG.error(e.getMessage(), e);
     }

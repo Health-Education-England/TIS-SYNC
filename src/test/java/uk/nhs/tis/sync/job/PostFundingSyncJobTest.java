@@ -1,83 +1,83 @@
 package uk.nhs.tis.sync.job;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import com.transformuk.hee.tis.tcs.service.model.Post;
 import com.transformuk.hee.tis.tcs.service.model.PostFunding;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(SpringExtension.class)
-class PostFundingSyncJobTest {
+@ExtendWith(MockitoExtension.class)
+public class PostFundingSyncJobTest {
 
   @Mock
   private EntityManager entityManager;
-
   @Mock
-  private ObjectMapper objectMapper;
+  private TypedQuery<PostFunding> query;
 
   private PostFundingSyncJob postFundingSyncJob;
 
   @BeforeEach
   public void setUp() {
-    MockitoAnnotations.initMocks(this);
-    postFundingSyncJob = new PostFundingSyncJob(objectMapper);
+    postFundingSyncJob = new PostFundingSyncJob();
   }
 
   @Test
-  void testBuildQueryForDate() {
+  void testShouldWorkWithBuildQueryForDateMethod() {
     LocalDate dateOfChange = LocalDate.now();
-    String expectedQuery =
-        "SELECT DISTINCT p.id FROM Post p JOIN ( SELECT postId FROM PostFunding WHERE startDate IS NOT NULL AND (endDate = '"
-            + dateOfChange.minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE)
-            + "' OR endDate IS NULL) GROUP BY postId HAVING COUNT(id) > 0) pf ON p.id = pf.postId ORDER BY p.id LIMIT "
-            + PostFundingSyncJob.DEFAULT_PAGE_SIZE;
+    String expectedQuery = "SELECT DISTINCT p.id FROM Post p "
+        + " JOIN ( "
+        + " SELECT postId "
+        + "  FROM PostFunding "
+        + "      WHERE postId > :lastPostId "
+        + "      AND startDate IS NOT NULL "
+        + "      AND (endDate = '" + dateOfChange.minusDays(1)
+        .format(DateTimeFormatter.ISO_LOCAL_DATE) + "' OR endDate IS NULL) "
+        + " GROUP BY postId "
+        + " ) pf ON p.id = pf.postId "
+        + " ORDER BY p.id LIMIT " + PostFundingSyncJob.DEFAULT_PAGE_SIZE + " ";
+
     String actualQuery = postFundingSyncJob.buildQueryForDate(dateOfChange);
-    assertEquals(expectedQuery, actualQuery);
+    assertThat(expectedQuery, is(actualQuery));
   }
 
   @Test
-  void testConvertData() {
-    Post post = new Post();
-    post.setId(1L);
-    PostFunding postFunding = new PostFunding();
-    postFunding.setId(999L);
-    post.fundingStatus(Status.CURRENT);
-    Set<PostFunding> postFundingSet = new HashSet<>(Arrays.asList(postFunding));
-    post.setFundings(postFundingSet);
-
-    when(entityManager.find(eq(Post.class), anyLong())).thenReturn(post);
-
+  public void testShouldConvertDataWithNoPostsAndFundings() {
+    List<Long> entityData = new ArrayList<>();
     Set<Post> entitiesToSave = new HashSet<>();
-    List<Long> entityData = Arrays.asList(1L);
+
     int result = postFundingSyncJob.convertData(entitiesToSave, entityData, entityManager);
 
-    assertEquals(0, result);
-    assertTrue(entitiesToSave.contains(post));
-    assertEquals(Status.INACTIVE, post.getFundingStatus());
+    // No entities removed
+    assertThat(result, is(0));
+    // No entities added to save
+    assertThat(entitiesToSave.size(), is(0));
   }
 
   @Test
-  void testPostFundingWillRemainCurrentWithMulitiplePostFunding() {
+  public void testShouldPassWhenAPostHasMultiplePostFundings() {
     Post post = new Post();
     post.setId(1L);
     PostFunding postFunding1 = new PostFunding();
@@ -89,18 +89,51 @@ class PostFundingSyncJobTest {
     post.setFundings(postFundingSet);
 
     when(entityManager.find(eq(Post.class), anyLong())).thenReturn(post);
+    when(entityManager.createQuery(anyString(), eq(PostFunding.class))).thenReturn(query);
+    when(query.setParameter(anyString(), any())).thenReturn(query);
+    List<PostFunding> mockPostFundings = Arrays.asList(new PostFunding(), new PostFunding());
+    when(query.getResultList()).thenReturn(mockPostFundings);
 
+    List<Long> entityData = new ArrayList<>();
+    entityData.add(1L);
     Set<Post> entitiesToSave = new HashSet<>();
-    List<Long> entityData = Arrays.asList(1L);
+
     int result = postFundingSyncJob.convertData(entitiesToSave, entityData, entityManager);
 
-    assertEquals(0, result);
-    assertTrue(entitiesToSave.contains(post));
-    assertEquals(Status.CURRENT, post.getFundingStatus());
+    assertThat(entitiesToSave.size(), is(1));
+    assertThat(result, is(0));
+    assertThat(entitiesToSave.contains(post), is(true));
+    assertThat(post.getFundingStatus(), is(Status.CURRENT));
   }
 
   @Test
-  void testHandleData() {
+  public void testJobShouldChangeCurrentPostFundingToInactive() {
+    Post post = new Post();
+    post.setId(1L);
+    PostFunding postFunding = new PostFunding();
+    postFunding.setId(999L);
+    post.fundingStatus(Status.CURRENT);
+    Set<PostFunding> postFundingSet = new HashSet<>(Arrays.asList(postFunding));
+    post.setFundings(postFundingSet);
+
+    when(entityManager.find(eq(Post.class), anyLong())).thenReturn(post);
+    when(entityManager.createQuery(anyString(), eq(PostFunding.class))).thenReturn(query);
+    when(query.setParameter(anyString(), any())).thenReturn(query);
+    List<PostFunding> mockPostFundings = Collections.singletonList(new PostFunding());
+    when(query.getResultList()).thenReturn(mockPostFundings);
+
+    List<Long> entityData = Arrays.asList(1L);
+
+    Set<Post> entitiesToSave = new HashSet<>();
+    int result = postFundingSyncJob.convertData(entitiesToSave, entityData, entityManager);
+
+    assertThat(result, is(0));
+    assertThat(entitiesToSave.contains(post), is(true));
+    assertThat(post.getFundingStatus(), is(Status.INACTIVE));
+  }
+
+  @Test
+  void testShouldBeSuccessfulWithHandleDataMethod() {
     Post post = new Post();
     Set<Post> dataToSave = new HashSet<>();
     dataToSave.add(post);
