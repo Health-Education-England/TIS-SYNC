@@ -40,7 +40,7 @@ public class PostFundingSyncJobTest {
   private PostFundingSyncJob postFundingSyncJob;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     postFundingSyncJob = new PostFundingSyncJob();
   }
 
