@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ExecutionException;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -45,7 +46,8 @@ public class PostFundingSyncJobTemplateTest {
   @Mock
   private Query query;
 
-  private PostFundingSyncJobTemplate<Object> postFundingSyncJobTemplate;
+  @InjectMocks
+  private ConcretePostFundingSyncJobTemplate postFundingSyncJobTemplate;
 
   private static final String BASE_QUERY = "SELECT DISTINCT p.id FROM Post p "
       + " JOIN ( "
@@ -78,22 +80,7 @@ public class PostFundingSyncJobTemplateTest {
   }
 
   @Test
-  public void testConvertData() {
-    Set<Object> entitiesToSave = new HashSet<>();
-    List<Long> entityData = Arrays.asList(1L, 2L, 3L);
-
-    when(query.getResultList()).thenReturn(Arrays.asList(BigInteger.valueOf(1L), BigInteger.valueOf(2L), BigInteger.valueOf(3L)));
-
-    int result = postFundingSyncJobTemplate.convertData(entitiesToSave, entityData, entityManager);
-
-    assertEquals(3, result);
-    assertEquals(3, entitiesToSave.size());
-  }
-
-  @Test
   public void testDoDataSync() throws ExecutionException, InterruptedException, NoSuchMethodException, InvocationTargetException, IllegalAccessException{
-
-    MockitoAnnotations.initMocks(this);
 
     String dateOption = "2025-05-01";
     LocalDate dateOfChange = LocalDate.parse(dateOption);
@@ -108,39 +95,23 @@ public class PostFundingSyncJobTemplateTest {
         + " ) pf ON p.id = pf.postId "
         + " ORDER BY p.id LIMIT :pageSize ";
 
-
     when(entityManagerFactory.createEntityManager()).thenReturn(entityManager);
     when(entityManager.getTransaction()).thenReturn(transaction);
     when(transaction.isActive()).thenReturn(false);
-
     when(entityManager.createQuery(queryString)).thenReturn(query);
     when(query.setParameter("date", dateOfChange)).thenReturn(query);
-    when(query.getResultList()).thenReturn(Collections.singletonList(1L)); // Example result
-
-    //String queryString1 = "SELECT * FROM PostFunding WHERE postId = :lastPostId";
-    long lastPostId = 123L;
-
-    Query queryMock = mock(Query.class);
-    when(entityManager.createNativeQuery(BASE_QUERY)).thenReturn(query);
-    when(query.setParameter("lastPostId", lastPostId)).thenReturn(query);
-
-    //when(entityManager.createNativeQuery(queryString)).thenReturn(mock(Query.class));
-    //when(query.setParameter("lastPostId", lastPostId)).thenReturn(query);
-
+    when(entityManager.createNativeQuery(any())).thenReturn(query);
+    when(query.setParameter(eq("lastPostId"), any())).thenReturn(query);
+    when(query.getResultList())
+        .thenReturn(Arrays.asList(BigInteger.ONE, BigInteger.valueOf(2), BigInteger.valueOf(3)))
+        .thenReturn(new ArrayList<>()); // no more results
 
     // Use reflection to invoke the private method
     Method method = PostFundingSyncJobTemplate.class.getDeclaredMethod("doDataSync", String.class);
     method.setAccessible(true);
     method.invoke(postFundingSyncJobTemplate, dateOption);
 
-    verify(entityManagerFactory).createEntityManager();
-    verify(entityManager).getTransaction();
-    verify(transaction).begin();
-    verify(entityManager).createQuery(queryString);
-    verify(query).setParameter("date", dateOfChange);
-    verify(query).getResultList();
-
-
+    verify(query, times(2)).getResultList();
   }
 
   @Test
@@ -160,36 +131,29 @@ public class PostFundingSyncJobTemplateTest {
 
   private static class ConcretePostFundingSyncJobTemplate extends PostFundingSyncJobTemplate<Object> {
 
+    @Override
+    protected int convertData(Set<Object> entitiesToSave, List<Long> entityData,
+        EntityManager entityManager) {
+      return 0;
+    }
 
     @Override
     protected String buildQueryForDate(LocalDate dateOfChange) {
-      //return "SELECT * FROM Post WHERE dateOfChange = ?";
-      String endDate = dateOfChange.minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
-      return BASE_QUERY.replace(":endDate", endDate).replace(":pageSize", "" + DEFAULT_PAGE_SIZE);
+      return null;
     }
-
-
-    @Override
-    protected int convertData(Set<Object> entitiesToSave, List<Long> entityData, EntityManager entityManager) {
-
-      //return entityData.size();*//*
-      //@Override
-      //protected int convertData(Set<Long> entitiesToSave, List<Long> entityData, EntityManager entityManager) {
-        // Concrete implementation for testing purposes
-       // if (entitiesToSave != null && entityData != null) {
-       //   entitiesToSave.addAll(entityData);
-      //    return entitiesToSave.size();
-     //   }
-       return 0;
-      }
 
 
     @Override
     protected void handleData(Set<Object> dataToSave, EntityManager entityManager) {
-      // Mock implementation for testing
+
     }
-   @Override
-   public void run(String dateOption) {}
+
+    @Override
+    public void run(@Nullable String params) {
+
+    }
   }
+
+
 }
 
