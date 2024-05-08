@@ -10,8 +10,6 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,18 +25,13 @@ import org.springframework.stereotype.Component;
     description = "Job for updating funding status for posts")
 public class PostFundingSyncJob extends PostFundingSyncJobTemplate<Post> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(PostFundingSyncJob.class);
-
-  private static final String BASE_QUERY = "SELECT DISTINCT p.id FROM Post p "
-      + " JOIN ( "
-      + " SELECT postId "
+  private static final String BASE_QUERY = " SELECT postId "
       + "  FROM PostFunding "
       + "      WHERE postId > :lastPostId "
       + "      AND startDate IS NOT NULL "
       + "      AND (endDate = ':endDate' OR endDate IS NULL) "
       + " GROUP BY postId "
-      + " ) pf ON p.id = pf.postId "
-      + " ORDER BY p.id LIMIT :pageSize ";
+      + " ORDER BY postId LIMIT :pageSize ";
 
   @Override
   public void run(String params) {
@@ -65,21 +58,13 @@ public class PostFundingSyncJob extends PostFundingSyncJobTemplate<Post> {
     int entities = entityData.size();
     for (Long id : entityData) {
       Post post = entityManager.find(Post.class, id);
+
       if (post != null) {
-        // Explicitly load PostFunding entities without triggering further lazy loading
-        List<PostFunding> fundings = entityManager.createQuery(
-            "SELECT pf FROM PostFunding pf WHERE pf.post.id = :postId",
-            PostFunding.class)
-            .setParameter("postId", post.getId())
-            .getResultList();
+        Set<PostFunding> fundings = post.getFundings();
 
         if (fundings.size() > 1) {
-          // If there are multiple fundings, save the current post
           entitiesToSave.add(post);
         } else if (fundings.size() == 1) {
-          // If there's a single funding, update status to inactive and save
-          PostFunding funding = fundings.get(0);
-          LOG.info("Funding for the post {} is {} ", post.toString(), funding.toString());
           post.setFundingStatus(Status.INACTIVE);
           entitiesToSave.add(post);
         }

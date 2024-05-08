@@ -90,7 +90,7 @@ public abstract class PersonDateChangeCaptureSyncJobTemplate<T> implements Runna
         });
   }
 
-  private void doDataSync(String dateOption) {
+  protected void doDataSync(String dateOption) {
     // Configure run
     LocalDate dateOfChange = magicallyGetDateOfChanges(dateOption);
     String queryString = buildQueryForDate(dateOfChange);

@@ -2,8 +2,6 @@ package uk.nhs.tis.sync.job;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
@@ -17,12 +15,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,12 +26,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class PostFundingSyncJobTest {
+class PostFundingSyncJobTest {
 
   @Mock
   private EntityManager entityManager;
-  @Mock
-  private TypedQuery<PostFunding> query;
 
   private PostFundingSyncJob postFundingSyncJob;
 
@@ -47,37 +41,32 @@ public class PostFundingSyncJobTest {
   @Test
   void testShouldWorkWithBuildQueryForDateMethod() {
     LocalDate dateOfChange = LocalDate.now();
-    String expectedQuery = "SELECT DISTINCT p.id FROM Post p "
-        + " JOIN ( "
-        + " SELECT postId "
+    String expectedQuery = " SELECT postId "
         + "  FROM PostFunding "
         + "      WHERE postId > :lastPostId "
         + "      AND startDate IS NOT NULL "
         + "      AND (endDate = '" + dateOfChange.minusDays(1)
         .format(DateTimeFormatter.ISO_LOCAL_DATE) + "' OR endDate IS NULL) "
         + " GROUP BY postId "
-        + " ) pf ON p.id = pf.postId "
-        + " ORDER BY p.id LIMIT " + PostFundingSyncJob.DEFAULT_PAGE_SIZE + " ";
+        + " ORDER BY postId LIMIT " + PostFundingSyncJob.DEFAULT_PAGE_SIZE + " ";
 
     String actualQuery = postFundingSyncJob.buildQueryForDate(dateOfChange);
     assertThat(expectedQuery, is(actualQuery));
   }
 
   @Test
-  public void testShouldConvertDataWithNoPostsAndFundings() {
+  void testShouldConvertDataWithNoPostsAndFundings() {
     List<Long> entityData = new ArrayList<>();
     Set<Post> entitiesToSave = new HashSet<>();
 
     int result = postFundingSyncJob.convertData(entitiesToSave, entityData, entityManager);
 
-    // No entities removed
     assertThat(result, is(0));
-    // No entities added to save
     assertThat(entitiesToSave.size(), is(0));
   }
 
   @Test
-  public void testShouldPassWhenAPostHasMultiplePostFundings() {
+  void testShouldPassWhenAPostHasMultiplePostFundings() {
     Post post = new Post();
     post.setId(1L);
     PostFunding postFunding1 = new PostFunding();
@@ -89,10 +78,6 @@ public class PostFundingSyncJobTest {
     post.setFundings(postFundingSet);
 
     when(entityManager.find(eq(Post.class), anyLong())).thenReturn(post);
-    when(entityManager.createQuery(anyString(), eq(PostFunding.class))).thenReturn(query);
-    when(query.setParameter(anyString(), any())).thenReturn(query);
-    List<PostFunding> mockPostFundings = Arrays.asList(new PostFunding(), new PostFunding());
-    when(query.getResultList()).thenReturn(mockPostFundings);
 
     List<Long> entityData = new ArrayList<>();
     entityData.add(1L);
@@ -107,7 +92,7 @@ public class PostFundingSyncJobTest {
   }
 
   @Test
-  public void testJobShouldChangeCurrentPostFundingToInactive() {
+  void testJobShouldChangeCurrentPostFundingToInactive() {
     Post post = new Post();
     post.setId(1L);
     PostFunding postFunding = new PostFunding();
@@ -117,10 +102,6 @@ public class PostFundingSyncJobTest {
     post.setFundings(postFundingSet);
 
     when(entityManager.find(eq(Post.class), anyLong())).thenReturn(post);
-    when(entityManager.createQuery(anyString(), eq(PostFunding.class))).thenReturn(query);
-    when(query.setParameter(anyString(), any())).thenReturn(query);
-    List<PostFunding> mockPostFundings = Collections.singletonList(new PostFunding());
-    when(query.getResultList()).thenReturn(mockPostFundings);
 
     List<Long> entityData = Arrays.asList(1L);
 
