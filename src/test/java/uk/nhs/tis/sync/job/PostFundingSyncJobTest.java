@@ -2,8 +2,6 @@ package uk.nhs.tis.sync.job;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.anyLong;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,6 +13,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -77,7 +76,7 @@ class PostFundingSyncJobTest {
     Set<PostFunding> postFundingSet = new HashSet<>(Arrays.asList(postFunding1, postFunding2));
     post.setFundings(postFundingSet);
 
-    when(entityManager.find(eq(Post.class), anyLong())).thenReturn(post);
+    when(entityManager.find(Post.class, post.getId())).thenReturn(post);
 
     List<Long> entityData = new ArrayList<>();
     entityData.add(1L);
@@ -98,10 +97,10 @@ class PostFundingSyncJobTest {
     PostFunding postFunding = new PostFunding();
     postFunding.setId(999L);
     post.fundingStatus(Status.CURRENT);
-    Set<PostFunding> postFundingSet = new HashSet<>(Arrays.asList(postFunding));
+    Set<PostFunding> postFundingSet = Collections.singleton(postFunding);
     post.setFundings(postFundingSet);
 
-    when(entityManager.find(eq(Post.class), anyLong())).thenReturn(post);
+    when(entityManager.find(Post.class, post.getId())).thenReturn(post);
 
     List<Long> entityData = Arrays.asList(1L);
 
