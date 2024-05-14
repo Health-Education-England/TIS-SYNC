@@ -81,11 +81,13 @@ public class PostFundingSyncJob implements RunnableJob {
   }
 
   protected void runSyncJob() {
-    if (mainStopWatch != null) {
+    if (isCurrentlyRunning()) {
       LOG.info("Sync job [{}] already running, exiting this execution", JOB_NAME);
       return;
     }
-    CompletableFuture.runAsync(this::doDataSync);
+    CompletableFuture.runAsync(() -> {
+      doDataSync();
+    });
   }
 
   private void doDataSync() {
