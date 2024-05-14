@@ -32,6 +32,8 @@ class PostFundingSyncJobTest {
 
   private PostFundingSyncJob postFundingSyncJob;
 
+  private static final int DEFAULT_PAGE_SIZE = 5000;
+
   @BeforeEach
   void setUp() {
     postFundingSyncJob = new PostFundingSyncJob();
@@ -47,9 +49,9 @@ class PostFundingSyncJobTest {
         + "      AND (endDate = '" + dateOfChange.minusDays(1)
         .format(DateTimeFormatter.ISO_LOCAL_DATE) + "' OR endDate IS NULL) "
         + " GROUP BY postId "
-        + " ORDER BY postId LIMIT " + PostFundingSyncJob.DEFAULT_PAGE_SIZE + " ";
+        + " ORDER BY postId LIMIT " + DEFAULT_PAGE_SIZE + " ";
 
-    String actualQuery = postFundingSyncJob.buildQueryForDate(dateOfChange);
+    String actualQuery = postFundingSyncJob.buildQueryForDate();
     assertThat(expectedQuery, is(actualQuery));
   }
 
