@@ -13,11 +13,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+
 import org.assertj.core.util.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,10 +56,14 @@ public class TrustAdminSyncJobTemplateUnitTest {
     when(entityManagerFactoryMock.createEntityManager()).thenReturn(entityManagerMock);
     when(entityManagerMock.getTransaction()).thenReturn(entityTransactionMock);
 
-    testObj.run();
+    testObj.run(null);
+
+    with().pollDelay(1, TimeUnit.SECONDS)
+        .atLeast(1, TimeUnit.SECONDS)
+        .until(() -> !testObj.isCurrentlyRunning());
 
     verify(entityManagerMock, times(100)).persist(any());
-    verify(entityManagerMock, times(2)).flush();
+    verify(entityManagerMock, times(1)).flush();
     verify(entityTransactionMock, times(2)).commit();
   }
 
@@ -108,7 +114,7 @@ public class TrustAdminSyncJobTemplateUnitTest {
     private boolean firstCall = true;
 
     public TrustAdminSyncJobTemplateStub(EntityManagerFactory entityManagerFactoryMock,
-        List<EntityData> collectedData) {
+                                         List<EntityData> collectedData) {
       this.entityManagerFactoryMock = entityManagerFactoryMock;
       this.collectedData = collectedData;
     }
@@ -134,8 +140,8 @@ public class TrustAdminSyncJobTemplateUnitTest {
     }
 
     @Override
-    protected List<EntityData> collectData(int pageSize, long lastId, long lastSiteId,
-        EntityManager entityManager) {
+    protected List<EntityData> collectData(Map<String, Long> ids, String queryString,
+                                           EntityManager entityManager) {
       if (firstCall) {
         firstCall = false;
         return this.collectedData;
@@ -144,8 +150,8 @@ public class TrustAdminSyncJobTemplateUnitTest {
     }
 
     @Override
-    protected int convertData(int skipped, Set<Object> entitiesToSave, List<EntityData> entityData,
-        EntityManager entityManager) {
+    protected int convertData(Set<Object> entitiesToSave, List<EntityData> entityData,
+                              EntityManager entityManager) {
       entityData.forEach(o -> entitiesToSave.add(new Object()));
       return 0;
     }

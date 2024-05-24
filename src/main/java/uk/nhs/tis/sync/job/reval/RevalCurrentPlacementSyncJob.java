@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.job.PersonDateChangeCaptureSyncJobTemplate;
 import uk.nhs.tis.sync.message.publisher.RabbitMqTcsRevalTraineeUpdatePublisher;
+import uk.nhs.tis.sync.model.EntityData;
 
 /**
  * Get personIds whose current placement changes nightly. And sends messages to rabbitMq
@@ -51,9 +52,10 @@ public class RevalCurrentPlacementSyncJob extends PersonDateChangeCaptureSyncJob
   }
 
   @Override
-  protected int convertData(Set<Long> entitiesToSave, List<Long> entityData,
-      EntityManager entityManager) {
-    entitiesToSave.addAll(entityData);
+  protected int convertData(Set<Long> entitiesToSave, List<EntityData> entityData,
+                            EntityManager entityManager) {
+    entitiesToSave.addAll(
+        entityData.stream().map(EntityData::getEntityId).collect(Collectors.toList()));
     return 0;
   }
 
@@ -70,6 +72,6 @@ public class RevalCurrentPlacementSyncJob extends PersonDateChangeCaptureSyncJob
     String today = dateOfChange.format(DateTimeFormatter.ISO_LOCAL_DATE);
     String yesterday = dateOfChange.minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
     return BASE_QUERY.replace(":yesterday", yesterday).replace(":today", today)
-          .replace(":pageSize", "" + DEFAULT_PAGE_SIZE);
+        .replace(":pageSize", "" + getPageSize());
   }
 }

@@ -3,6 +3,12 @@ package uk.nhs.tis.sync.job;
 import com.transformuk.hee.tis.tcs.service.model.Post;
 import com.transformuk.hee.tis.tcs.service.model.PostTrust;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
+import java.math.BigInteger;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -14,13 +20,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.model.EntityData;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
-import java.math.BigInteger;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * This job runs on a daily basis and MUST be run after the PostEmployingBodyTrustJob.
@@ -34,13 +34,9 @@ import java.util.stream.Collectors;
 public class PostTrainingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTrust> {
 
   private static final Logger LOG = LoggerFactory.getLogger(PostTrainingBodyTrustJob.class);
-  private static final int FIFTEEN_MIN = 15 * 60 * 1000;
 
-  @Autowired
-  private EntityManagerFactory entityManagerFactory;
   @Autowired
   private SqlQuerySupplier sqlQuerySupplier;
-
 
   @Scheduled(cron = "${application.cron.postTrainingBodyTrustJob}")
   @SchedulerLock(name = "postTrustTrainingBodyScheduledTask", lockAtLeastFor = FIFTEEN_MIN,
@@ -48,22 +44,7 @@ public class PostTrainingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTrus
   @ManagedOperation(
       description = "Run sync of the PostTrust table with Post to Training Body Trust")
   public void PostTrainingBodyTrustFullSync() {
-    runSyncJob();
-  }
-
-  @Override
-  protected String getJobName() {
-    return "PostTrainingBodyTrustJob";
-  }
-
-  @Override
-  protected int getPageSize() {
-    return DEFAULT_PAGE_SIZE;
-  }
-
-  @Override
-  protected EntityManagerFactory getEntityManagerFactory() {
-    return this.entityManagerFactory;
+    runSyncJob(null);
   }
 
   @Override
@@ -72,15 +53,17 @@ public class PostTrainingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTrus
   }
 
   @Override
-  protected List<EntityData> collectData(int pageSize, long lastId, long lastTrainingBodyId,
-      EntityManager entityManager) {
+  protected List<EntityData> collectData(Map<String, Long> ids, String queryString,
+                                         EntityManager entityManager) {
+    long lastId = ids.get(LAST_ENTITY_ID);
+    long lastTrainingBodyId = ids.get(LAST_SITE_ID);
     LOG.info("Querying with lastPostId: [{}] and lastTrainingBodyId: [{}]", lastId,
         lastTrainingBodyId);
     String postTrainingBodyQuery = sqlQuerySupplier.getQuery(SqlQuerySupplier.POST_TRAININGBODY);
 
     Query query = entityManager.createNativeQuery(postTrainingBodyQuery)
         .setParameter("lastId", lastId).setParameter("lastTrainingBodyId", lastTrainingBodyId)
-        .setParameter("pageSize", pageSize);
+        .setParameter("pageSize", getPageSize());
 
     List<Object[]> resultList = query.getResultList();
     List<EntityData> result = resultList.stream().filter(Objects::nonNull).map(objArr -> {
@@ -93,9 +76,10 @@ public class PostTrainingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTrus
   }
 
   @Override
-  protected int convertData(int skipped, Set<PostTrust> entitiesToSave, List<EntityData> entityData,
-      EntityManager entityManager) {
+  protected int convertData(Set<PostTrust> entitiesToSave, List<EntityData> entityData,
+                            EntityManager entityManager) {
 
+    int skipped = 0;
     if (CollectionUtils.isNotEmpty(entityData)) {
       for (EntityData ed : entityData) {
         if (ed != null) {

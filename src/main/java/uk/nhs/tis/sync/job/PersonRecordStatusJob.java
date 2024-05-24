@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.persistence.EntityManager;
+
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +21,7 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import uk.nhs.tis.sync.model.EntityData;
 
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonRecordStatusJob",
@@ -93,10 +95,10 @@ public class PersonRecordStatusJob extends PersonDateChangeCaptureSyncJobTemplat
   }
 
   @Override
-  protected int convertData(Set<Person> entitiesToSave, List<Long> entityData,
-      EntityManager entityManager) {
+  protected int convertData(Set<Person> entitiesToSave, List<EntityData> entityData,
+                            EntityManager entityManager) {
     int entities = entityData.size();
-    entityData.stream().map(id -> entityManager.find(Person.class, id))
+    entityData.stream().map(entity -> entityManager.find(Person.class, entity.getEntityId()))
         .filter(Objects::nonNull)
         .filter(p -> p.getStatus() != p.programmeMembershipsStatus())
         .forEach(p -> {
@@ -120,11 +122,11 @@ public class PersonRecordStatusJob extends PersonDateChangeCaptureSyncJobTemplat
       String startDate = dateOfChange.format(DateTimeFormatter.ISO_LOCAL_DATE);
       String endDate = dateOfChange.minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
       return BASE_QUERY.replace(":endDate", endDate).replace(":startDate", startDate)
-          .replace(":pageSize", "" + DEFAULT_PAGE_SIZE);
+          .replace(":pageSize", "" + this.getPageSize());
     } else {
-      return BASE_QUERY.replace(":pageSize", "" + DEFAULT_PAGE_SIZE)
+      return BASE_QUERY.replace(":pageSize", "" + this.getPageSize())
           .replace(" AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')", "");
     }
   }
-  
+
 }

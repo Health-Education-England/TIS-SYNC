@@ -6,25 +6,23 @@ import com.transformuk.hee.tis.tcs.service.repository.PersonRepository;
 import com.transformuk.hee.tis.tcs.service.repository.PersonTrustRepository;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
 import net.javacrumbs.shedlock.core.SchedulerLock;
-import uk.nhs.tis.sync.model.EntityData;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jmx.export.annotation.ManagedOperation;
-import org.springframework.jmx.export.annotation.ManagedResource;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Query;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jmx.export.annotation.ManagedOperation;
+import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import uk.nhs.tis.sync.model.EntityData;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonPlacementEmployingBodyJob",
@@ -34,12 +32,9 @@ public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTempl
 
   private static final Logger LOG =
       LoggerFactory.getLogger(PersonPlacementEmployingBodyTrustJob.class);
-  private static final int FIFTEEN_MIN = 15 * 60 * 1000;
 
   @Autowired
   private PersonTrustRepository personTrustRepository;
-  @Autowired
-  private EntityManagerFactory entityManagerFactory;
   @Autowired
   private PersonRepository personRepository;
   @Autowired
@@ -51,22 +46,7 @@ public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTempl
   @ManagedOperation(
       description = "Run sync of the PersonTrust table with Person to Placement EmployingBody")
   public void doPersonPlacementEmployingBodyFullSync() {
-    runSyncJob();
-  }
-
-  @Override
-  protected String getJobName() {
-    return "PersonPlacementEmployingBodyTrustJob";
-  }
-
-  @Override
-  protected int getPageSize() {
-    return DEFAULT_PAGE_SIZE;
-  }
-
-  @Override
-  protected EntityManagerFactory getEntityManagerFactory() {
-    return this.entityManagerFactory;
+    runSyncJob(null);
   }
 
   @Override
@@ -77,8 +57,10 @@ public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTempl
   }
 
   @Override
-  protected List<EntityData> collectData(int pageSize, long lastId, long lastEmployingBodyId,
-      EntityManager entityManager) {
+  protected List<EntityData> collectData(Map<String, Long> ids, String queryString,
+                                         EntityManager entityManager) {
+    long lastId = ids.get(LAST_ENTITY_ID);
+    long lastEmployingBodyId = ids.get(LAST_SITE_ID);
     LOG.info("Querying with lastPersonId: [{}] and lastEmployingBodyId: [{}]", lastId,
         lastEmployingBodyId);
     String personPlacementQuery =
@@ -86,7 +68,7 @@ public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTempl
 
     Query query = entityManager.createNativeQuery(personPlacementQuery)
         .setParameter("lastId", lastId).setParameter("lastEmployingBodyId", lastEmployingBodyId)
-        .setParameter("pageSize", pageSize);
+        .setParameter("pageSize", getPageSize());
     List<Object[]> resultList = query.getResultList();
 
     return resultList.stream().filter(Objects::nonNull)
@@ -95,11 +77,11 @@ public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTempl
         .collect(Collectors.toList());
   }
 
-  @Transactional(readOnly = true)
   @Override
-  protected int convertData(int skipped, Set<PersonTrust> entitiesToSave,
-      List<EntityData> entityData, EntityManager entityManager) {
+  protected int convertData(Set<PersonTrust> entitiesToSave,
+                            List<EntityData> entityData, EntityManager entityManager) {
 
+    int skipped = 0;
     if (CollectionUtils.isNotEmpty(entityData)) {
 
       Set<Long> personIds =

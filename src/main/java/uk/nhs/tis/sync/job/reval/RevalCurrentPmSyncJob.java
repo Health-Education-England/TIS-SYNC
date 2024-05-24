@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.job.PersonDateChangeCaptureSyncJobTemplate;
 import uk.nhs.tis.sync.message.publisher.RabbitMqTcsRevalTraineeUpdatePublisher;
+import uk.nhs.tis.sync.model.EntityData;
 
 /**
  * Get personIds whose current programmeMembership changes nightly. And sends messages to rabbitMq
@@ -52,9 +53,10 @@ public class RevalCurrentPmSyncJob extends PersonDateChangeCaptureSyncJobTemplat
   }
 
   @Override
-  protected int convertData(Set<Long> entitiesToSave, List<Long> entityData,
-      EntityManager entityManager) {
-    entitiesToSave.addAll(entityData);
+  protected int convertData(Set<Long> entitiesToSave, List<EntityData> entityData,
+                            EntityManager entityManager) {
+    entitiesToSave.addAll(
+        entityData.stream().map(EntityData::getEntityId).collect(Collectors.toList()));
     return 0;
   }
 
@@ -72,11 +74,10 @@ public class RevalCurrentPmSyncJob extends PersonDateChangeCaptureSyncJobTemplat
       String startDate = dateOfChange.format(DateTimeFormatter.ISO_LOCAL_DATE);
       String endDate = dateOfChange.minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
       return BASE_QUERY.replace(":endDate", endDate).replace(":startDate", startDate)
-          .replace(":pageSize", "" + DEFAULT_PAGE_SIZE);
+          .replace(":pageSize", "" + getPageSize());
     } else {
-      return BASE_QUERY.replace(":pageSize", "" + DEFAULT_PAGE_SIZE)
+      return BASE_QUERY.replace(":pageSize", "" + getPageSize())
           .replace(" AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')", "");
     }
   }
-
 }

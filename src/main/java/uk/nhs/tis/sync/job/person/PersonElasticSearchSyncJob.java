@@ -125,7 +125,6 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
     personElasticSearchSync();
   }
 
-
   protected void run() {
 
     if (applicationEventPublisher != null) {

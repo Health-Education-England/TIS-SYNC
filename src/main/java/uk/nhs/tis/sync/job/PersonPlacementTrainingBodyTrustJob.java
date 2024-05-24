@@ -6,15 +6,6 @@ import com.transformuk.hee.tis.tcs.service.repository.PersonRepository;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jmx.export.annotation.ManagedOperation;
-import org.springframework.jmx.export.annotation.ManagedResource;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import uk.nhs.tis.sync.model.EntityData;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
@@ -24,6 +15,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jmx.export.annotation.ManagedOperation;
+import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import uk.nhs.tis.sync.model.EntityData;
 
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonPlacementTrainingBodyTrustJob",
@@ -47,24 +46,8 @@ public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTempla
   @ManagedOperation(
       description = "Run sync of the PersonTrust table with Person to Placement TrainingBody")
   public void PersonPlacementTrainingBodyFullSync() {
-    runSyncJob();
+    runSyncJob(null);
   }
-
-  @Override
-  protected String getJobName() {
-    return "PersonPlacementTrainingBodyTrustJob";
-  }
-
-  @Override
-  protected int getPageSize() {
-    return DEFAULT_PAGE_SIZE;
-  }
-
-  @Override
-  protected EntityManagerFactory getEntityManagerFactory() {
-    return this.entityManagerFactory;
-  }
-
 
   @Override
   protected void deleteData() {
@@ -72,10 +55,11 @@ public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTempla
     // truncate the table
   }
 
-
   @Override
-  protected List<EntityData> collectData(int pageSize, long lastId, long lastTrainingBodyId,
-      EntityManager entityManager) {
+  protected List<EntityData> collectData(Map<String, Long> ids, String queryString,
+                                         EntityManager entityManager) {
+    long lastId = ids.get(LAST_ENTITY_ID);
+    long lastTrainingBodyId = ids.get(LAST_SITE_ID);
     LOG.info("Querying with lastPersonId: [{}] and lastTrainingBodyId: [{}]", lastId,
         lastTrainingBodyId);
     String personPlacementQuery =
@@ -83,7 +67,7 @@ public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTempla
 
     Query query = entityManager.createNativeQuery(personPlacementQuery)
         .setParameter("lastId", lastId).setParameter("lastTrainingBodyId", lastTrainingBodyId)
-        .setParameter("pageSize", pageSize);
+        .setParameter("pageSize", getPageSize());
 
     List<Object[]> resultList = query.getResultList();
     List<EntityData> result = resultList.stream().filter(Objects::nonNull)
@@ -94,11 +78,11 @@ public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTempla
     return result;
   }
 
-  @Transactional(readOnly = true)
   @Override
-  protected int convertData(int skipped, Set<PersonTrust> entitiesToSave,
-      List<EntityData> entityData, EntityManager entityManager) {
+  protected int convertData(Set<PersonTrust> entitiesToSave,
+                            List<EntityData> entityData, EntityManager entityManager) {
 
+    int skipped = 0;
     if (CollectionUtils.isNotEmpty(entityData)) {
 
       Set<Long> personIds =
