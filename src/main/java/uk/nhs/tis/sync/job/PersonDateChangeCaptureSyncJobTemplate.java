@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import uk.nhs.tis.sync.model.EntityData;
 
 /**
- * abstract template for Jobs which sync data when start and end dates have passed.
+ * Abstract template for Jobs which sync data when start and end dates have passed.
  */
 public abstract class PersonDateChangeCaptureSyncJobTemplate<T> extends CommonSyncJobTemplate<T> {
 
@@ -47,14 +47,14 @@ public abstract class PersonDateChangeCaptureSyncJobTemplate<T> extends CommonSy
 
   @Override
   protected List<EntityData> collectData(Map<String, Long> ids, String queryString,
-                                         EntityManager entityManager) {
+      EntityManager entityManager) {
     long lastPersonId = ids.get(LAST_ENTITY_ID);
     Query query =
         entityManager.createNativeQuery(queryString).setParameter("lastPersonId", lastPersonId);
 
     List<BigInteger> resultList = query.getResultList();
     return resultList.stream().filter(Objects::nonNull).map(objArr ->
-      new EntityData().entityId(objArr.longValue())
+        new EntityData().entityId(objArr.longValue())
     ).collect(Collectors.toList());
   }
 

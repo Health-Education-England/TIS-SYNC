@@ -10,9 +10,8 @@ import java.util.concurrent.CompletableFuture;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jmx.export.annotation.ManagedOperation;
@@ -22,14 +21,12 @@ import uk.nhs.tis.sync.model.EntityData;
 /**
  * An abstract common sync job template.
  *
- * @param <T> the entity type
+ * @param <T> the type of the entity loaded into the target
  */
+@Slf4j
 public abstract class CommonSyncJobTemplate<T> implements RunnableJob {
 
-  private static final Logger LOG = LoggerFactory.getLogger(
-      CommonSyncJobTemplate.class);
-
-  private static int DEFAULT_PAGE_SIZE = 5000;
+  private static final int DEFAULT_PAGE_SIZE = 5000;
   protected static final int FIFTEEN_MIN = 15 * 60 * 1000;
 
   protected Stopwatch mainStopWatch;
@@ -55,12 +52,12 @@ public abstract class CommonSyncJobTemplate<T> implements RunnableJob {
   protected abstract void deleteData();
 
   protected abstract int convertData(Set<T> entitiesToSave, List<EntityData> entityData,
-                                     EntityManager entityManager);
+      EntityManager entityManager);
 
   protected abstract void handleData(Set<T> dataToSave, EntityManager entityManager);
 
   protected abstract List<EntityData> collectData(Map<String, Long> ids, String queryString,
-                                                  EntityManager entityManager);
+      EntityManager entityManager);
 
   @ManagedOperation(description = "Is the sync job currently running")
   public boolean isCurrentlyRunning() {
@@ -74,14 +71,14 @@ public abstract class CommonSyncJobTemplate<T> implements RunnableJob {
 
   protected void runSyncJob(String option) {
     if (mainStopWatch != null) {
-      LOG.info("Sync job [{}] already running, exiting this execution", getJobName());
+      log.info("Sync job [{}] already running, exiting this execution", getJobName());
       return;
     }
     CompletableFuture.runAsync(() -> doDataSync(option))
         .exceptionally(t -> {
           publishJobexecutionEvent(
               new JobExecutionEvent(this, getFailureMessage(Optional.ofNullable(getJobName()), t)));
-          LOG.error("Job run ended due an Exception", t);
+          log.error("Job run ended due an Exception", t);
           return null;
         });
   }
@@ -96,14 +93,14 @@ public abstract class CommonSyncJobTemplate<T> implements RunnableJob {
   /**
    * Update ids in the map to the last entity id we collected.
    *
-   * @param ids ids to be updated in the iteration of processing
+   * @param ids           ids to be updated in the iteration of processing
    * @param collectedData collected entities from db
    */
   protected abstract void updateIds(Map<String, Long> ids, List<EntityData> collectedData);
 
   /**
-   * Assemble the query string in the sync job.
-   * This method is not necessary if the query is assembled in the `collectedData` method.
+   * Assemble the query string in the sync job. This method is not necessary if the query is
+   * assembled in the `collectedData` method.
    *
    * @param option parameters needed to assemble the query string
    * @return the query string
@@ -112,7 +109,7 @@ public abstract class CommonSyncJobTemplate<T> implements RunnableJob {
 
   protected void doDataSync(String option) {
     publishJobexecutionEvent(new JobExecutionEvent(this, "Sync [" + getJobName() + "] started."));
-    LOG.info("Sync [{}] started", getJobName());
+    log.info("Sync [{}] started", getJobName());
 
     mainStopWatch = Stopwatch.createStarted();
     Stopwatch stopwatch = Stopwatch.createStarted();
@@ -140,7 +137,7 @@ public abstract class CommonSyncJobTemplate<T> implements RunnableJob {
         List<EntityData> collectedData =
             collectData(ids, queryString, entityManager);
         hasMoreResults = !collectedData.isEmpty();
-        LOG.info("Time taken to read chunk : [{}]", stopwatch);
+        log.info("Time taken to read chunk : [{}]", stopwatch);
 
         if (CollectionUtils.isNotEmpty(collectedData)) {
           updateIds(ids, collectedData);
@@ -154,13 +151,13 @@ public abstract class CommonSyncJobTemplate<T> implements RunnableJob {
         dataToSave.clear();
 
         transaction.commit();
-        LOG.info("Time taken to save chunk : [{}]", stopwatch);
+        log.info("Time taken to save chunk : [{}]", stopwatch);
         stopwatch.reset().start();
         entityManager.close();
       }
-      LOG.info("Sync job [{}] finished. Total time taken {} for processing [{}] records",
+      log.info("Sync job [{}] finished. Total time taken {} for processing [{}] records",
           getJobName(), mainStopWatch.stop(), totalRecords);
-      LOG.info("Skipped records {}", skipped);
+      log.info("Skipped records {}", skipped);
       publishJobexecutionEvent(
           new JobExecutionEvent(this, getSuccessMessage(Optional.ofNullable(getJobName()))));
     } finally {
