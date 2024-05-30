@@ -5,40 +5,50 @@ import com.transformuk.hee.tis.tcs.service.model.PersonTrust;
 import com.transformuk.hee.tis.tcs.service.repository.PersonRepository;
 import com.transformuk.hee.tis.tcs.service.repository.PersonTrustRepository;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
-import net.javacrumbs.shedlock.core.SchedulerLock;
-import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Query;
+import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.core.SchedulerLock;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.model.EntityData;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
 
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonPlacementEmployingBodyJob",
     description = "Service that clears the PersonTrust table and links Person with Placement EmployingBody(Trust)")
 @SuppressWarnings("unchecked")
+@Slf4j
 public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTemplate<PersonTrust> {
 
-  private static final Logger LOG =
-      LoggerFactory.getLogger(PersonPlacementEmployingBodyTrustJob.class);
+  private final PersonTrustRepository personTrustRepository;
+
+  private final PersonRepository personRepository;
+
+  private final SqlQuerySupplier sqlQuerySupplier;
 
   @Autowired
-  private PersonTrustRepository personTrustRepository;
-  @Autowired
-  private PersonRepository personRepository;
-  @Autowired
-  private SqlQuerySupplier sqlQuerySupplier;
+  public PersonPlacementEmployingBodyTrustJob(
+      EntityManagerFactory entityManagerFactory,
+      @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher,
+      SqlQuerySupplier sqlQuerySupplier, PersonTrustRepository personTrustRepository,
+      PersonRepository personRepository) {
+    super(entityManagerFactory, applicationEventPublisher);
+    this.sqlQuerySupplier = sqlQuerySupplier;
+    this.personTrustRepository = personTrustRepository;
+    this.personRepository = personRepository;
+  }
 
   @Scheduled(cron = "${application.cron.personPlacementEmployingBodyTrustJob}")
   @SchedulerLock(name = "personTrustEmployingBodyScheduledTask", lockAtLeastFor = FIFTEEN_MIN,
@@ -51,9 +61,9 @@ public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTempl
 
   @Override
   protected void deleteData() {
-    LOG.info("deleting all data");
+    log.info("deleting all data");
     personTrustRepository.deleteAllInBatch();
-    LOG.info("deleted all PersonTrust data");
+    log.info("deleted all PersonTrust data");
   }
 
   @Override
@@ -61,7 +71,7 @@ public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTempl
                                          EntityManager entityManager) {
     long lastId = ids.get(LAST_ENTITY_ID);
     long lastEmployingBodyId = ids.get(LAST_SITE_ID);
-    LOG.info("Querying with lastPersonId: [{}] and lastEmployingBodyId: [{}]", lastId,
+    log.info("Querying with lastPersonId: [{}] and lastEmployingBodyId: [{}]", lastId,
         lastEmployingBodyId);
     String personPlacementQuery =
         sqlQuerySupplier.getQuery(SqlQuerySupplier.PERSON_PLACEMENT_EMPLOYINGBODY);
@@ -92,7 +102,6 @@ public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTempl
 
       for (EntityData ed : entityData) {
         if (ed != null) {
-
           if (ed.getEntityId() != null || ed.getOtherId() != null) {
             PersonTrust personTrust = new PersonTrust();
             personTrust.setPerson(personIdToPerson.get(ed.getEntityId()));

@@ -31,11 +31,16 @@ public abstract class CommonSyncJobTemplate<T> implements RunnableJob {
 
   protected Stopwatch mainStopWatch;
 
-  @Autowired
-  private EntityManagerFactory entityManagerFactory;
+  protected final ApplicationEventPublisher applicationEventPublisher;
 
-  @Autowired(required = false)
-  protected ApplicationEventPublisher applicationEventPublisher;
+  private final EntityManagerFactory entityManagerFactory;
+
+  @Autowired
+  public CommonSyncJobTemplate(EntityManagerFactory entityManagerFactory,
+      @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher) {
+    this.entityManagerFactory = entityManagerFactory;
+    this.applicationEventPublisher = applicationEventPublisher;
+  }
 
   protected String getJobName() {
     return this.getClass().getSimpleName();

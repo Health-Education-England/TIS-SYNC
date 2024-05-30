@@ -9,18 +9,19 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Query;
+import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.model.EntityData;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
 
 /**
  * This job runs on a daily basis and MUST be run after the PostEmployingBodyTrustJob.
@@ -31,12 +32,18 @@ import javax.persistence.Query;
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PostTrainingBodyTrustJob",
     description = "Service that links Post with Training Body Trusts")
+@Slf4j
 public class PostTrainingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTrust> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(PostTrainingBodyTrustJob.class);
+  private SqlQuerySupplier sqlQuerySupplier;
 
   @Autowired
-  private SqlQuerySupplier sqlQuerySupplier;
+  public PostTrainingBodyTrustJob(EntityManagerFactory entityManagerFactory,
+      ApplicationEventPublisher applicationEventPublisher,
+      SqlQuerySupplier sqlQuerySupplier) {
+    super(entityManagerFactory, applicationEventPublisher);
+    this.sqlQuerySupplier = sqlQuerySupplier;
+  }
 
   @Scheduled(cron = "${application.cron.postTrainingBodyTrustJob}")
   @SchedulerLock(name = "postTrustTrainingBodyScheduledTask", lockAtLeastFor = FIFTEEN_MIN,
@@ -57,7 +64,7 @@ public class PostTrainingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTrus
                                          EntityManager entityManager) {
     long lastId = ids.get(LAST_ENTITY_ID);
     long lastTrainingBodyId = ids.get(LAST_SITE_ID);
-    LOG.info("Querying with lastPostId: [{}] and lastTrainingBodyId: [{}]", lastId,
+    log.info("Querying with lastPostId: [{}] and lastTrainingBodyId: [{}]", lastId,
         lastTrainingBodyId);
     String postTrainingBodyQuery = sqlQuerySupplier.getQuery(SqlQuerySupplier.POST_TRAININGBODY);
 

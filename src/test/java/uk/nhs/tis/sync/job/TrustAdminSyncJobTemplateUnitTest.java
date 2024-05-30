@@ -25,6 +25,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import uk.nhs.tis.sync.model.EntityData;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -42,8 +44,11 @@ public class TrustAdminSyncJobTemplateUnitTest {
   @Mock
   private List<EntityData> mockList;
 
+  @Mock
+  private ApplicationEventPublisher applicationEventPublisherMock;
+
   public void instantiateJob(List<EntityData> data) {
-    testObj = new TrustAdminSyncJobTemplateStub(entityManagerFactoryMock, data);
+    testObj = new TrustAdminSyncJobTemplateStub(entityManagerFactoryMock, applicationEventPublisherMock, data);
   }
 
   @Test
@@ -113,8 +118,9 @@ public class TrustAdminSyncJobTemplateUnitTest {
     private final List<EntityData> collectedData;
     private boolean firstCall = true;
 
-    public TrustAdminSyncJobTemplateStub(EntityManagerFactory entityManagerFactoryMock,
+    public TrustAdminSyncJobTemplateStub(EntityManagerFactory entityManagerFactoryMock, ApplicationEventPublisher applicationEventPublisherMock,
                                          List<EntityData> collectedData) {
+      super(entityManagerFactoryMock, applicationEventPublisherMock);
       this.entityManagerFactoryMock = entityManagerFactoryMock;
       this.collectedData = collectedData;
     }

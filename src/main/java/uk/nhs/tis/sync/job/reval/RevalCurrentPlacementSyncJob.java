@@ -2,7 +2,10 @@ package uk.nhs.tis.sync.job.reval;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import javax.persistence.EntityManagerFactory;
 import net.javacrumbs.shedlock.core.SchedulerLock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -25,8 +28,11 @@ public class RevalCurrentPlacementSyncJob extends RevalPersonChangedJobTemplate 
           + " AND (dateFrom = ':today' OR dateTo = ':yesterday')"
           + " ORDER BY traineeId LIMIT :pageSize";
 
-  public RevalCurrentPlacementSyncJob(RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher) {
-    super(rabbitMqPublisher);
+  @Autowired
+  public RevalCurrentPlacementSyncJob(EntityManagerFactory entityManagerFactory,
+      @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher,
+      RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher) {
+    super(entityManagerFactory, applicationEventPublisher, rabbitMqPublisher);
   }
 
   @Override

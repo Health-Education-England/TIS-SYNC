@@ -10,19 +10,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Query;
+import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.model.EntityData;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Query;
 
 /**
  * This job runs on a daily basis and must be the first job that works on the PostTrust table as it
@@ -34,15 +33,20 @@ import javax.persistence.Query;
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PostEmployingBodyTrustJob",
     description = "Service that clears the PersonTrust table and links Post with Employing Body Trusts")
+@Slf4j
 public class PostEmployingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTrust> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(PostEmployingBodyTrustJob.class);
-  @Autowired
   private PostTrustRepository postTrustRepository;
-  @Autowired
-  private EntityManagerFactory entityManagerFactory;
-  @Autowired
+
   private SqlQuerySupplier sqlQuerySupplier;
+
+  public PostEmployingBodyTrustJob(EntityManagerFactory entityManagerFactory,
+      ApplicationEventPublisher applicationEventPublisher, PostTrustRepository postTrustRepository,
+      SqlQuerySupplier sqlQuerySupplier) {
+    super(entityManagerFactory, applicationEventPublisher);
+    this.postTrustRepository = postTrustRepository;
+    this.sqlQuerySupplier = sqlQuerySupplier;
+  }
 
   @Scheduled(cron = "${application.cron.postEmployingBodyTrustJob}")
   @SchedulerLock(name = "postTrustEmployingBodyScheduledTask", lockAtLeastFor = FIFTEEN_MIN,
@@ -55,9 +59,9 @@ public class PostEmployingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTru
 
   @Override
   protected void deleteData() {
-    LOG.info("deleting all data");
+    log.info("deleting all data");
     postTrustRepository.deleteAllInBatch();
-    LOG.info("deleted all PostTrust data");
+    log.info("deleted all PostTrust data");
   }
 
   @Override
@@ -65,7 +69,7 @@ public class PostEmployingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTru
                                          EntityManager entityManager) {
     long lastId = ids.get(LAST_ENTITY_ID);
     long lastEmployingBodyId = ids.get(LAST_SITE_ID);
-    LOG.info("Querying with lastPostId: [{}] and lastEmployingBodyId: [{}]", lastId,
+    log.info("Querying with lastPostId: [{}] and lastEmployingBodyId: [{}]", lastId,
         lastEmployingBodyId);
     String postEmployingBodyQuery = sqlQuerySupplier.getQuery(SqlQuerySupplier.POST_EMPLOYINGBODY);
 

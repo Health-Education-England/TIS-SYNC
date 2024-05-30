@@ -6,11 +6,10 @@ import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
+import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.collections4.CollectionUtils;
 import org.elasticsearch.index.IndexNotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -28,43 +27,37 @@ import uk.nhs.tis.sync.job.RunnableJob;
 import uk.nhs.tis.sync.service.PersonElasticSearchService;
 import uk.nhs.tis.sync.service.impl.PersonViewRowMapper;
 
+/**
+ * This job runs on a daily basis and provides support for faster data search
+ * <p>
+ * Its purpose is to clear down the persons index in ES then repopulates the person data so that
+ * person search is quicker.
+ */
 @Component
-@ManagedResource(objectName = "sync.mbean:name=PersonElasticSearchJob", description = "Service that clears the persons index in ES and repopulates the data")
+@ManagedResource(objectName = "sync.mbean:name=PersonElasticSearchJob",
+    description = "Service that clears the persons index in ES and repopulates the data")
+@Slf4j
 public class PersonElasticSearchSyncJob implements RunnableJob {
 
   private static final String JOB_NAME = "Person sync job";
-  private static final Logger LOG = LoggerFactory.getLogger(PersonElasticSearchSyncJob.class);
   private static final String ES_INDEX = "persons";
   private static final int FIFTEEN_MIN = 15 * 60 * 1000;
 
-  private Stopwatch mainStopWatch;
-
-  protected int pageSize = 8_000;
-
-  @Autowired
   private final SqlQuerySupplier sqlQuerySupplier;
 
-  @Autowired
   private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-  @Autowired
   private final ElasticsearchOperations elasticSearchOperations;
 
-  @Autowired
   private final PersonElasticSearchService personElasticSearchService;
 
   private ApplicationEventPublisher applicationEventPublisher;
 
-  @ManagedOperation(description = "Is the Person es sync just currently running")
-  public boolean isCurrentlyRunning() {
-    return mainStopWatch != null;
-  }
+  protected int pageSize = 8_000;
+  private Stopwatch mainStopWatch;
 
-  @ManagedOperation(description = "The current elapsed time of the current sync job")
-  public String elapsedTime() {
-    return mainStopWatch != null ? mainStopWatch.toString() : "0s";
-  }
 
+  @Autowired
   public PersonElasticSearchSyncJob(NamedParameterJdbcTemplate namedParameterJdbcTemplate,
       SqlQuerySupplier sqlQuerySupplier, ElasticsearchOperations elasticSearchOperations,
       PersonElasticSearchService personElasticSearchService,
@@ -76,16 +69,27 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
     this.pageSize = pageSize;
   }
 
+  @ManagedOperation(description = "Is the Person es sync just currently running")
+  public boolean isCurrentlyRunning() {
+    return mainStopWatch != null;
+  }
+
+  @ManagedOperation(description = "The current elapsed time of the current sync job")
+  public String elapsedTime() {
+    return mainStopWatch != null ? mainStopWatch.toString() : "0s";
+  }
+
   protected void runSyncJob() {
     if (mainStopWatch != null) {
-      LOG.info("Sync job [{}] already running, exiting this execution", JOB_NAME);
+      log.info("Sync job [{}] already running, exiting this execution", JOB_NAME);
       return;
     }
     CompletableFuture.runAsync(this::run);
   }
 
   @Scheduled(cron = "${application.cron.personElasticSearchJob}")
-  @SchedulerLock(name = "personsElasticSearchScheduledTask", lockAtLeastFor = FIFTEEN_MIN, lockAtMostFor = FIFTEEN_MIN)
+  @SchedulerLock(name = "personsElasticSearchScheduledTask", lockAtLeastFor = FIFTEEN_MIN,
+      lockAtMostFor = FIFTEEN_MIN)
   @ManagedOperation(description = "Run sync of the persons es index")
   public void personElasticSearchSync() {
     runSyncJob();
@@ -96,11 +100,11 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
   }
 
   private void deleteIndex() {
-    LOG.info("deleting person es index");
+    log.info("deleting person es index");
     try {
       elasticSearchOperations.indexOps(IndexCoordinates.of(ES_INDEX)).delete();
     } catch (IndexNotFoundException e) {
-      LOG.info("Could not delete an index that does not exist, continuing");
+      log.info("Could not delete an index that does not exist, continuing");
     }
   }
 
@@ -126,13 +130,12 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
   }
 
   protected void run() {
-
     if (applicationEventPublisher != null) {
       applicationEventPublisher
           .publishEvent(new JobExecutionEvent(this, "Sync [" + JOB_NAME + "] started."));
     }
     try {
-      LOG.info("Sync [{}] started", JOB_NAME);
+      log.info("Sync [{}] started", JOB_NAME);
       mainStopWatch = Stopwatch.createStarted();
       Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -151,7 +154,7 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
 
         hasMoreResults = !collectedData.isEmpty();
 
-        LOG.info("Time taken to read chunk : [{}]", stopwatch);
+        log.info("Time taken to read chunk : [{}]", stopwatch);
         if (CollectionUtils.isNotEmpty(collectedData)) {
           totalRecords += collectedData.size();
         }
@@ -159,11 +162,11 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
 
         personElasticSearchService.saveDocuments(collectedData);
 
-        LOG.info("Time taken to save chunk : [{}]", stopwatch);
+        log.info("Time taken to save chunk : [{}]", stopwatch);
       }
       elasticSearchOperations.indexOps(PersonView.class).refresh();
       stopwatch.reset().start();
-      LOG.info("Sync job [{}] finished. Total time taken {} for processing [{}] records",
+      log.info("Sync job [{}] finished. Total time taken {} for processing [{}] records",
           JOB_NAME, mainStopWatch.stop(), totalRecords);
       mainStopWatch = null;
       if (applicationEventPublisher != null) {
@@ -171,7 +174,7 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
             .publishEvent(new JobExecutionEvent(this, "Sync [" + JOB_NAME + "] finished."));
       }
     } catch (Exception e) {
-      LOG.error(e.getLocalizedMessage(), e);
+      log.error(e.getLocalizedMessage(), e);
       mainStopWatch = null;
       if (applicationEventPublisher != null) {
         applicationEventPublisher.publishEvent(new JobExecutionEvent(this,
@@ -181,7 +184,7 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
   }
 
   private void createIndex() {
-    LOG.info("creating and updating mappings");
+    log.info("creating and updating mappings");
     elasticSearchOperations.indexOps(IndexCoordinates.of(ES_INDEX)).create();
     Document mapping = elasticSearchOperations.indexOps(IndexCoordinates.of(ES_INDEX))
         .createMapping(PersonView.class);
@@ -192,5 +195,4 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
   public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
     this.applicationEventPublisher = applicationEventPublisher;
   }
-
 }
