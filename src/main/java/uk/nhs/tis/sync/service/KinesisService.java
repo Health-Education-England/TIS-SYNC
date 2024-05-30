@@ -25,7 +25,6 @@ import uk.nhs.tis.sync.dto.DmsDto;
 @Service
 public class KinesisService {
 
-  public static final String PARTITION_KEY = "0";
   private final AmazonKinesis amazonKinesis;
   private final ObjectMapper objectMapper;
 
@@ -70,7 +69,9 @@ public class KinesisService {
         PutRecordsRequestEntry putRecordsRequestEntry = new PutRecordsRequestEntry();
         putRecordsRequestEntry.setData(ByteBuffer.wrap(jsonString.getBytes()));
         putRecordsRequestEntryList.add(putRecordsRequestEntry);
-        putRecordsRequestEntry.setPartitionKey(PARTITION_KEY);
+        String partitionKey = String.format("%s.%s",
+            dmsDto.getMetadata().getSchemaName(), dmsDto.getMetadata().getTableName());
+        putRecordsRequestEntry.setPartitionKey(partitionKey);
       }
 
       putRecordsRequest.setRecords(putRecordsRequestEntryList);
