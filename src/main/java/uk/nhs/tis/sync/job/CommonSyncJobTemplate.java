@@ -35,8 +35,7 @@ public abstract class CommonSyncJobTemplate<T> implements RunnableJob {
 
   private final EntityManagerFactory entityManagerFactory;
 
-  @Autowired
-  public CommonSyncJobTemplate(EntityManagerFactory entityManagerFactory,
+  protected CommonSyncJobTemplate(EntityManagerFactory entityManagerFactory,
       @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher) {
     this.entityManagerFactory = entityManagerFactory;
     this.applicationEventPublisher = applicationEventPublisher;

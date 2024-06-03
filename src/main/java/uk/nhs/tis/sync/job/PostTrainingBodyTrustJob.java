@@ -15,7 +15,6 @@ import javax.persistence.Query;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -37,7 +36,6 @@ public class PostTrainingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTrus
 
   private SqlQuerySupplier sqlQuerySupplier;
 
-  @Autowired
   public PostTrainingBodyTrustJob(EntityManagerFactory entityManagerFactory,
       ApplicationEventPublisher applicationEventPublisher,
       SqlQuerySupplier sqlQuerySupplier) {

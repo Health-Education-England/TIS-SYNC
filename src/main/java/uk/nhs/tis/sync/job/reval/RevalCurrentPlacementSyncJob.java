@@ -28,7 +28,6 @@ public class RevalCurrentPlacementSyncJob extends RevalPersonChangedJobTemplate 
           + " AND (dateFrom = ':today' OR dateTo = ':yesterday')"
           + " ORDER BY traineeId LIMIT :pageSize";
 
-  @Autowired
   public RevalCurrentPlacementSyncJob(EntityManagerFactory entityManagerFactory,
       @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher,
       RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher) {

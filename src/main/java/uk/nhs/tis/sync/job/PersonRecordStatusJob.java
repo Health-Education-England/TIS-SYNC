@@ -37,7 +37,6 @@ public class PersonRecordStatusJob extends PersonDateChangeCaptureSyncJobTemplat
 
   private final ObjectMapper objectMapper;
 
-  @Autowired
   public PersonRecordStatusJob(EntityManagerFactory entityManagerFactory,
       @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher,
       ObjectMapper objectMapper) {

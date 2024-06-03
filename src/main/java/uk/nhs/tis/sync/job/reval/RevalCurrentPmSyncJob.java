@@ -28,7 +28,6 @@ public class RevalCurrentPmSyncJob extends RevalPersonChangedJobTemplate {
           + " AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')"
           + " ORDER BY personId LIMIT :pageSize";
 
-  @Autowired
   public RevalCurrentPmSyncJob(EntityManagerFactory entityManagerFactory,
       @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher,
       RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher) {

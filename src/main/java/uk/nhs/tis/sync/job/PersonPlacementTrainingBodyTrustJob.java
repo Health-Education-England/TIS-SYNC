@@ -36,7 +36,6 @@ public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTempla
 
   private SqlQuerySupplier sqlQuerySupplier;
 
-  @Autowired
   public PersonPlacementTrainingBodyTrustJob(EntityManagerFactory entityManagerFactory,
       @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher,
       PersonRepository personRepository, SqlQuerySupplier sqlQuerySupplier) {

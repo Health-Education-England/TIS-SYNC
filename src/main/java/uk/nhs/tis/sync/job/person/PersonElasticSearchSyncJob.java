@@ -56,8 +56,6 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
   protected int pageSize = 8_000;
   private Stopwatch mainStopWatch;
 
-
-  @Autowired
   public PersonElasticSearchSyncJob(NamedParameterJdbcTemplate namedParameterJdbcTemplate,
       SqlQuerySupplier sqlQuerySupplier, ElasticsearchOperations elasticSearchOperations,
       PersonElasticSearchService personElasticSearchService,

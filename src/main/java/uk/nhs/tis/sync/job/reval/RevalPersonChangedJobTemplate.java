@@ -22,7 +22,6 @@ public abstract class RevalPersonChangedJobTemplate extends
 
   private final RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher;
 
-  @Autowired
   protected RevalPersonChangedJobTemplate(
       EntityManagerFactory entityManagerFactory,
       @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher,
