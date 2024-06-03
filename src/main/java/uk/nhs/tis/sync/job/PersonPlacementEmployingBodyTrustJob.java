@@ -25,9 +25,16 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.model.EntityData;
 
+/**
+ * A sync job for updating placement employing body for a person.
+ *
+ * This job clears the PersonTrust table and links Person with Placement EmployingBody (Trust).
+ *
+ */
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonPlacementEmployingBodyJob",
-    description = "Service that clears the PersonTrust table and links Person with Placement EmployingBody(Trust)")
+    description = "Service that clears the PersonTrust table and links "
+        + "Person with Placement EmployingBody(Trust)")
 @SuppressWarnings("unchecked")
 @Slf4j
 public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTemplate<PersonTrust> {
@@ -38,6 +45,15 @@ public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTempl
 
   private final SqlQuerySupplier sqlQuerySupplier;
 
+  /**
+   * Constructs a new PersonPlacementEmployingBodyTrustJob with the specified dependencies.
+   *
+   * @param entityManagerFactory the factory to create EntityManager instances
+   * @param applicationEventPublisher the publisher for application events, may be null
+   * @param sqlQuerySupplier the supplier for SQL queries
+   * @param personTrustRepository the repository for PersonTrust entities
+   * @param personRepository the repository for Person entities
+   */
   public PersonPlacementEmployingBodyTrustJob(
       EntityManagerFactory entityManagerFactory,
       @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher,

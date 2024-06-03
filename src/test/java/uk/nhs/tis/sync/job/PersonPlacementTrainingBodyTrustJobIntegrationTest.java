@@ -36,7 +36,7 @@ public class PersonPlacementTrainingBodyTrustJobIntegrationTest {
 
   @Test
   public void testJobRun() throws Exception {
-    job.PersonPlacementTrainingBodyFullSync();
+    job.personPlacementTrainingBodyFullSync();
     int maxLoops = 1440, loops = 0;
     //Loop while the job is running up to 2 hours
     Thread.sleep(5 * 1000L);

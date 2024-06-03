@@ -24,15 +24,17 @@ import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.model.EntityData;
 
 /**
- * This job runs on a daily basis and must be the first job that works on the PostTrust table as it
- * truncates it at the beginning.
- * <p>
- * Its purpose is to clear down the PostTrust table then populate it with post ids and the linked
- * employing body trust id
+ * This job runs on a daily basis and must be the first job that works on the
+ * PostTrust table as it truncates it at the beginning.
+ *
+ * <p>Its purpose is to clear down the PostTrust table
+ * then populate it with post ids and the linked
+ * employing body trust id.
  */
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PostEmployingBodyTrustJob",
-    description = "Service that clears the PersonTrust table and links Post with Employing Body Trusts")
+    description = "Service that clears the PersonTrust table and "
+        + "links Post with Employing Body Trusts")
 @Slf4j
 public class PostEmployingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTrust> {
 
@@ -40,6 +42,14 @@ public class PostEmployingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTru
 
   private SqlQuerySupplier sqlQuerySupplier;
 
+  /**
+   * Constructs a new PostEmployingBodyTrustJob with the specified dependencies.
+   *
+   * @param entityManagerFactory the factory to create EntityManager instances
+   * @param applicationEventPublisher the publisher for application events
+   * @param sqlQuerySupplier the supplier for SQL queries
+   * @param postTrustRepository the repository for PostTrust entities
+   */
   public PostEmployingBodyTrustJob(EntityManagerFactory entityManagerFactory,
       ApplicationEventPublisher applicationEventPublisher, PostTrustRepository postTrustRepository,
       SqlQuerySupplier sqlQuerySupplier) {
@@ -53,7 +63,7 @@ public class PostEmployingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTru
       lockAtMostFor = FIFTEEN_MIN)
   @ManagedOperation(
       description = "Run sync of the PostTrust table with Post to Employing Body Trust")
-  public void PostEmployingBodyTrustFullSync() {
+  public void postEmployingBodyTrustFullSync() {
     runSyncJob(null);
   }
 

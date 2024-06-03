@@ -29,9 +29,9 @@ import uk.nhs.tis.sync.service.impl.PersonViewRowMapper;
 
 /**
  * This job runs on a daily basis and provides support for faster data search
- * <p>
- * Its purpose is to clear down the persons index in ES then repopulates the person data so that
- * person search is quicker.
+ *
+ * <p>Its purpose is to clear down the persons index in ES then repopulates the
+ * person data so that person search is quicker.
  */
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonElasticSearchJob",
@@ -56,6 +56,15 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
   protected int pageSize = 8_000;
   private Stopwatch mainStopWatch;
 
+  /**
+   * Constructs a new PersonElasticSearchSyncJob with the specified dependencies.
+   *
+   * @param namedParameterJdbcTemplate the JDBC template for Named parameter
+   * @param elasticSearchOperations the elasticSearchOperations
+   * @param sqlQuerySupplier the supplier for SQL queries
+   * @param personElasticSearchService the personElasticSearchService
+   * @param pageSize the page size value
+   */
   public PersonElasticSearchSyncJob(NamedParameterJdbcTemplate namedParameterJdbcTemplate,
       SqlQuerySupplier sqlQuerySupplier, ElasticsearchOperations elasticSearchOperations,
       PersonElasticSearchService personElasticSearchService,
@@ -139,11 +148,12 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
 
       int totalRecords = 0;
       int page = 0;
-      boolean hasMoreResults = true;
 
       deleteIndex();
       createIndex();
       stopwatch.reset().start();
+
+      boolean hasMoreResults = true;
 
       while (hasMoreResults) {
 

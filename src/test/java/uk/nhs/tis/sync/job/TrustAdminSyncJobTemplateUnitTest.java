@@ -19,13 +19,11 @@ import java.util.concurrent.TimeUnit;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
-
 import org.assertj.core.util.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import uk.nhs.tis.sync.model.EntityData;
 
@@ -48,7 +46,8 @@ public class TrustAdminSyncJobTemplateUnitTest {
   private ApplicationEventPublisher applicationEventPublisherMock;
 
   public void instantiateJob(List<EntityData> data) {
-    testObj = new TrustAdminSyncJobTemplateStub(entityManagerFactoryMock, applicationEventPublisherMock, data);
+    testObj = new TrustAdminSyncJobTemplateStub(entityManagerFactoryMock,
+        applicationEventPublisherMock, data);
   }
 
   @Test
@@ -118,8 +117,9 @@ public class TrustAdminSyncJobTemplateUnitTest {
     private final List<EntityData> collectedData;
     private boolean firstCall = true;
 
-    public TrustAdminSyncJobTemplateStub(EntityManagerFactory entityManagerFactoryMock, ApplicationEventPublisher applicationEventPublisherMock,
-                                         List<EntityData> collectedData) {
+    public TrustAdminSyncJobTemplateStub(EntityManagerFactory entityManagerFactoryMock,
+        ApplicationEventPublisher applicationEventPublisherMock,
+        List<EntityData> collectedData) {
       super(entityManagerFactoryMock, applicationEventPublisherMock);
       this.entityManagerFactoryMock = entityManagerFactoryMock;
       this.collectedData = collectedData;
@@ -147,7 +147,7 @@ public class TrustAdminSyncJobTemplateUnitTest {
 
     @Override
     protected List<EntityData> collectData(Map<String, Long> ids, String queryString,
-                                           EntityManager entityManager) {
+        EntityManager entityManager) {
       if (firstCall) {
         firstCall = false;
         return this.collectedData;
@@ -157,7 +157,7 @@ public class TrustAdminSyncJobTemplateUnitTest {
 
     @Override
     protected int convertData(Set<Object> entitiesToSave, List<EntityData> entityData,
-                              EntityManager entityManager) {
+        EntityManager entityManager) {
       entityData.forEach(o -> entitiesToSave.add(new Object()));
       return 0;
     }

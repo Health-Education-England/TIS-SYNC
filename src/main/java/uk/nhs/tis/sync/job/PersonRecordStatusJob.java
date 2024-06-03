@@ -24,9 +24,17 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.model.EntityData;
 
+/**
+ * A sync job for updating training record status for a person.
+ *
+ * This job sets a Person's (Training Record) Status if their
+ * programme membership(s) started/ended.
+ *
+ */
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonRecordStatusJob",
-    description = "Job set a Person's (Training Record) Status if their programme membership(s) started/ended")
+    description = "Job set a Person's (Training Record) Status if their "
+        + "programme membership(s) started/ended")
 @Slf4j
 public class PersonRecordStatusJob extends PersonDateChangeCaptureSyncJobTemplate<Person> {
 

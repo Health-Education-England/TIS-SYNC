@@ -24,6 +24,12 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.model.EntityData;
 
+/**
+ * A sync job for updating placement training body for a person.
+ *
+ * This job clears the PersonTrust table and links Person with Placement TrainingBody (Trust).
+ *
+ */
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonPlacementTrainingBodyTrustJob",
     description = "Service that clears the PersonTrust table and links Person with Placement TrainingBody (Trusts)")
@@ -49,7 +55,7 @@ public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTempla
       lockAtMostFor = FIFTEEN_MIN)
   @ManagedOperation(
       description = "Run sync of the PersonTrust table with Person to Placement TrainingBody")
-  public void PersonPlacementTrainingBodyFullSync() {
+  public void personPlacementTrainingBodyFullSync() {
     runSyncJob(null);
   }
 

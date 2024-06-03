@@ -13,9 +13,10 @@ import uk.nhs.tis.sync.message.publisher.RabbitMqTcsRevalTraineeUpdatePublisher;
 import uk.nhs.tis.sync.model.EntityData;
 
 /**
- * This is a template abstract class for Revalidation Person job change
- * <p>
- * Its purpose is to publish Persons based on their current Placement into Rabbit message queue
+ * This is a template abstract class for Revalidation Person job change.
+ *
+ * <p>Its purpose is to publish Persons based on their current Placement
+ * into Rabbit message queue.
  */
 public abstract class RevalPersonChangedJobTemplate extends
     PersonDateChangeCaptureSyncJobTemplate<Long> {

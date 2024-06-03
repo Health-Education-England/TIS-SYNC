@@ -79,11 +79,11 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
       do {
         Thread.sleep(SLEEP_DURATION);
       } while (personPlacementEmployingBodyTrustJob.isCurrentlyRunning());
-      personPlacementTrainingBodyTrustJob.PersonPlacementTrainingBodyFullSync();
+      personPlacementTrainingBodyTrustJob.personPlacementTrainingBodyFullSync();
       do {
         Thread.sleep(SLEEP_DURATION);
       } while (personPlacementTrainingBodyTrustJob.isCurrentlyRunning());
-      postEmployingBodyTrustJob.PostEmployingBodyTrustFullSync();
+      postEmployingBodyTrustJob.postEmployingBodyTrustFullSync();
       do {
         Thread.sleep(SLEEP_DURATION);
       } while (postEmployingBodyTrustJob.isCurrentlyRunning());

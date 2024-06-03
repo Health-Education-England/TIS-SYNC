@@ -24,9 +24,9 @@ import uk.nhs.tis.sync.model.EntityData;
 
 /**
  * This job runs on a daily basis and MUST be run after the PostEmployingBodyTrustJob.
- * <p>
- * Its purpose is to populate the PostTrust table with post ids and the linked training body trust
- * id
+ *
+ * <p>Its purpose is to populate the PostTrust table with post ids and the linked
+ * training body trust id.
  */
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PostTrainingBodyTrustJob",
