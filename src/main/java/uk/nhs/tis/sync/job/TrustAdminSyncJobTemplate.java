@@ -22,7 +22,7 @@ public abstract class TrustAdminSyncJobTemplate<T> extends CommonSyncJobTemplate
   protected static final String LAST_SITE_ID = "lastSiteId";
 
   @Autowired
-  public TrustAdminSyncJobTemplate(EntityManagerFactory entityManagerFactory,
+  protected TrustAdminSyncJobTemplate(EntityManagerFactory entityManagerFactory,
       @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher) {
     super(entityManagerFactory, applicationEventPublisher);
   }

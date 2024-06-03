@@ -34,7 +34,7 @@ public abstract class PersonDateChangeCaptureSyncJobTemplate<T> extends CommonSy
   protected String dateOfChangeOverride;
 
   @Autowired
-  public PersonDateChangeCaptureSyncJobTemplate(EntityManagerFactory entityManagerFactory,
+  protected PersonDateChangeCaptureSyncJobTemplate(EntityManagerFactory entityManagerFactory,
       @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher) {
     super(entityManagerFactory, applicationEventPublisher);
   }
