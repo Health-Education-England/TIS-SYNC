@@ -27,8 +27,7 @@ import uk.nhs.tis.sync.model.EntityData;
 /**
  * A sync job for updating placement training body for a person.
  *
- * This job clears the PersonTrust table and links Person with Placement TrainingBody (Trust).
- *
+ * <p>This job clears the PersonTrust table and links Person with Placement TrainingBody (Trust).
  */
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonPlacementTrainingBodyTrustJob",
@@ -42,6 +41,14 @@ public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTempla
 
   private SqlQuerySupplier sqlQuerySupplier;
 
+  /**
+   * Constructs a new PersonPlacementTrainingBodyTrustJob with the specified dependencies.
+   *
+   * @param entityManagerFactory the factory to create EntityManager instances
+   * @param applicationEventPublisher the publisher for application events, may be null
+   * @param sqlQuerySupplier the supplier for SQL queries
+   * @param personRepository the repository for Person entities
+   */
   public PersonPlacementTrainingBodyTrustJob(EntityManagerFactory entityManagerFactory,
       @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher,
       PersonRepository personRepository, SqlQuerySupplier sqlQuerySupplier) {

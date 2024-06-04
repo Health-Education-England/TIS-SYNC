@@ -27,9 +27,8 @@ import uk.nhs.tis.sync.model.EntityData;
 /**
  * A sync job for updating training record status for a person.
  *
- * This job sets a Person's (Training Record) Status if their
+ * <p>This job sets a Person's (Training Record) Status if their
  * programme membership(s) started/ended.
- *
  */
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonRecordStatusJob",

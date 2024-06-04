@@ -28,8 +28,7 @@ import uk.nhs.tis.sync.model.EntityData;
 /**
  * A sync job for updating placement employing body for a person.
  *
- * This job clears the PersonTrust table and links Person with Placement EmployingBody (Trust).
- *
+ * <p>This job clears the PersonTrust table and links Person with Placement EmployingBody (Trust).
  */
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonPlacementEmployingBodyJob",

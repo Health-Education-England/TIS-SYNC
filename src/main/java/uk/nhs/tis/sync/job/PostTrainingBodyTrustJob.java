@@ -48,7 +48,7 @@ public class PostTrainingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTrus
       lockAtMostFor = FIFTEEN_MIN)
   @ManagedOperation(
       description = "Run sync of the PostTrust table with Post to Training Body Trust")
-  public void PostTrainingBodyTrustFullSync() {
+  public void postTrainingBodyTrustFullSync() {
     runSyncJob(null);
   }
 
