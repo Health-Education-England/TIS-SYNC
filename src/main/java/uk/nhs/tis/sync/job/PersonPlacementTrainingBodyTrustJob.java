@@ -4,48 +4,65 @@ import com.transformuk.hee.tis.tcs.service.model.Person;
 import com.transformuk.hee.tis.tcs.service.model.PersonTrust;
 import com.transformuk.hee.tis.tcs.service.repository.PersonRepository;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
-import net.javacrumbs.shedlock.core.SchedulerLock;
-import org.apache.commons.collections4.CollectionUtils;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Query;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Query;
+import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.core.SchedulerLock;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.model.EntityData;
 
+/**
+ * A sync job for updating placement training body for a person.
+ *
+ * <p>This job clears the PersonTrust table and links Person with Placement TrainingBody (Trust).
+ */
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonPlacementTrainingBodyTrustJob",
     description = "Service that clears the PersonTrust table and links Person with Placement TrainingBody (Trusts)")
+@Slf4j
 public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTemplate<PersonTrust> {
 
-  private static final Logger LOG =
-      LoggerFactory.getLogger(PersonPlacementTrainingBodyTrustJob.class);
   private static final int FIFTEEN_MIN = 15 * 60 * 1000;
 
-  @Autowired
-  private EntityManagerFactory entityManagerFactory;
-  @Autowired
   private PersonRepository personRepository;
-  @Autowired
+
   private SqlQuerySupplier sqlQuerySupplier;
+
+  /**
+   * Constructs a new PersonPlacementTrainingBodyTrustJob with the specified dependencies.
+   *
+   * @param entityManagerFactory the factory to create EntityManager instances
+   * @param applicationEventPublisher the publisher for application events, may be null
+   * @param sqlQuerySupplier the supplier for SQL queries
+   * @param personRepository the repository for Person entities
+   */
+  public PersonPlacementTrainingBodyTrustJob(EntityManagerFactory entityManagerFactory,
+      @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher,
+      PersonRepository personRepository, SqlQuerySupplier sqlQuerySupplier) {
+    super(entityManagerFactory, applicationEventPublisher);
+    this.personRepository = personRepository;
+    this.sqlQuerySupplier = sqlQuerySupplier;
+  }
 
   @Scheduled(cron = "${application.cron.personPlacementTrainingBodyTrustJob}")
   @SchedulerLock(name = "personTrustTrainingBodyScheduledTask", lockAtLeastFor = FIFTEEN_MIN,
       lockAtMostFor = FIFTEEN_MIN)
   @ManagedOperation(
       description = "Run sync of the PersonTrust table with Person to Placement TrainingBody")
-  public void PersonPlacementTrainingBodyFullSync() {
+  public void personPlacementTrainingBodyFullSync() {
     runSyncJob(null);
   }
 
@@ -60,7 +77,7 @@ public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTempla
                                          EntityManager entityManager) {
     long lastId = ids.get(LAST_ENTITY_ID);
     long lastTrainingBodyId = ids.get(LAST_SITE_ID);
-    LOG.info("Querying with lastPersonId: [{}] and lastTrainingBodyId: [{}]", lastId,
+    log.info("Querying with lastPersonId: [{}] and lastTrainingBodyId: [{}]", lastId,
         lastTrainingBodyId);
     String personPlacementQuery =
         sqlQuerySupplier.getQuery(SqlQuerySupplier.PERSON_PLACEMENT_TRAININGBODY);

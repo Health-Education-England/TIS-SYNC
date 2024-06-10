@@ -4,9 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.collections4.CollectionUtils;
-import uk.nhs.tis.sync.model.EntityData;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import uk.nhs.tis.sync.model.EntityData;
 
 /**
  * A template for trust admin sync jobs.
@@ -17,6 +20,11 @@ public abstract class TrustAdminSyncJobTemplate<T> extends CommonSyncJobTemplate
 
   protected static final String LAST_ENTITY_ID = "lastEntityId";
   protected static final String LAST_SITE_ID = "lastSiteId";
+
+  protected TrustAdminSyncJobTemplate(EntityManagerFactory entityManagerFactory,
+      @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher) {
+    super(entityManagerFactory, applicationEventPublisher);
+  }
 
   public void run(String params) {
     runSyncJob(params);

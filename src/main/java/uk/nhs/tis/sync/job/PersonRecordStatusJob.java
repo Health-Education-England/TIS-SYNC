@@ -10,25 +10,33 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.persistence.EntityManager;
-
+import javax.persistence.EntityManagerFactory;
+import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.model.EntityData;
 
+/**
+ * A sync job for updating training record status for a person.
+ *
+ * <p>This job sets a Person's (Training Record) Status if their
+ * programme membership(s) started/ended.
+ */
 @Component
 @ManagedResource(objectName = "sync.mbean:name=PersonRecordStatusJob",
-    description = "Job set a Person's (Training Record) Status if their programme membership(s) started/ended")
+    description = "Job set a Person's (Training Record) Status if their "
+        + "programme membership(s) started/ended")
+@Slf4j
 public class PersonRecordStatusJob extends PersonDateChangeCaptureSyncJobTemplate<Person> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(PersonRecordStatusJob.class);
   private static final String BASE_QUERY =
       "SELECT DISTINCT personId FROM ProgrammeMembership" + " WHERE personId > :lastPersonId"
           + " AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')"
@@ -36,7 +44,10 @@ public class PersonRecordStatusJob extends PersonDateChangeCaptureSyncJobTemplat
 
   private final ObjectMapper objectMapper;
 
-  public PersonRecordStatusJob(ObjectMapper objectMapper) {
+  public PersonRecordStatusJob(EntityManagerFactory entityManagerFactory,
+      @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher,
+      ObjectMapper objectMapper) {
+    super(entityManagerFactory, applicationEventPublisher);
     this.objectMapper = objectMapper;
   }
 
@@ -65,20 +76,20 @@ public class PersonRecordStatusJob extends PersonDateChangeCaptureSyncJobTemplat
    *                   "NONE", empty or a date in format yyyy-MM-dd
    */
   public void personRecordStatusJob(String jsonParams) {
-    LOG.debug("Received run params [{}]", jsonParams);
+    log.debug("Received run params [{}]", jsonParams);
     String date = null;
     if (StringUtils.isNotEmpty(jsonParams)) {
       try {
         date = objectMapper.readTree(jsonParams).get("dateOverride").textValue();
         validateDateParamFormat(date);
-        LOG.debug("Got validated date [{}]", date);
+        log.debug("Got validated date [{}]", date);
       } catch (JsonProcessingException e) {
         String errorMsg = "Unable to extract the dateOverride property";
-        LOG.error(errorMsg, e);
+        log.error(errorMsg, e);
         throw new IllegalArgumentException(errorMsg);
       } catch (DateTimeParseException e) {
         String errorMsg = String.format("The date is not correct: %s", date);
-        LOG.error(errorMsg, e);
+        log.error(errorMsg, e);
         throw new IllegalArgumentException(errorMsg);
       }
     }
@@ -128,5 +139,4 @@ public class PersonRecordStatusJob extends PersonDateChangeCaptureSyncJobTemplat
           .replace(" AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')", "");
     }
   }
-
 }

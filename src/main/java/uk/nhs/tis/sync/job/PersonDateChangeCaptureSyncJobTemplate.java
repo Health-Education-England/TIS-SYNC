@@ -11,10 +11,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import uk.nhs.tis.sync.model.EntityData;
 
 /**
@@ -29,6 +32,11 @@ public abstract class PersonDateChangeCaptureSyncJobTemplate<T> extends CommonSy
   protected static final String NO_DATE_OVERRIDE = "NONE";
 
   protected String dateOfChangeOverride;
+
+  protected PersonDateChangeCaptureSyncJobTemplate(EntityManagerFactory entityManagerFactory,
+      @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher) {
+    super(entityManagerFactory, applicationEventPublisher);
+  }
 
   protected abstract String buildQueryForDate(LocalDate dateOfChange);
 
