@@ -2,37 +2,36 @@ package uk.nhs.tis.sync.job.reval;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import net.javacrumbs.shedlock.core.SchedulerLock;
-import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import uk.nhs.tis.sync.job.PersonDateChangeCaptureSyncJobTemplate;
 import uk.nhs.tis.sync.message.publisher.RabbitMqTcsRevalTraineeUpdatePublisher;
 
 /**
- * Get personIds whose current placement changes nightly. And sends messages to rabbitMq
- * for tcs to fetch
+ * Get personIds whose current placement changed overnight, i.e. ended yesterday or started today.
+ * This sends messages for further processing, currently tcs to fetch and forward relevant data.
  */
 @Profile("!nimdta")
 @Component
 @ManagedResource(objectName = "sync.mbean:name=RevalCurrentPlacementSyncJob",
     description = "Job message personIds if their placement(s) started/ended")
-public class RevalCurrentPlacementSyncJob extends PersonDateChangeCaptureSyncJobTemplate<Long> {
+public class RevalCurrentPlacementSyncJob extends RevalPersonChangedJobTemplate {
+
   private static final String BASE_QUERY =
       "SELECT DISTINCT traineeId FROM Placement" + " WHERE traineeId > :lastPersonId"
           + " AND (dateFrom = ':today' OR dateTo = ':yesterday')"
           + " ORDER BY traineeId LIMIT :pageSize";
-  private final RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher;
 
-  public RevalCurrentPlacementSyncJob(RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher) {
-    this.rabbitMqPublisher = rabbitMqPublisher;
+  public RevalCurrentPlacementSyncJob(EntityManagerFactory entityManagerFactory,
+      @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher,
+      RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher) {
+    super(entityManagerFactory, applicationEventPublisher, rabbitMqPublisher);
   }
 
   @Override
@@ -51,25 +50,10 @@ public class RevalCurrentPlacementSyncJob extends PersonDateChangeCaptureSyncJob
   }
 
   @Override
-  protected int convertData(Set<Long> entitiesToSave, List<Long> entityData,
-      EntityManager entityManager) {
-    entitiesToSave.addAll(entityData);
-    return 0;
-  }
-
-  @Override
-  protected void handleData(Set<Long> dataToSave, EntityManager entityManager) {
-    if (CollectionUtils.isNotEmpty(dataToSave)) {
-      rabbitMqPublisher.publishToBroker(
-          dataToSave.stream().map(String::valueOf).collect(Collectors.toSet()));
-    }
-  }
-
-  @Override
   protected String buildQueryForDate(LocalDate dateOfChange) {
     String today = dateOfChange.format(DateTimeFormatter.ISO_LOCAL_DATE);
     String yesterday = dateOfChange.minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
     return BASE_QUERY.replace(":yesterday", yesterday).replace(":today", today)
-          .replace(":pageSize", "" + DEFAULT_PAGE_SIZE);
+        .replace(":pageSize", "" + getPageSize());
   }
 }

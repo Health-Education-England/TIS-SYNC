@@ -2,18 +2,15 @@ package uk.nhs.tis.sync.job.reval;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import net.javacrumbs.shedlock.core.SchedulerLock;
-import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import uk.nhs.tis.sync.job.PersonDateChangeCaptureSyncJobTemplate;
 import uk.nhs.tis.sync.message.publisher.RabbitMqTcsRevalTraineeUpdatePublisher;
 
 /**
@@ -24,16 +21,17 @@ import uk.nhs.tis.sync.message.publisher.RabbitMqTcsRevalTraineeUpdatePublisher;
 @Component
 @ManagedResource(objectName = "sync.mbean:name=RevalCurrentPmSyncJob",
     description = "Job message personIds if their programme membership(s) started/ended")
-public class RevalCurrentPmSyncJob extends PersonDateChangeCaptureSyncJobTemplate<Long> {
+public class RevalCurrentPmSyncJob extends RevalPersonChangedJobTemplate {
 
   private static final String BASE_QUERY =
       "SELECT DISTINCT personId FROM ProgrammeMembership" + " WHERE personId > :lastPersonId"
           + " AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')"
           + " ORDER BY personId LIMIT :pageSize";
-  private final RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher;
 
-  public RevalCurrentPmSyncJob(RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher) {
-    this.rabbitMqPublisher = rabbitMqPublisher;
+  public RevalCurrentPmSyncJob(EntityManagerFactory entityManagerFactory,
+      @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher,
+      RabbitMqTcsRevalTraineeUpdatePublisher rabbitMqPublisher) {
+    super(entityManagerFactory, applicationEventPublisher, rabbitMqPublisher);
   }
 
   @Override
@@ -52,31 +50,15 @@ public class RevalCurrentPmSyncJob extends PersonDateChangeCaptureSyncJobTemplat
   }
 
   @Override
-  protected int convertData(Set<Long> entitiesToSave, List<Long> entityData,
-      EntityManager entityManager) {
-    entitiesToSave.addAll(entityData);
-    return 0;
-  }
-
-  @Override
-  protected void handleData(Set<Long> dataToSave, EntityManager entityManager) {
-    if (CollectionUtils.isNotEmpty(dataToSave)) {
-      rabbitMqPublisher.publishToBroker(
-          dataToSave.stream().map(String::valueOf).collect(Collectors.toSet()));
-    }
-  }
-
-  @Override
   protected String buildQueryForDate(LocalDate dateOfChange) {
     if (dateOfChange != null) {
       String startDate = dateOfChange.format(DateTimeFormatter.ISO_LOCAL_DATE);
       String endDate = dateOfChange.minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
       return BASE_QUERY.replace(":endDate", endDate).replace(":startDate", startDate)
-          .replace(":pageSize", "" + DEFAULT_PAGE_SIZE);
+          .replace(":pageSize", "" + getPageSize());
     } else {
-      return BASE_QUERY.replace(":pageSize", "" + DEFAULT_PAGE_SIZE)
+      return BASE_QUERY.replace(":pageSize", "" + getPageSize())
           .replace(" AND (programmeEndDate = ':endDate' OR programmeStartDate = ':startDate')", "");
     }
   }
-
 }

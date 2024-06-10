@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import javax.persistence.EntityManager;
@@ -23,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.context.ApplicationEventPublisher;
 import uk.nhs.tis.sync.model.EntityData;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -40,8 +42,12 @@ public class TrustAdminSyncJobTemplateUnitTest {
   @Mock
   private List<EntityData> mockList;
 
+  @Mock
+  private ApplicationEventPublisher applicationEventPublisherMock;
+
   public void instantiateJob(List<EntityData> data) {
-    testObj = new TrustAdminSyncJobTemplateStub(entityManagerFactoryMock, data);
+    testObj = new TrustAdminSyncJobTemplateStub(entityManagerFactoryMock,
+        applicationEventPublisherMock, data);
   }
 
   @Test
@@ -54,10 +60,14 @@ public class TrustAdminSyncJobTemplateUnitTest {
     when(entityManagerFactoryMock.createEntityManager()).thenReturn(entityManagerMock);
     when(entityManagerMock.getTransaction()).thenReturn(entityTransactionMock);
 
-    testObj.run();
+    testObj.run(null);
+
+    with().pollDelay(1, TimeUnit.SECONDS)
+        .atLeast(1, TimeUnit.SECONDS)
+        .until(() -> !testObj.isCurrentlyRunning());
 
     verify(entityManagerMock, times(100)).persist(any());
-    verify(entityManagerMock, times(2)).flush();
+    verify(entityManagerMock, times(1)).flush();
     verify(entityTransactionMock, times(2)).commit();
   }
 
@@ -108,7 +118,9 @@ public class TrustAdminSyncJobTemplateUnitTest {
     private boolean firstCall = true;
 
     public TrustAdminSyncJobTemplateStub(EntityManagerFactory entityManagerFactoryMock,
+        ApplicationEventPublisher applicationEventPublisherMock,
         List<EntityData> collectedData) {
+      super(entityManagerFactoryMock, applicationEventPublisherMock);
       this.entityManagerFactoryMock = entityManagerFactoryMock;
       this.collectedData = collectedData;
     }
@@ -134,7 +146,7 @@ public class TrustAdminSyncJobTemplateUnitTest {
     }
 
     @Override
-    protected List<EntityData> collectData(int pageSize, long lastId, long lastSiteId,
+    protected List<EntityData> collectData(Map<String, Long> ids, String queryString,
         EntityManager entityManager) {
       if (firstCall) {
         firstCall = false;
@@ -144,7 +156,7 @@ public class TrustAdminSyncJobTemplateUnitTest {
     }
 
     @Override
-    protected int convertData(int skipped, Set<Object> entitiesToSave, List<EntityData> entityData,
+    protected int convertData(Set<Object> entitiesToSave, List<EntityData> entityData,
         EntityManager entityManager) {
       entityData.forEach(o -> entitiesToSave.add(new Object()));
       return 0;
