@@ -35,8 +35,6 @@ import uk.nhs.tis.sync.model.EntityData;
 @Slf4j
 public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTemplate<PersonTrust> {
 
-  private static final int FIFTEEN_MIN = 15 * 60 * 1000;
-
   private PersonRepository personRepository;
 
   private SqlQuerySupplier sqlQuerySupplier;
