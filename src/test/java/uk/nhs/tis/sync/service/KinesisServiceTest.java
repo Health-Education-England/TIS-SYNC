@@ -114,10 +114,12 @@ class KinesisServiceTest {
     PutRecordsRequestEntry putRecordsRequestEntry1 = putRecordsRequestEntryList.get(0);
     byte[] entry1 = putRecordsRequestEntry1.getData().array();
     String actualRecord1 = new String(entry1, StandardCharsets.ISO_8859_1);
+    String actualRecord1PartitionKey = putRecordsRequestEntry1.getPartitionKey();
 
     PutRecordsRequestEntry putRecordsRequestEntry2 = putRecordsRequestEntryList.get(1);
     byte[] entry2 = putRecordsRequestEntry2.getData().array();
     String actualRecord2 = new String(entry2, StandardCharsets.ISO_8859_1);
+    String actualRecord2PartitionKey = putRecordsRequestEntry2.getPartitionKey();
 
     String expectedRecord1 = "{\n" +
         "\"data\":\t{\n" +
@@ -173,6 +175,11 @@ class KinesisServiceTest {
 
     JSONAssert.assertEquals(expectedJsonRecord1, actualJsonRecord1, false);
     JSONAssert.assertEquals(expectedJsonRecord2, actualJsonRecord2, false);
+
+    assertThat("Unexpected record 1 partition key.", actualRecord1PartitionKey,
+        is("tcs.Post"));
+    assertThat("Unexpected record 2 partition key.", actualRecord2PartitionKey,
+        is("reference.Trust"));
   }
 
   @Test
