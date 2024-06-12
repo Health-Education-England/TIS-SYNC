@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.nhs.tis.sync.job.PersonOwnerRebuildJob;
+import uk.nhs.tis.sync.job.PostFundingSyncJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
 import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
 
@@ -26,6 +27,8 @@ public class JobRunningListenerTest {
   private PersonOwnerRebuildJob personOwnerRebuildJob;
   @MockBean
   private RevalCurrentPmSyncJob revalCurrentPmSyncJob;
+  @MockBean
+  private PostFundingSyncJob postFundingSyncJob;
 
   @Autowired
   JobRunningListener testClass;
@@ -35,11 +38,14 @@ public class JobRunningListenerTest {
     when(personOwnerRebuildJob.isCurrentlyRunning()).thenReturn(false);
     when(personElasticSearchSyncJob.isCurrentlyRunning()).thenReturn(false);
     when(revalCurrentPmSyncJob.isCurrentlyRunning()).thenReturn(false);
+    when(postFundingSyncJob.isCurrentlyRunning()).thenReturn(false);
     testClass.runJobs();
     verify(personOwnerRebuildJob).personOwnerRebuildJob();
     verify(personOwnerRebuildJob).isCurrentlyRunning();
     verify(personElasticSearchSyncJob).personElasticSearchSync();
     verify(personElasticSearchSyncJob).isCurrentlyRunning();
     verify(revalCurrentPmSyncJob).isCurrentlyRunning();
+    verify(postFundingSyncJob).postFundingSyncJob();
+    verify(postFundingSyncJob).isCurrentlyRunning();
   }
 }

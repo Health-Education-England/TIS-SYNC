@@ -20,6 +20,7 @@ import uk.nhs.tis.sync.job.PersonPlacementEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PersonPlacementTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.PersonRecordStatusJob;
 import uk.nhs.tis.sync.job.PostEmployingBodyTrustJob;
+import uk.nhs.tis.sync.job.PostFundingSyncJob;
 import uk.nhs.tis.sync.job.PostTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.RunnableJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
@@ -47,6 +48,8 @@ public class JobResource {
   private final PersonRecordStatusJob personRecordStatusJob;
   private RevalCurrentPmSyncJob revalCurrentPmSyncJob;
   private RevalCurrentPlacementSyncJob revalCurrentPlacementSyncJob;
+  private PostFundingSyncJob postFundingSyncJob;
+
   @Autowired
   private JobRunningListener jobRunningListener;
   @Value("${spring.profiles.active:}")
@@ -79,11 +82,16 @@ public class JobResource {
     this.revalCurrentPlacementSyncJob = revalCurrentPlacementSyncJob;
   }
 
+  @Autowired
+  public void setPostFundingSyncJob(PostFundingSyncJob postFundingSyncJob) {
+    this.postFundingSyncJob = postFundingSyncJob;
+  }
+
   /**
    * GET /jobs/status : Get all the status of 8 jobs.
    *
    * @return map of the status for most jobs. eg. {"personPlacementEmployingBodyTrustJob", "true"},
-   *     which means personPlacementEmployingBodyTrustJob is currently running.
+   * which means personPlacementEmployingBodyTrustJob is currently running.
    */
   @GetMapping("/jobs/status")
   @PreAuthorize("hasPermission('tis:sync::jobs:', 'View')")
@@ -104,6 +112,7 @@ public class JobResource {
     if (revalCurrentPlacementSyncJob != null) {
       statusMap.put("revalCurrentPlacementJob", revalCurrentPlacementSyncJob.isCurrentlyRunning());
     }
+    statusMap.put("postFundingSyncJob", postFundingSyncJob.isCurrentlyRunning());
     return ResponseEntity.ok().body(statusMap);
   }
 
@@ -128,7 +137,7 @@ public class JobResource {
    *
    * @param name the name of the job to run
    * @return status of the requested job : "Already running" - the job has been running before
-   *     triggering it "Just started" - the job has been started by this request
+   * triggering it "Just started" - the job has been started by this request
    */
   @PutMapping("/job/{name}")
   @PreAuthorize("hasPermission('tis:sync::jobs:', 'Update')")
@@ -178,6 +187,9 @@ public class JobResource {
         } else {
           return ResponseEntity.badRequest().body(JOB_NOT_FOUND);
         }
+        break;
+      case "postFundingSyncJob":
+        status = ensureRunning(postFundingSyncJob, params);
         break;
       default:
         return ResponseEntity.badRequest().body(JOB_NOT_FOUND);
