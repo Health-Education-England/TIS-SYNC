@@ -31,7 +31,7 @@ import uk.nhs.tis.sync.job.PersonPlacementEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PersonPlacementTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.PersonRecordStatusJob;
 import uk.nhs.tis.sync.job.PostEmployingBodyTrustJob;
-import uk.nhs.tis.sync.job.PostFundingSyncJob;
+import uk.nhs.tis.sync.job.PostFundingStatusSyncJob;
 import uk.nhs.tis.sync.job.PostTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
 import uk.nhs.tis.sync.job.reval.RevalCurrentPlacementSyncJob;
@@ -68,7 +68,7 @@ class JobResourceTest {
   private RevalCurrentPlacementSyncJob revalCurrentPlacementSyncJob;
 
   @MockBean
-  PostFundingSyncJob postFundingSyncJob;
+  PostFundingStatusSyncJob postFundingStatusSyncJob;
 
   private MockMvc mockMvc;
 
@@ -85,7 +85,7 @@ class JobResourceTest {
         personRecordStatusJob);
     jobResource.setRevalCurrentPmSyncJob(revalCurrentPmSyncJob);
     jobResource.setRevalCurrentPlacementSyncJob((revalCurrentPlacementSyncJob));
-    jobResource.setPostFundingSyncJob(postFundingSyncJob);
+    jobResource.setPostFundingStatusSyncJob(postFundingStatusSyncJob);
     mockMvc = MockMvcBuilders.standaloneSetup(jobResource).build();
   }
 
@@ -108,7 +108,7 @@ class JobResourceTest {
         .thenReturn(false);
     when(revalCurrentPmSyncJob.isCurrentlyRunning())
         .thenReturn(false);
-    when(postFundingSyncJob.isCurrentlyRunning())
+    when(postFundingStatusSyncJob.isCurrentlyRunning())
         .thenReturn(false);
 
     mockMvc.perform(get("/api/jobs/status")
@@ -121,7 +121,7 @@ class JobResourceTest {
         .andExpect(jsonPath("$.personOwnerRebuildJob").value(false))
         .andExpect(jsonPath("$.personRecordStatusJob").value(false))
         .andExpect(jsonPath("$.revalCurrentPmJob").value(false))
-        .andExpect(jsonPath("$.postFundingSyncJob").value(false))
+        .andExpect(jsonPath("$.postFundingStatusSyncJob").value(false))
         .andExpect(status().isOk());
   }
 
@@ -168,7 +168,7 @@ class JobResourceTest {
       "personOwnerRebuildJob",
       "personRecordStatusJob",
       "revalCurrentPmJob",
-      "postFundingSyncJob"
+      "postFundingStatusSyncJob"
   })
   void shouldReturnJustStartedWhenAJobTriggered(String name) throws Exception {
     when(personPlacementTrainingBodyTrustJob.isCurrentlyRunning())
@@ -187,7 +187,7 @@ class JobResourceTest {
         .thenReturn(false);
     when(revalCurrentPmSyncJob.isCurrentlyRunning())
         .thenReturn(false);
-    when(postFundingSyncJob.isCurrentlyRunning())
+    when(postFundingStatusSyncJob.isCurrentlyRunning())
         .thenReturn(false);
 
     mockMvc.perform(put("/api/job/" + name)
@@ -273,7 +273,7 @@ class JobResourceTest {
       "personOwnerRebuildJob",
       "personRecordStatusJob",
       "revalCurrentPmJob",
-      "postFundingSyncJob"
+      "postFundingStatusSyncJob"
   })
   void shouldReturnAlreadyRunningWhenTriggerARunningJob(String name) throws Exception {
 
@@ -293,7 +293,7 @@ class JobResourceTest {
         .thenReturn(true);
     when(revalCurrentPmSyncJob.isCurrentlyRunning())
         .thenReturn(true);
-    when(postFundingSyncJob.isCurrentlyRunning())
+    when(postFundingStatusSyncJob.isCurrentlyRunning())
         .thenReturn(true);
 
     mockMvc.perform(put("/api/job/" + name)

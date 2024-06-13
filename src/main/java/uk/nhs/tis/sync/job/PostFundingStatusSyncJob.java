@@ -1,14 +1,22 @@
 package uk.nhs.tis.sync.job;
 
+import static uk.nhs.tis.sync.job.TrustAdminSyncJobTemplate.LAST_ENTITY_ID;
+
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
 import com.transformuk.hee.tis.tcs.service.model.Post;
 import com.transformuk.hee.tis.tcs.service.model.PostFunding;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.Query;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.apache.commons.collections4.CollectionUtils;
@@ -26,12 +34,11 @@ import uk.nhs.tis.sync.model.EntityData;
  * status based on specified criteria.
  */
 @Component
-@ManagedResource(objectName = "sync.mbean:name=PostFundingSyncJob",
+@ManagedResource(objectName = "sync.mbean:name=PostFundingStatusSyncJob",
     description = "Job for updating funding status for posts")
 @Slf4j
-public class PostFundingSyncJob extends PostFundingSyncJobTemplate<Post> {
+public class PostFundingStatusSyncJob extends CommonSyncJobTemplate<Post> {
 
-  private static final String JOB_NAME = "Post funding sync job";
   private static final int FIFTEEN_MIN = 15 * 60 * 1000;
   private static final int DEFAULT_PAGE_SIZE = 5000;
   private static final String BASE_QUERY = " SELECT postId "
@@ -42,29 +49,47 @@ public class PostFundingSyncJob extends PostFundingSyncJobTemplate<Post> {
       + " GROUP BY postId "
       + " ORDER BY postId LIMIT :pageSize ";
 
-  @Autowired
-  protected EntityManagerFactory entityManagerFactory;
-
-  @Autowired(required = false)
-  protected ApplicationEventPublisher applicationEventPublisher;
-
-  public PostFundingSyncJob(EntityManagerFactory entityManagerFactory,
+  public PostFundingStatusSyncJob(EntityManagerFactory entityManagerFactory,
       @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher) {
     super(entityManagerFactory, applicationEventPublisher);
   }
 
-  @Scheduled(cron = "${application.cron.postFundingSyncJob}")
-  @SchedulerLock(name = "postFundingSyncJobTask", lockAtLeastFor = FIFTEEN_MIN, lockAtMostFor = FIFTEEN_MIN)
+  @Scheduled(cron = "${application.cron.postFundingStatusSyncJob}")
+  @SchedulerLock(name = "postFundingStatusSyncJobTask", lockAtLeastFor = FIFTEEN_MIN,
+      lockAtMostFor = FIFTEEN_MIN)
   @ManagedOperation(description = "Run sync of modifying the post funding status")
-  public void postFundingSyncJob() {
+  public void postFundingStatusSyncJob() {
     runSyncJob(null);
   }
 
-  @Override
+  public void run(String params) {
+    runSyncJob(params);
+  }
+
   protected String buildQueryForDate() {
     LocalDate today = LocalDate.now();
     String endDate = today.minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
     return BASE_QUERY.replace(":endDate", endDate).replace(":pageSize", "" + DEFAULT_PAGE_SIZE);
+  }
+
+  @Override
+  protected String assembleQueryString(String option) {
+    String queryString = buildQueryForDate();
+    log.debug("Job will run with query:[{}]", queryString);
+    return queryString;
+  }
+
+  @Override
+  protected List<EntityData> collectData(Map<String, Long> ids, String queryString,
+      EntityManager entityManager) {
+    long lastPostId = ids.get(LAST_ENTITY_ID);
+    Query query =
+        entityManager.createNativeQuery(queryString).setParameter("lastPostId", lastPostId);
+
+    List<BigInteger> resultList = query.getResultList();
+    return resultList.stream().filter(Objects::nonNull).map(objArr ->
+        new EntityData().entityId(objArr.longValue())
+    ).collect(Collectors.toList());
   }
 
   @Override
@@ -93,5 +118,21 @@ public class PostFundingSyncJob extends PostFundingSyncJobTemplate<Post> {
       dataToSave.forEach(entityManager::persist);
       entityManager.flush();
     }
+  }
+
+  @Override
+  protected Map<String, Long> initIds() {
+    Map<String, Long> idMap = new HashMap<>();
+    idMap.put(LAST_ENTITY_ID, 0L);
+    return idMap;
+  }
+
+  @Override
+  protected void updateIds(Map<String, Long> ids, List<EntityData> collectedData) {
+    ids.put(LAST_ENTITY_ID, collectedData.get(collectedData.size() - 1).getEntityId());
+  }
+
+  @Override
+  protected void deleteData() {
   }
 }

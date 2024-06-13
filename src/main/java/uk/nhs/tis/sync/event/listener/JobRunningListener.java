@@ -16,7 +16,7 @@ import uk.nhs.tis.sync.job.PersonPlacementEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PersonPlacementTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.PersonRecordStatusJob;
 import uk.nhs.tis.sync.job.PostEmployingBodyTrustJob;
-import uk.nhs.tis.sync.job.PostFundingSyncJob;
+import uk.nhs.tis.sync.job.PostFundingStatusSyncJob;
 import uk.nhs.tis.sync.job.PostTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
 import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
@@ -51,7 +51,7 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
 
   private RevalCurrentPmSyncJob revalCurrentPmSyncJob;
 
-  private PostFundingSyncJob postFundingSyncJob;
+  private PostFundingStatusSyncJob postFundingStatusSyncJob;
 
   private LocalTime earliest;
 
@@ -63,8 +63,8 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
   }
 
   @Autowired
-  public void setPostFundingSyncJob(PostFundingSyncJob postFundingSyncJob) {
-    this.postFundingSyncJob = postFundingSyncJob;
+  public void setPostFundingStatusSyncJob(PostFundingStatusSyncJob postFundingStatusSyncJob) {
+    this.postFundingStatusSyncJob = postFundingStatusSyncJob;
   }
 
   @Override
@@ -113,10 +113,10 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
           Thread.sleep(SLEEP_DURATION);
         } while (revalCurrentPmSyncJob.isCurrentlyRunning());
       }
-      postFundingSyncJob.postFundingSyncJob();
+      postFundingStatusSyncJob.postFundingStatusSyncJob();
       do {
         Thread.sleep(SLEEP_DURATION);
-      } while (postFundingSyncJob.isCurrentlyRunning());
+      } while (postFundingStatusSyncJob.isCurrentlyRunning());
     } catch (InterruptedException e) {
       LOG.error(e.getMessage(), e);
     }

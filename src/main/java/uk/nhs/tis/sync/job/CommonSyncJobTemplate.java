@@ -33,7 +33,7 @@ public abstract class CommonSyncJobTemplate<T> implements RunnableJob {
 
   protected final ApplicationEventPublisher applicationEventPublisher;
 
-  private final EntityManagerFactory entityManagerFactory;
+  protected EntityManagerFactory entityManagerFactory;
 
   protected CommonSyncJobTemplate(EntityManagerFactory entityManagerFactory,
       @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher) {
