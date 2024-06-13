@@ -134,5 +134,7 @@ public class PostFundingStatusSyncJob extends CommonSyncJobTemplate<Post> {
 
   @Override
   protected void deleteData() {
+    // This method is intentionally left blank because
+    // delete will not required.
   }
 }
