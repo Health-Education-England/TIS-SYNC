@@ -3,8 +3,10 @@ package uk.nhs.tis.sync.job;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -56,7 +58,6 @@ class PostFundingStatusSyncJobTest {
   @BeforeEach
   void setUp() {
     postFundingStatusSyncJob = new PostFundingStatusSyncJob(entityManagerFactory, applicationEventPublisher);
-    postFundingStatusSyncJob.entityManagerFactory = entityManagerFactory;
   }
 
   @Test
@@ -72,7 +73,7 @@ class PostFundingStatusSyncJobTest {
         + " ORDER BY postId LIMIT " + DEFAULT_PAGE_SIZE + " ";
 
     String actualQuery = postFundingStatusSyncJob.buildQueryForDate();
-    assertThat(expectedQuery, is(actualQuery));
+    assertThat(actualQuery, is(expectedQuery));
   }
 
   @Test
@@ -83,13 +84,14 @@ class PostFundingStatusSyncJobTest {
     int result = postFundingStatusSyncJob.convertData(entitiesToSave, entityData, entityManager);
 
     assertThat(result, is(0));
-    assertThat(entitiesToSave.size(), is(0));
+    assertThat(entitiesToSave, is(empty()));
   }
 
   @Test
   void testShouldPassWhenAPostHasMultiplePostFundings() {
     Post post = new Post();
     post.setId(1L);
+
     PostFunding postFunding1 = new PostFunding();
     postFunding1.setId(999L);
     PostFunding postFunding2 = new PostFunding();
@@ -108,9 +110,8 @@ class PostFundingStatusSyncJobTest {
 
     int result = postFundingStatusSyncJob.convertData(entitiesToSave, entityData, entityManager);
 
-    assertThat(entitiesToSave.size(), is(1));
     assertThat(result, is(0));
-    assertThat(entitiesToSave.contains(post), is(true));
+    assertThat(entitiesToSave, contains(post));
     assertThat(post.getFundingStatus(), is(Status.CURRENT));
   }
 
@@ -135,7 +136,7 @@ class PostFundingStatusSyncJobTest {
     int result = postFundingStatusSyncJob.convertData(entitiesToSave, entityData, entityManager);
 
     assertThat(result, is(0));
-    assertThat(entitiesToSave.contains(post), is(true));
+    assertThat(entitiesToSave, contains(post));
     assertThat(post.getFundingStatus(), is(Status.INACTIVE));
   }
 
@@ -147,7 +148,7 @@ class PostFundingStatusSyncJobTest {
     postFundingStatusSyncJob.handleData(dataToSave, entityManager);
 
     verify(entityManager, times(1)).persist(post);
-    verify(entityManager, times(1)).flush();
+    verify(entityManager).flush();
   }
 
   @Test
@@ -155,7 +156,7 @@ class PostFundingStatusSyncJobTest {
     boolean running = postFundingStatusSyncJob.isCurrentlyRunning();
     String runningTime = postFundingStatusSyncJob.elapsedTime();
     assertFalse(running);
-    assertEquals("0s", runningTime);
+    assertThat(runningTime, is("0s"));
   }
 
   @Test
@@ -163,7 +164,9 @@ class PostFundingStatusSyncJobTest {
     when(entityManagerFactory.createEntityManager())
         .thenThrow(new RuntimeException("Expected"));
     postFundingStatusSyncJob.run("");
-    await().pollDelay(1, TimeUnit.SECONDS).atLeast(1, TimeUnit.SECONDS).until(() -> true);
+    await()
+        .atMost(5, TimeUnit.SECONDS)
+        .until(() -> !postFundingStatusSyncJob.isCurrentlyRunning());
     assertThat("should be running", postFundingStatusSyncJob.isCurrentlyRunning(), is(false));
   }
 
