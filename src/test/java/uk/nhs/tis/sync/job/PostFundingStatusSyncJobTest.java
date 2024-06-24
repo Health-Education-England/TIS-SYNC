@@ -88,7 +88,7 @@ class PostFundingStatusSyncJobTest {
   }
 
   @Test
-  public void testShouldPassWhenMultipleFundingsAllEndDatesYesterday() {
+  void testShouldPassWhenMultipleFundingsAllEndDatesYesterday() {
     LocalDate yesterday = LocalDate.now().minusDays(1);
 
     Post post = new Post();
@@ -122,7 +122,7 @@ class PostFundingStatusSyncJobTest {
   }
 
   @Test
-  void testShouldPassWhenAPostHasMultiplePostFundings() {
+  void testShouldPassWhenAPostHasMultiplePostFundingsEndDateNotYesterday() {
     Post post = new Post();
     post.setId(1L);
 
@@ -130,7 +130,7 @@ class PostFundingStatusSyncJobTest {
     postFunding1.setId(999L);
     PostFunding postFunding2 = new PostFunding();
     postFunding2.setId(1000L);
-    post.fundingStatus(Status.CURRENT);
+    post.setFundingStatus(Status.CURRENT);
     Set<PostFunding> postFundingSet = new HashSet<>(Arrays.asList(postFunding1, postFunding2));
     post.setFundings(postFundingSet);
 
@@ -150,12 +150,45 @@ class PostFundingStatusSyncJobTest {
   }
 
   @Test
-  void testJobShouldChangeCurrentPostFundingToInactive() {
+  void testShouldPassWhenAPostHasSinglePostFundingEndDateYesterday() {
     Post post = new Post();
     post.setId(1L);
+    LocalDate yesterday = LocalDate.now().minusDays(1);
+
     PostFunding postFunding = new PostFunding();
     postFunding.setId(999L);
+    postFunding.setEndDate(yesterday);
+
+    post.setFundingStatus(Status.CURRENT);
+    Set<PostFunding> postFundingSet = new HashSet<>(Arrays.asList(postFunding));
+    post.setFundings(postFundingSet);
+
+    when(entityManager.find(Post.class, post.getId())).thenReturn(post);
+
+    List<EntityData> entityData = new ArrayList<>();
+    EntityData entity = new EntityData();
+    entity.entityId(1L);
+    entityData.add(entity);
+    Set<Post> entitiesToSave = new HashSet<>();
+
+    int result = postFundingStatusSyncJob.convertData(entitiesToSave, entityData, entityManager);
+
+    assertThat(result, is(0));
+    assertThat(entitiesToSave, contains(post));
+    assertThat(post.getFundingStatus(), is(Status.INACTIVE));
+  }
+
+  @Test
+  void testJobShouldPassWhenPostFundingEndDateIsEmpty() {
+    Post post = new Post();
+    post.setId(1L);
+
+    PostFunding postFunding = new PostFunding();
+    postFunding.setId(999L);
+    postFunding.setEndDate(null);
+
     post.fundingStatus(Status.CURRENT);
+
     Set<PostFunding> postFundingSet = Collections.singleton(postFunding);
     post.setFundings(postFundingSet);
 
@@ -171,7 +204,7 @@ class PostFundingStatusSyncJobTest {
 
     assertThat(result, is(0));
     assertThat(entitiesToSave, contains(post));
-    assertThat(post.getFundingStatus(), is(Status.INACTIVE));
+    assertThat(post.getFundingStatus(), is(Status.CURRENT));
   }
 
   @Test

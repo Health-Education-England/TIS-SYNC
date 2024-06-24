@@ -102,20 +102,17 @@ public class PostFundingStatusSyncJob extends CommonSyncJobTemplate<Post> {
       if (post != null) {
         Set<PostFunding> fundings = post.getFundings();
 
-        if (fundings.size() > 1) {
+        if (fundings.size() >= 1) {
           boolean allEndDatesYesterday = true;
           for (PostFunding funding : fundings) {
-            if(!yesterday.equals(funding.getEndDate())) {
+            if (!yesterday.equals(funding.getEndDate())) {
               allEndDatesYesterday = false;
               break;
             }
           }
-          if(allEndDatesYesterday) {
+          if (allEndDatesYesterday) {
             post.setFundingStatus(Status.INACTIVE);
           }
-          entitiesToSave.add(post);
-        } else if (fundings.size() == 1) {
-          post.setFundingStatus(Status.INACTIVE);
           entitiesToSave.add(post);
         }
       }

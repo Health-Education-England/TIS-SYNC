@@ -68,7 +68,7 @@ class JobResourceTest {
   private RevalCurrentPlacementSyncJob revalCurrentPlacementSyncJob;
 
   @MockBean
-  PostFundingStatusSyncJob postFundingStatusSyncJob;
+  private PostFundingStatusSyncJob postFundingStatusSyncJob;
 
   private MockMvc mockMvc;
 
@@ -82,8 +82,8 @@ class JobResourceTest {
         postTrainingBodyTrustJob,
         personElasticSearchSyncJob,
         personOwnerRebuildJob,
-        personRecordStatusJob,
-        postFundingStatusSyncJob);
+        personRecordStatusJob);
+    jobResource.setPostFundingStatusSyncJob(postFundingStatusSyncJob);
     jobResource.setRevalCurrentPmSyncJob(revalCurrentPmSyncJob);
     jobResource.setRevalCurrentPlacementSyncJob((revalCurrentPlacementSyncJob));
     mockMvc = MockMvcBuilders.standaloneSetup(jobResource).build();
