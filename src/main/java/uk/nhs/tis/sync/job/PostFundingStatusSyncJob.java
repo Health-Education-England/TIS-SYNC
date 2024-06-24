@@ -100,24 +100,30 @@ public class PostFundingStatusSyncJob extends CommonSyncJobTemplate<Post> {
       Post post = entityManager.find(Post.class, entity.getEntityId());
 
       if (post != null) {
-        Set<PostFunding> fundings = post.getFundings();
-
-        if (fundings.size() >= 1) {
-          boolean allEndDatesYesterday = true;
-          for (PostFunding funding : fundings) {
-            if (!yesterday.equals(funding.getEndDate())) {
-              allEndDatesYesterday = false;
-              break;
-            }
-          }
-          if (allEndDatesYesterday) {
-            post.setFundingStatus(Status.INACTIVE);
-          }
-          entitiesToSave.add(post);
-        }
+        processPostFundingStatus(entitiesToSave, yesterday, post);
       }
     }
     return entities - entitiesToSave.size();
+  }
+
+  private void processPostFundingStatus(Set<Post> entitiesToSave, LocalDate yesterday, Post post) {
+    Set<PostFunding> fundings = post.getFundings();
+    if (!fundings.isEmpty()) {
+      boolean allEndDatesYesterday = checkAllEndDatesYesterday(fundings, yesterday);
+      if (allEndDatesYesterday) {
+        post.setFundingStatus(Status.INACTIVE);
+      }
+      entitiesToSave.add(post);
+    }
+  }
+
+  private boolean checkAllEndDatesYesterday(Set<PostFunding> fundings, LocalDate yesterday) {
+    for (PostFunding funding : fundings) {
+      if (!yesterday.equals(funding.getEndDate())) {
+        return false;
+      }
+    }
+    return true;
   }
 
   protected void handleData(Set<Post> dataToSave, EntityManager entityManager) {
