@@ -51,6 +51,7 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
 
   private RevalCurrentPmSyncJob revalCurrentPmSyncJob;
 
+  @Autowired
   private PostFundingStatusSyncJob postFundingStatusSyncJob;
 
   private LocalTime earliest;
@@ -60,11 +61,6 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
   @Autowired(required = false)
   public void setRevalCurrentPmSyncJob(RevalCurrentPmSyncJob revalCurrentPmSyncJob) {
     this.revalCurrentPmSyncJob = revalCurrentPmSyncJob;
-  }
-
-  @Autowired
-  public void setPostFundingStatusSyncJob(PostFundingStatusSyncJob postFundingStatusSyncJob) {
-    this.postFundingStatusSyncJob = postFundingStatusSyncJob;
   }
 
   @Override

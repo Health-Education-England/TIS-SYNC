@@ -65,10 +65,10 @@ class PostFundingStatusSyncJobTest {
     LocalDate dateOfChange = LocalDate.now();
     String expectedQuery = " SELECT postId "
         + "  FROM PostFunding "
-        + "      WHERE postId > :lastPostId "
+        + "  WHERE postId > :lastPostId "
         + "      AND startDate IS NOT NULL "
-        + "      AND (endDate = '" + dateOfChange.minusDays(1)
-        .format(DateTimeFormatter.ISO_LOCAL_DATE) + "' OR endDate IS NULL) "
+        + "      AND endDate = '" + dateOfChange.minusDays(1)
+        .format(DateTimeFormatter.ISO_LOCAL_DATE) + "' "
         + " GROUP BY postId "
         + " ORDER BY postId LIMIT " + DEFAULT_PAGE_SIZE + " ";
 
@@ -85,6 +85,40 @@ class PostFundingStatusSyncJobTest {
 
     assertThat(result, is(0));
     assertThat(entitiesToSave, is(empty()));
+  }
+
+  @Test
+  public void testShouldPassWhenMultipleFundingsAllEndDatesYesterday() {
+    LocalDate yesterday = LocalDate.now().minusDays(1);
+
+    Post post = new Post();
+    post.setId(1L);
+
+    PostFunding postFunding1 = new PostFunding();
+    postFunding1.setId(999L);
+    postFunding1.setEndDate(yesterday);
+
+    PostFunding postFunding2 = new PostFunding();
+    postFunding2.setId(1000L);
+    postFunding2.setEndDate(yesterday);
+
+    post.fundingStatus(Status.CURRENT);
+    Set<PostFunding> postFundingSet = new HashSet<>(Arrays.asList(postFunding1, postFunding2));
+    post.setFundings(postFundingSet);
+
+    when(entityManager.find(Post.class, post.getId())).thenReturn(post);
+
+    List<EntityData> entityData = new ArrayList<>();
+    EntityData entity = new EntityData();
+    entity.entityId(1L);
+    entityData.add(entity);
+    Set<Post> entitiesToSave = new HashSet<>();
+
+    int result = postFundingStatusSyncJob.convertData(entitiesToSave, entityData, entityManager);
+
+    assertThat(result, is(0));
+    assertThat(entitiesToSave, contains(post));
+    assertThat(post.getFundingStatus(), is(Status.INACTIVE));
   }
 
   @Test

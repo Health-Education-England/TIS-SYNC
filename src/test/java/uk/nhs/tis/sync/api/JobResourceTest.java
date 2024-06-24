@@ -82,10 +82,10 @@ class JobResourceTest {
         postTrainingBodyTrustJob,
         personElasticSearchSyncJob,
         personOwnerRebuildJob,
-        personRecordStatusJob);
+        personRecordStatusJob,
+        postFundingStatusSyncJob);
     jobResource.setRevalCurrentPmSyncJob(revalCurrentPmSyncJob);
     jobResource.setRevalCurrentPlacementSyncJob((revalCurrentPlacementSyncJob));
-    jobResource.setPostFundingStatusSyncJob(postFundingStatusSyncJob);
     mockMvc = MockMvcBuilders.standaloneSetup(jobResource).build();
   }
 

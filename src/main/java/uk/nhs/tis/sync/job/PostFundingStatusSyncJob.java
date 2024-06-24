@@ -39,13 +39,11 @@ import uk.nhs.tis.sync.model.EntityData;
 @Slf4j
 public class PostFundingStatusSyncJob extends CommonSyncJobTemplate<Post> {
 
-  private static final int FIFTEEN_MIN = 15 * 60 * 1000;
-  private static final int DEFAULT_PAGE_SIZE = 5000;
   private static final String BASE_QUERY = " SELECT postId "
       + "  FROM PostFunding "
-      + "      WHERE postId > :lastPostId "
+      + "  WHERE postId > :lastPostId "
       + "      AND startDate IS NOT NULL "
-      + "      AND (endDate = ':endDate' OR endDate IS NULL) "
+      + "      AND endDate = ':endDate' "
       + " GROUP BY postId "
       + " ORDER BY postId LIMIT :pageSize ";
 
@@ -63,13 +61,13 @@ public class PostFundingStatusSyncJob extends CommonSyncJobTemplate<Post> {
   }
 
   public void run(String params) {
-    runSyncJob(params);
+    postFundingStatusSyncJob();
   }
 
   protected String buildQueryForDate() {
     LocalDate today = LocalDate.now();
     String endDate = today.minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
-    return BASE_QUERY.replace(":endDate", endDate).replace(":pageSize", "" + DEFAULT_PAGE_SIZE);
+    return BASE_QUERY.replace(":endDate", endDate).replace(":pageSize", "" + getPageSize());
   }
 
   @Override
@@ -96,6 +94,8 @@ public class PostFundingStatusSyncJob extends CommonSyncJobTemplate<Post> {
   protected int convertData(Set<Post> entitiesToSave, List<EntityData> entityData,
       EntityManager entityManager) {
     int entities = entityData.size();
+    LocalDate yesterday = LocalDate.now().minusDays(1);
+
     for (EntityData entity : entityData) {
       Post post = entityManager.find(Post.class, entity.getEntityId());
 
@@ -103,6 +103,16 @@ public class PostFundingStatusSyncJob extends CommonSyncJobTemplate<Post> {
         Set<PostFunding> fundings = post.getFundings();
 
         if (fundings.size() > 1) {
+          boolean allEndDatesYesterday = true;
+          for (PostFunding funding : fundings) {
+            if(!yesterday.equals(funding.getEndDate())) {
+              allEndDatesYesterday = false;
+              break;
+            }
+          }
+          if(allEndDatesYesterday) {
+            post.setFundingStatus(Status.INACTIVE);
+          }
           entitiesToSave.add(post);
         } else if (fundings.size() == 1) {
           post.setFundingStatus(Status.INACTIVE);
