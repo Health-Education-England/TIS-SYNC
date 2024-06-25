@@ -39,13 +39,13 @@ import uk.nhs.tis.sync.model.EntityData;
 @Slf4j
 public class PostFundingStatusSyncJob extends CommonSyncJobTemplate<Post> {
 
-  private static final String BASE_QUERY = " SELECT postId "
-      + "  FROM PostFunding "
-      + "  WHERE postId > :lastPostId "
-      + "      AND startDate IS NOT NULL "
-      + "      AND endDate = ':endDate' "
-      + " GROUP BY postId "
-      + " ORDER BY postId LIMIT :pageSize ";
+  private static final String BASE_QUERY = " SELECT postId"
+      + " FROM PostFunding"
+      + " WHERE postId > :lastPostId"
+      + "      AND startDate IS NOT NULL"
+      + "      AND endDate = ':endDate'"
+      + " GROUP BY postId"
+      + " ORDER BY postId LIMIT :pageSize";
 
   public PostFundingStatusSyncJob(EntityManagerFactory entityManagerFactory,
       @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher) {
@@ -112,14 +112,14 @@ public class PostFundingStatusSyncJob extends CommonSyncJobTemplate<Post> {
       boolean allEndDatesYesterday = checkAllEndDatesYesterday(fundings, yesterday);
       if (allEndDatesYesterday) {
         post.setFundingStatus(Status.INACTIVE);
+        entitiesToSave.add(post);
       }
-      entitiesToSave.add(post);
     }
   }
 
   private boolean checkAllEndDatesYesterday(Set<PostFunding> fundings, LocalDate yesterday) {
     for (PostFunding funding : fundings) {
-      if (!yesterday.equals(funding.getEndDate())) {
+      if (funding.getEndDate() == null || yesterday.isBefore(funding.getEndDate())) {
         return false;
       }
     }

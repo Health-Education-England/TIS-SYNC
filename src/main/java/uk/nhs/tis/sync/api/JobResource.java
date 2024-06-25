@@ -71,7 +71,7 @@ public class JobResource {
     this.personRecordStatusJob = personRecordStatusJob;
   }
 
-  @Autowired(required = false)
+  @Autowired
   public void setPostFundingStatusSyncJob(PostFundingStatusSyncJob postFundingStatusSyncJob) {
     this.postFundingStatusSyncJob = postFundingStatusSyncJob;
   }
