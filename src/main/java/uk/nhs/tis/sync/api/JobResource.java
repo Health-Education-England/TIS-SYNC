@@ -20,6 +20,7 @@ import uk.nhs.tis.sync.job.PersonPlacementEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PersonPlacementTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.PersonRecordStatusJob;
 import uk.nhs.tis.sync.job.PostEmployingBodyTrustJob;
+import uk.nhs.tis.sync.job.PostFundingStatusSyncJob;
 import uk.nhs.tis.sync.job.PostTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.RunnableJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
@@ -47,6 +48,8 @@ public class JobResource {
   private final PersonRecordStatusJob personRecordStatusJob;
   private RevalCurrentPmSyncJob revalCurrentPmSyncJob;
   private RevalCurrentPlacementSyncJob revalCurrentPlacementSyncJob;
+  private PostFundingStatusSyncJob postFundingStatusSyncJob;
+
   @Autowired
   private JobRunningListener jobRunningListener;
   @Value("${spring.profiles.active:}")
@@ -66,6 +69,11 @@ public class JobResource {
     this.personElasticSearchSyncJob = personElasticSearchSyncJob;
     this.personOwnerRebuildJob = personOwnerRebuildJob;
     this.personRecordStatusJob = personRecordStatusJob;
+  }
+
+  @Autowired
+  public void setPostFundingStatusSyncJob(PostFundingStatusSyncJob postFundingStatusSyncJob) {
+    this.postFundingStatusSyncJob = postFundingStatusSyncJob;
   }
 
   @Autowired(required = false)
@@ -104,6 +112,7 @@ public class JobResource {
     if (revalCurrentPlacementSyncJob != null) {
       statusMap.put("revalCurrentPlacementJob", revalCurrentPlacementSyncJob.isCurrentlyRunning());
     }
+    statusMap.put("postFundingStatusSyncJob", postFundingStatusSyncJob.isCurrentlyRunning());
     return ResponseEntity.ok().body(statusMap);
   }
 
@@ -178,6 +187,9 @@ public class JobResource {
         } else {
           return ResponseEntity.badRequest().body(JOB_NOT_FOUND);
         }
+        break;
+      case "postFundingStatusSyncJob":
+        status = ensureRunning(postFundingStatusSyncJob, params);
         break;
       default:
         return ResponseEntity.badRequest().body(JOB_NOT_FOUND);

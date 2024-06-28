@@ -142,6 +142,7 @@ function registerListeners() {
   document.getElementById("postTrainingBodyTrustJob").addEventListener("click", runJob);
   document.getElementById("personElasticSearchSyncJob").addEventListener("click", runJob);
   document.getElementById("personRecordStatusJob").addEventListener("click", runPersonStatusSyncJob);
+  document.getElementById("postFundingStatusSyncJob").addEventListener("click", runJob);
   document.getElementById("runAllJobs").addEventListener("click", runAllJobs);
   document.getElementById("getStatus").addEventListener("click", getStatus);
   document.getElementById("revalCurrentPmJob").addEventListener("click", runJob);
