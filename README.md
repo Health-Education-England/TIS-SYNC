@@ -26,7 +26,7 @@ The following environmental variables must be provided
 | **PostTrainingBodyTrustJob**             |      PostTrainingBodyTrustJob       |          PostTrainingBodyTrustFullSync |                                                  none (assuming only this failed) |
 | **PersonRecordStatusJob**                |        PersonRecordStatusJob        |                  personRecordStatusJob |                        **PersonElasticSearchSyncJob** (assuming only this failed) |
 | **PersonElasticSearchSyncJob**           |       PersonElasticSearchJob        |                personElasticSearchSync |                                                                              none |
-| **PostFundingStatusSyncJob**             |      PostFundingStatusSyncJob       |         postFundingStatusSyncJob       |                                              Re-run **Post Funding Status Sync Job** |
+| **PostFundingStatusSyncJob**             |      PostFundingStatusSyncJob       |         postFundingStatusSyncJob       |                                                  none (assuming only this failed) |
 
 ### Run jobs on Buttons Page
 1. If you want to run jobs on server, go to page https://\<host IP here\>/sync/.
