@@ -1,5 +1,6 @@
 package uk.nhs.tis.sync.service;
 
+import com.transformuk.hee.tis.profile.client.service.impl.ProfileServiceImpl;
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
 import com.transformuk.hee.tis.tcs.api.dto.PersonDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
@@ -24,7 +25,9 @@ public class DataRequestService {
 
   private static final String TABLE_CURRICULUM = "Curriculum";
   private static final String TABLE_CURRICULUM_MEMBERSHIP = "CurriculumMembership";
+  private static final String TABLE_DBC = "DBC";
   private static final String TABLE_GRADE = "Grade";
+  private static final String TABLE_HEE_USER = "HeeUser";
   private static final String TABLE_PERSON = "Person";
   private static final String TABLE_PLACEMENT = "Placement";
   private static final String TABLE_PLACEMENT_SPECIALTY = "PlacementSpecialty";
@@ -39,9 +42,13 @@ public class DataRequestService {
 
   private final ReferenceServiceImpl referenceServiceImpl;
 
-  DataRequestService(TcsServiceImpl tcsServiceImpl, ReferenceServiceImpl referenceServiceImpl) {
+  private final ProfileServiceImpl profileServiceImpl;
+
+  DataRequestService(TcsServiceImpl tcsServiceImpl, ReferenceServiceImpl referenceServiceImpl,
+                     ProfileServiceImpl profileServiceImpl) {
     this.tcsServiceImpl = tcsServiceImpl;
     this.referenceServiceImpl = referenceServiceImpl;
+    this.profileServiceImpl = profileServiceImpl;
   }
 
   /**
@@ -72,6 +79,15 @@ public class DataRequestService {
         return programmeMembership.getCurriculumMemberships().stream()
             .map(cm -> new CurriculumMembershipWrapperDto(uuid, cm))
             .collect(Collectors.toList());
+      }
+
+      if(table.equals(TABLE_HEE_USER) && message.containsKey("name")) {
+        String name = message.get("name");
+        return createNonNullList(profileServiceImpl.getSingleAdminUser(name));
+      }
+      if(table.equals(TABLE_DBC) && message.containsKey("dbc")) {
+        String dbc = message.get("dbc");
+        return createNonNullList(referenceServiceImpl.getDBCByCode(dbc));
       }
 
       if (message.containsKey("id")) {

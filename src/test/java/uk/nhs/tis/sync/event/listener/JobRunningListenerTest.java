@@ -3,6 +3,7 @@ package uk.nhs.tis.sync.event.listener;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.transformuk.hee.tis.profile.client.service.impl.ProfileServiceImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,8 @@ public class JobRunningListenerTest {
   private RevalCurrentPmSyncJob revalCurrentPmSyncJob;
   @MockBean
   private PostFundingStatusSyncJob postFundingStatusSyncJob;
+  @MockBean
+  ProfileServiceImpl profileService;
 
   @Autowired
   JobRunningListener testClass;

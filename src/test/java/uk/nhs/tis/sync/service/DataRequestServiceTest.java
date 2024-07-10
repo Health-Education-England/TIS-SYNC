@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.transformuk.hee.tis.profile.client.service.impl.ProfileServiceImpl;
 import com.transformuk.hee.tis.reference.api.dto.GradeDTO;
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
@@ -61,11 +62,14 @@ class DataRequestServiceTest {
 
   private ReferenceServiceImpl referenceService;
 
+  private ProfileServiceImpl profileService;
+
   @BeforeEach
   void setUp() {
     tcsService = mock(TcsServiceImpl.class);
     referenceService = mock(ReferenceServiceImpl.class);
-    service = new DataRequestService(tcsService, referenceService);
+    profileService = mock(ProfileServiceImpl.class);
+    service = new DataRequestService(tcsService, referenceService, profileService);
   }
 
   @Test

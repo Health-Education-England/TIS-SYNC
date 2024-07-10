@@ -1,5 +1,6 @@
 package uk.nhs.tis.sync.job;
 
+import com.transformuk.hee.tis.profile.client.service.impl.ProfileServiceImpl;
 import com.transformuk.hee.tis.tcs.service.repository.PersonTrustRepository;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
@@ -9,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
@@ -16,6 +18,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 //@Sql({"/scripts/posts.sql","/scripts/personRows.sql","/scripts/placements.sql"})
 //@Sql(scripts = {"/scripts/deletePlacements.sql","/scripts/deletePersonRows.sql","/scripts/deletePosts.sql"}, executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 public class PersonPlacementEmployingBodyTrustJobIntegrationTest {
+
+  @MockBean
+  ProfileServiceImpl profileService;
 
   @Autowired
   PersonPlacementEmployingBodyTrustJob job;
