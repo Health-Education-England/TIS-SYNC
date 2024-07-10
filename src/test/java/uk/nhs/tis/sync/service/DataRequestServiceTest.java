@@ -830,6 +830,18 @@ class DataRequestServiceTest {
   }
 
   @Test
+  void shouldReturnEmptyWhenHeeUserMessageHasWrongKey() {
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "HeeUser");
+      put("another key", HEE_USER_NAME);
+    }};
+    List<Object> heeUsers = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", heeUsers.size(), is(0));
+    verifyNoInteractions(profileService);
+  }
+
+  @Test
   void shouldReturnDbcWhenDbcFound() {
     DBCDTO expectedDto = new DBCDTO();
     ResponseEntity<DBCDTO> responseEntity = new ResponseEntity<>(expectedDto, HttpStatus.OK);
@@ -857,5 +869,17 @@ class DataRequestServiceTest {
     List<Object> dbcs = service.retrieveDtos(message);
 
     assertThat("Unexpected DTO count.", dbcs.size(), is(0));
+  }
+
+  @Test
+  void shouldReturnEmptyWhenDbcMessageHasWrongKey() {
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "DBC");
+      put("another key", DBC_VALUE);
+    }};
+    List<Object> dbcs = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", dbcs.size(), is(0));
+    verifyNoInteractions(referenceService);
   }
 }

@@ -83,12 +83,12 @@ public class DataRequestService {
             .collect(Collectors.toList());
       }
 
-      if(table.equals(TABLE_HEE_USER) && message.containsKey("name")) {
+      if (table.equals(TABLE_HEE_USER) && message.containsKey("name")) {
         String name = message.get("name");
         return createNonNullList(profileServiceImpl.getSingleAdminUser(name));
       }
 
-      if(table.equals(TABLE_DBC) && message.containsKey("dbc")) {
+      if (table.equals(TABLE_DBC) && message.containsKey("dbc")) {
         String dbc = message.get("dbc");
         ResponseEntity<DBCDTO> responseEntity = referenceServiceImpl.getDBCByCode(dbc);
         return createNonNullList(responseEntity.getBody());

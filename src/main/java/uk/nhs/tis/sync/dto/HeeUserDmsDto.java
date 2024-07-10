@@ -2,6 +2,9 @@ package uk.nhs.tis.sync.dto;
 
 import lombok.Data;
 
+/**
+ * A DTO for transferring HeeUser data to the DMS.
+ */
 @Data
 public class HeeUserDmsDto {
   private final String name;

@@ -10,9 +10,11 @@ import java.util.HashSet;
 import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import uk.nhs.tis.sync.dto.HeeUserDmsDto;
 
-public class HeeUserMapperTest {
+class HeeUserMapperTest {
 
   private HeeUserMapper mapper;
 
@@ -58,5 +60,13 @@ public class HeeUserMapperTest {
     assertEquals("email", heeUserDmsDto.getEmailAddress());
     assertEquals("phone", heeUserDmsDto.getPhoneNumber());
     //other HeeUserDto properties are ignored
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  void shouldMapBooleansToZeroOrOneString(boolean bool) {
+    heeUserDto.setActive(bool);
+    HeeUserDmsDto heeUserDmsDto = mapper.toDmsDto(heeUserDto);
+    assertEquals(bool ? "1" : "0", heeUserDmsDto.getActive());
   }
 }
