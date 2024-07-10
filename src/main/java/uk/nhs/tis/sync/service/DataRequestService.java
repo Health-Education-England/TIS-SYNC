@@ -1,6 +1,7 @@
 package uk.nhs.tis.sync.service;
 
 import com.transformuk.hee.tis.profile.client.service.impl.ProfileServiceImpl;
+import com.transformuk.hee.tis.reference.api.dto.DBCDTO;
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
 import com.transformuk.hee.tis.tcs.api.dto.PersonDTO;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
@@ -16,6 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import uk.nhs.tis.sync.dto.CurriculumMembershipWrapperDto;
 
@@ -85,9 +87,11 @@ public class DataRequestService {
         String name = message.get("name");
         return createNonNullList(profileServiceImpl.getSingleAdminUser(name));
       }
+
       if(table.equals(TABLE_DBC) && message.containsKey("dbc")) {
         String dbc = message.get("dbc");
-        return createNonNullList(referenceServiceImpl.getDBCByCode(dbc));
+        ResponseEntity<DBCDTO> responseEntity = referenceServiceImpl.getDBCByCode(dbc);
+        return createNonNullList(responseEntity.getBody());
       }
 
       if (message.containsKey("id")) {
