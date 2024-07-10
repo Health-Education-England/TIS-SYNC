@@ -8,7 +8,6 @@ import com.transformuk.hee.tis.profile.service.dto.UserProgrammeDTO;
 import com.transformuk.hee.tis.profile.service.dto.UserTrustDTO;
 import java.util.HashSet;
 import java.util.Set;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
