@@ -11,7 +11,6 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
-import com.transformuk.hee.tis.profile.client.service.impl.ProfileServiceImpl;
 import com.transformuk.hee.tis.tcs.service.repository.PersonRepository;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
@@ -31,8 +30,6 @@ public class PersonOwnerRebuildJobTest {
 
   @MockBean
   private PersonRepository repo;
-  @MockBean
-  ProfileServiceImpl profileService;
 
   @Test
   public void testPersonOwnerRebuildJob() {
