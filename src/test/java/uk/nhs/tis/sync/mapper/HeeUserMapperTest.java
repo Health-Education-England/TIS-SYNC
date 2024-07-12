@@ -40,7 +40,7 @@ class HeeUserMapperTest {
   }
 
   @Test
-  public void shouldMapAHeeUserDtoToADataDmsDto() {
+  void shouldMapAHeeUserDtoToADataDmsDto() {
     HeeUserDmsDto heeUserDmsDto = mapper.toDmsDto(heeUserDto);
 
     assertEquals("1", heeUserDmsDto.getActive());
