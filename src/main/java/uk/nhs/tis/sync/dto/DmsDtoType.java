@@ -1,5 +1,7 @@
 package uk.nhs.tis.sync.dto;
 
+import com.transformuk.hee.tis.profile.service.dto.HeeUserDTO;
+import com.transformuk.hee.tis.reference.api.dto.DBCDTO;
 import com.transformuk.hee.tis.reference.api.dto.GradeDTO;
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
@@ -22,6 +24,7 @@ import uk.nhs.tis.sync.mapper.CurriculumMapper;
 import uk.nhs.tis.sync.mapper.CurriculumMembershipMapper;
 import uk.nhs.tis.sync.mapper.DmsMapper;
 import uk.nhs.tis.sync.mapper.GradeMapper;
+import uk.nhs.tis.sync.mapper.HeeUserMapper;
 import uk.nhs.tis.sync.mapper.PersonMapper;
 import uk.nhs.tis.sync.mapper.PlacementSpecialtyMapper;
 import uk.nhs.tis.sync.mapper.PlacementSummaryMapper;
@@ -41,26 +44,29 @@ import uk.nhs.tis.sync.mapper.TrustMapper;
 @Getter
 public enum DmsDtoType {
 
-  CONTACT_DETAILS(ContactDetailsDTO.class, "tcs", "ContactDetails", null),
-  CURRICULUM(CurriculumDTO.class, "tcs", "Curriculum", CurriculumMapper.class),
-  CURRICULUM_MEMBERSHIP(CurriculumMembershipWrapperDto.class, "tcs", "CurriculumMembership",
+  CONTACT_DETAILS(ContactDetailsDTO.class, Schemas.TCS, "ContactDetails", null),
+  CURRICULUM(CurriculumDTO.class, Schemas.TCS, "Curriculum", CurriculumMapper.class),
+  CURRICULUM_MEMBERSHIP(CurriculumMembershipWrapperDto.class, Schemas.TCS, "CurriculumMembership",
       CurriculumMembershipMapper.class),
-  GDC_DETAILS(GdcDetailsDTO.class, "tcs", "GdcDetails", null),
-  GMC_DETAILS(GmcDetailsDTO.class, "tcs", "GmcDetails", null),
-  GRADE(GradeDTO.class, "reference", "Grade", GradeMapper.class),
-  PERSON(PersonDTO.class, "tcs", "Person", PersonMapper.class),
-  PERSONAL_DETAILS(PersonalDetailsDTO.class, "tcs", "PersonalDetails", null),
-  PLACEMENT_DETAILS(PlacementSummaryDTO.class, "tcs", "Placement", PlacementSummaryMapper.class),
-  PLACEMENT_SPECIALTY(PlacementSpecialtyDTO.class, "tcs", "PlacementSpecialty",
+  DBC_DETAILS(DBCDTO.class, Schemas.REFERENCE, "DBC", null),
+  GDC_DETAILS(GdcDetailsDTO.class, Schemas.TCS, "GdcDetails", null),
+  GMC_DETAILS(GmcDetailsDTO.class, Schemas.TCS, "GmcDetails", null),
+  GRADE(GradeDTO.class, Schemas.REFERENCE, "Grade", GradeMapper.class),
+  HEE_USER(HeeUserDTO.class, Schemas.AUTH, "HeeUser", HeeUserMapper.class),
+  PERSON(PersonDTO.class, Schemas.TCS, "Person", PersonMapper.class),
+  PERSONAL_DETAILS(PersonalDetailsDTO.class, Schemas.TCS, "PersonalDetails", null),
+  PLACEMENT_DETAILS(PlacementSummaryDTO.class, Schemas.TCS, "Placement",
+      PlacementSummaryMapper.class),
+  PLACEMENT_SPECIALTY(PlacementSpecialtyDTO.class, Schemas.TCS, "PlacementSpecialty",
       PlacementSpecialtyMapper.class),
-  POST(PostDTO.class, "tcs", "Post", PostMapper.class),
-  PROGRAMME(ProgrammeDTO.class, "tcs", "Programme", ProgrammeMapper.class),
-  PROGRAMME_MEMBERSHIP(ProgrammeMembershipDTO.class, "tcs", "ProgrammeMembership",
+  POST(PostDTO.class, Schemas.TCS, "Post", PostMapper.class),
+  PROGRAMME(ProgrammeDTO.class, Schemas.TCS, "Programme", ProgrammeMapper.class),
+  PROGRAMME_MEMBERSHIP(ProgrammeMembershipDTO.class, Schemas.TCS, "ProgrammeMembership",
       ProgrammeMembershipMapper.class),
-  QUALIFICATION(QualificationDTO.class, "tcs", "Qualification", QualificationMapper.class),
-  SITE(SiteDTO.class, "reference", "Site", SiteMapper.class),
-  SPECIALTY(SpecialtyDTO.class, "tcs", "Specialty", SpecialtyMapper.class),
-  TRUST(TrustDTO.class, "reference", "Trust", TrustMapper.class);
+  QUALIFICATION(QualificationDTO.class, Schemas.TCS, "Qualification", QualificationMapper.class),
+  SITE(SiteDTO.class, Schemas.REFERENCE, "Site", SiteMapper.class),
+  SPECIALTY(SpecialtyDTO.class, Schemas.TCS, "Specialty", SpecialtyMapper.class),
+  TRUST(TrustDTO.class, Schemas.REFERENCE, "Trust", TrustMapper.class);
 
   private final Class<?> dtoType;
   private final String schema;
@@ -80,5 +86,14 @@ public enum DmsDtoType {
       }
     }
     return null;
+  }
+
+  /**
+   * Define the schema names.
+   */
+  private static class Schemas {
+    public static final String AUTH = "auth";
+    public static final String REFERENCE = "reference";
+    public static final String TCS = "tcs";
   }
 }

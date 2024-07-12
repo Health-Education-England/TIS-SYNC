@@ -18,7 +18,8 @@ import java.net.UnknownHostException;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {"com.transformuk.hee.tis.tcs",
-    "uk.nhs.tis.sync", "com.transformuk.hee.tis.reference.client"})
+    "uk.nhs.tis.sync", "com.transformuk.hee.tis.reference.client",
+    "com.transformuk.hee.tis.profile.client"})
 @EnableWebMvc
 @EnableSpringDataWebSupport
 @PropertySource({"classpath:/config/application.properties",

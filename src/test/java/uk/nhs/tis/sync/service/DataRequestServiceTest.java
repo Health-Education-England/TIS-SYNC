@@ -10,6 +10,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.transformuk.hee.tis.profile.client.service.impl.ProfileServiceImpl;
+import com.transformuk.hee.tis.profile.service.dto.HeeUserDTO;
+import com.transformuk.hee.tis.reference.api.dto.DBCDTO;
 import com.transformuk.hee.tis.reference.api.dto.GradeDTO;
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
@@ -44,6 +47,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import uk.nhs.tis.sync.dto.CurriculumMembershipWrapperDto;
 
@@ -51,6 +55,8 @@ class DataRequestServiceTest {
 
   private static final String FORENAMES = "Joe";
   private static final String SURNAME = "Bloggs";
+  private static final String HEE_USER_NAME = "the user name";
+  private static final String DBC_VALUE = "theDBC";
 
   private static final String GDC_NUMBER = "gdc123";
   private static final String GMC_NUMBER = "gmc123";
@@ -61,11 +67,14 @@ class DataRequestServiceTest {
 
   private ReferenceServiceImpl referenceService;
 
+  private ProfileServiceImpl profileService;
+
   @BeforeEach
   void setUp() {
     tcsService = mock(TcsServiceImpl.class);
     referenceService = mock(ReferenceServiceImpl.class);
-    service = new DataRequestService(tcsService, referenceService);
+    profileService = mock(ProfileServiceImpl.class);
+    service = new DataRequestService(tcsService, referenceService, profileService);
   }
 
   @Test
@@ -790,5 +799,87 @@ class DataRequestServiceTest {
     List<Object> grades = service.retrieveDtos(message);
 
     assertThat("Unexpected DTO count.", grades.size(), is(0));
+  }
+
+  @Test
+  void shouldReturnHeeUserWhenHeeUserFound() {
+    HeeUserDTO expectedDto = new HeeUserDTO();
+    when(profileService.getSingleAdminUser(HEE_USER_NAME)).thenReturn(expectedDto);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "HeeUser");
+      put("name", HEE_USER_NAME);
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(1));
+    assertThat("Unexpected DTO.", retrievedDtos.get(0), sameInstance(expectedDto));
+  }
+
+  @Test
+  void shouldReturnEmptyWhenHeeUserNotFound() {
+    when(profileService.getSingleAdminUser(HEE_USER_NAME)).thenReturn(null);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "HeeUser");
+      put("name", HEE_USER_NAME);
+    }};
+    List<Object> heeUsers = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", heeUsers.size(), is(0));
+  }
+
+  @Test
+  void shouldReturnEmptyWhenHeeUserMessageHasWrongKey() {
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "HeeUser");
+      put("another key", HEE_USER_NAME);
+    }};
+    List<Object> heeUsers = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", heeUsers.size(), is(0));
+    verifyNoInteractions(profileService);
+  }
+
+  @Test
+  void shouldReturnDbcWhenDbcFound() {
+    DBCDTO expectedDto = new DBCDTO();
+    ResponseEntity<DBCDTO> responseEntity = new ResponseEntity<>(expectedDto, HttpStatus.OK);
+    when(referenceService.getDBCByCode(DBC_VALUE)).thenReturn(responseEntity);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "DBC");
+      put("dbc", DBC_VALUE);
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(1));
+    assertThat("Unexpected DTO.", retrievedDtos.get(0), sameInstance(expectedDto));
+  }
+
+  @Test
+  void shouldReturnEmptyWhenDbcNotFound() {
+    ResponseEntity<DBCDTO> responseEntity = new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+    when(referenceService.getDBCByCode(DBC_VALUE)).thenReturn(responseEntity);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "DBC");
+      put("dbc", DBC_VALUE);
+    }};
+    List<Object> dbcs = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", dbcs.size(), is(0));
+  }
+
+  @Test
+  void shouldReturnEmptyWhenDbcMessageHasWrongKey() {
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "DBC");
+      put("another key", DBC_VALUE);
+    }};
+    List<Object> dbcs = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", dbcs.size(), is(0));
+    verifyNoInteractions(referenceService);
   }
 }
