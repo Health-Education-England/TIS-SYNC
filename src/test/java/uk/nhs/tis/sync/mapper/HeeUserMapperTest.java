@@ -6,8 +6,7 @@ import com.transformuk.hee.tis.profile.dto.RoleDTO;
 import com.transformuk.hee.tis.profile.service.dto.HeeUserDTO;
 import com.transformuk.hee.tis.profile.service.dto.UserProgrammeDTO;
 import com.transformuk.hee.tis.profile.service.dto.UserTrustDTO;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collections;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,25 +25,17 @@ class HeeUserMapperTest {
 
     heeUserDto = new HeeUserDTO();
     heeUserDto.setActive(true);
-    HashSet<UserProgrammeDTO> assocProgrammes = new HashSet<>();
-    assocProgrammes.add(new UserProgrammeDTO());
-    heeUserDto.setAssociatedProgrammes(assocProgrammes);
-    HashSet<UserTrustDTO> userTrusts = new HashSet<>();
-    userTrusts.add(new UserTrustDTO());
-    heeUserDto.setAssociatedTrusts(userTrusts);
+    heeUserDto.setAssociatedProgrammes(Collections.singleton(new UserProgrammeDTO()));
+    heeUserDto.setAssociatedTrusts(Collections.singleton(new UserTrustDTO()));
     heeUserDto.setFirstName("first name");
     heeUserDto.setName("name");
-    Set<String> dbcs = new HashSet<>();
-    dbcs.add("dbc1");
-    heeUserDto.setDesignatedBodyCodes(dbcs);
+    heeUserDto.setDesignatedBodyCodes(Collections.singleton("dbc1"));
     heeUserDto.setEmailAddress("email");
     heeUserDto.setGmcId("gmc");
     heeUserDto.setLastName("last name");
     heeUserDto.setPassword("password");
     heeUserDto.setPhoneNumber("phone");
-    HashSet<RoleDTO> roles = new HashSet<>();
-    roles.add(new RoleDTO());
-    heeUserDto.setRoles(roles);
+    heeUserDto.setRoles(Collections.singleton(new RoleDTO()));
     heeUserDto.setTemporaryPassword(true);
   }
 
