@@ -7,7 +7,7 @@ import com.transformuk.hee.tis.profile.service.dto.HeeUserDTO;
 import com.transformuk.hee.tis.profile.service.dto.UserProgrammeDTO;
 import com.transformuk.hee.tis.profile.service.dto.UserTrustDTO;
 import java.util.Collections;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
