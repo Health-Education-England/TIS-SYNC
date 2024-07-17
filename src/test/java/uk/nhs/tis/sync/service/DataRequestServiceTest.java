@@ -58,6 +58,7 @@ class DataRequestServiceTest {
   private static final String SURNAME = "Bloggs";
   private static final String HEE_USER_NAME = "the user name";
   private static final String DBC_VALUE = "theDBC";
+  private static final String DBC_ABBR = "ABCDE";
   private static final String LOCAL_OFFICE_ABBR = "S-123";
 
   private static final String GDC_NUMBER = "gdc123";
@@ -867,6 +868,36 @@ class DataRequestServiceTest {
     Map<String, String> message = new HashMap<String, String>() {{
       put("table", "DBC");
       put("dbc", DBC_VALUE);
+    }};
+    List<Object> dbcs = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", dbcs.size(), is(0));
+  }
+
+  @Test
+  void shouldReturnDbcWhenAbbrFound() {
+    DBCDTO expectedDto = new DBCDTO();
+    ResponseEntity<DBCDTO> responseEntity = new ResponseEntity<>(expectedDto, HttpStatus.OK);
+    when(referenceService.getDBCByAbbr(DBC_ABBR)).thenReturn(responseEntity);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "DBC");
+      put("abbr", DBC_ABBR);
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(1));
+    assertThat("Unexpected DTO.", retrievedDtos.get(0), sameInstance(expectedDto));
+  }
+
+  @Test
+  void shouldReturnEmptyWhenAbbrNotFound() {
+    ResponseEntity<DBCDTO> responseEntity = new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+    when(referenceService.getDBCByAbbr(DBC_ABBR)).thenReturn(responseEntity);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "DBC");
+      put("abbr", DBC_ABBR);
     }};
     List<Object> dbcs = service.retrieveDtos(message);
 
