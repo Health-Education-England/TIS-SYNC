@@ -30,6 +30,7 @@ public class DataRequestService {
   private static final String TABLE_DBC = "DBC";
   private static final String TABLE_GRADE = "Grade";
   private static final String TABLE_HEE_USER = "HeeUser";
+  private static final String TABLE_LOCAL_OFFICE = "LocalOffice";
   private static final String TABLE_PERSON = "Person";
   private static final String TABLE_PLACEMENT = "Placement";
   private static final String TABLE_PLACEMENT_SPECIALTY = "PlacementSpecialty";
@@ -92,6 +93,12 @@ public class DataRequestService {
         String dbc = message.get("dbc");
         ResponseEntity<DBCDTO> responseEntity = referenceServiceImpl.getDBCByCode(dbc);
         return createNonNullList(responseEntity.getBody());
+      }
+
+      if (table.equals(TABLE_LOCAL_OFFICE) && message.containsKey("abbreviation")) {
+        String abbreviation = message.get("abbreviation");
+        return createNonNullList(
+            referenceServiceImpl.findLocalOfficesByAbbrev(abbreviation).get(0));
       }
 
       if (message.containsKey("id")) {
