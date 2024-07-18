@@ -89,18 +89,15 @@ public class DataRequestService {
         return createNonNullList(profileServiceImpl.getSingleAdminUser(name));
       }
 
-      if (table.equals(TABLE_DBC)) {
-        ResponseEntity<DBCDTO> responseEntity;
-        if (message.containsKey("dbc")) {
-          String dbc = message.get("dbc");
-          responseEntity = referenceServiceImpl.getDBCByCode(dbc);
-          return createNonNullList(responseEntity.getBody());
-        }
-        if (message.containsKey("abbr")) {
-          String abbr = message.get("abbr");
-          responseEntity = referenceServiceImpl.getDBCByAbbr(abbr);
-          return createNonNullList(responseEntity.getBody());
-        }
+      if (table.equals(TABLE_DBC) && message.containsKey("dbc")) {
+        String dbc = message.get("dbc");
+        ResponseEntity<DBCDTO> responseEntity = referenceServiceImpl.getDBCByCode(dbc);
+        return createNonNullList(responseEntity.getBody());
+      }
+      if (table.equals(TABLE_DBC) && message.containsKey("abbr")) {
+        String abbr = message.get("abbr");
+        ResponseEntity<DBCDTO> responseEntity = referenceServiceImpl.getDBCByAbbr(abbr);
+        return createNonNullList(responseEntity.getBody());
       }
 
       if (table.equals(TABLE_LOCAL_OFFICE) && message.containsKey("abbreviation")) {

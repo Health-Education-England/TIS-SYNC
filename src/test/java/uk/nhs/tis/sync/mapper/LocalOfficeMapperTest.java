@@ -1,6 +1,7 @@
 package uk.nhs.tis.sync.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.transformuk.hee.tis.reference.api.dto.LocalOfficeDTO;
 import com.transformuk.hee.tis.reference.api.enums.Status;
@@ -38,5 +39,13 @@ class LocalOfficeMapperTest {
     assertEquals("abbr", localOfficeDmsDto.getAbbreviation());
     assertEquals(uuid, localOfficeDmsDto.getUuid());
     assertEquals("CURRENT", localOfficeDmsDto.getStatus());
+  }
+
+  @Test
+  void shouldMapNullStatusToNull() {
+    localOfficeDto.setStatus(null);
+    LocalOfficeDmsDto localOfficeDmsDto = mapper.toDmsDto(localOfficeDto);
+
+    assertNull(localOfficeDmsDto.getStatus());
   }
 }

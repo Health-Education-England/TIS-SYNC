@@ -5,6 +5,9 @@ import com.transformuk.hee.tis.reference.api.enums.Status;
 import org.mapstruct.Mapper;
 import uk.nhs.tis.sync.dto.LocalOfficeDmsDto;
 
+/**
+ * A mapper to map between Reference and DMS DTOs for the LocalOffice data type.
+ */
 @Mapper(componentModel = "spring")
 public interface LocalOfficeMapper extends DmsMapper<LocalOfficeDTO, LocalOfficeDmsDto> {
 
