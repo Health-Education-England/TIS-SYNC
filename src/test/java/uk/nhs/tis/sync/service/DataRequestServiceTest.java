@@ -14,6 +14,7 @@ import com.transformuk.hee.tis.profile.client.service.impl.ProfileServiceImpl;
 import com.transformuk.hee.tis.profile.service.dto.HeeUserDTO;
 import com.transformuk.hee.tis.reference.api.dto.DBCDTO;
 import com.transformuk.hee.tis.reference.api.dto.GradeDTO;
+import com.transformuk.hee.tis.reference.api.dto.LocalOfficeDTO;
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.reference.client.impl.ReferenceServiceImpl;
@@ -57,6 +58,8 @@ class DataRequestServiceTest {
   private static final String SURNAME = "Bloggs";
   private static final String HEE_USER_NAME = "the user name";
   private static final String DBC_VALUE = "theDBC";
+  private static final String DBC_ABBR = "ABCDE";
+  private static final String LOCAL_OFFICE_ABBR = "S-123";
 
   private static final String GDC_NUMBER = "gdc123";
   private static final String GMC_NUMBER = "gmc123";
@@ -872,10 +875,83 @@ class DataRequestServiceTest {
   }
 
   @Test
+  void shouldReturnDbcWhenAbbrFound() {
+    DBCDTO expectedDto = new DBCDTO();
+    ResponseEntity<DBCDTO> responseEntity = new ResponseEntity<>(expectedDto, HttpStatus.OK);
+    when(referenceService.getDBCByAbbr(DBC_ABBR)).thenReturn(responseEntity);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "DBC");
+      put("abbr", DBC_ABBR);
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(1));
+    assertThat("Unexpected DTO.", retrievedDtos.get(0), sameInstance(expectedDto));
+  }
+
+  @Test
+  void shouldReturnEmptyWhenAbbrNotFound() {
+    ResponseEntity<DBCDTO> responseEntity = new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+    when(referenceService.getDBCByAbbr(DBC_ABBR)).thenReturn(responseEntity);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "DBC");
+      put("abbr", DBC_ABBR);
+    }};
+    List<Object> dbcs = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", dbcs.size(), is(0));
+  }
+
+  @Test
   void shouldReturnEmptyWhenDbcMessageHasWrongKey() {
     Map<String, String> message = new HashMap<String, String>() {{
       put("table", "DBC");
       put("another key", DBC_VALUE);
+    }};
+    List<Object> dbcs = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", dbcs.size(), is(0));
+    verifyNoInteractions(referenceService);
+  }
+
+  @Test
+  void shouldReturnLocalOfficeWhenLocalOfficeFound() {
+    LocalOfficeDTO expectedDto = new LocalOfficeDTO();
+    expectedDto.setId(1L);
+    when(referenceService.findLocalOfficesByAbbrev(LOCAL_OFFICE_ABBR))
+        .thenReturn(Collections.singletonList(expectedDto));
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "LocalOffice");
+      put("abbreviation", LOCAL_OFFICE_ABBR);
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(1));
+    assertThat("Unexpected DTO.", retrievedDtos.get(0), sameInstance(expectedDto));
+  }
+
+  @Test
+  void shouldReturnEmptyWhenLocalOfficeNotFound() {
+    when(referenceService.findLocalOfficesByAbbrev(LOCAL_OFFICE_ABBR))
+        .thenReturn(Collections.emptyList());
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "LocalOffice");
+      put("abbreviation", LOCAL_OFFICE_ABBR);
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(0));
+  }
+
+  @Test
+  void shouldReturnEmptyWhenLocalOfficeMessageHasWrongKey() {
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "LocalOffice");
+      put("another key", LOCAL_OFFICE_ABBR);
     }};
     List<Object> dbcs = service.retrieveDtos(message);
 

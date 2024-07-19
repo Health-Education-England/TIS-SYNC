@@ -30,6 +30,7 @@ public class DataRequestService {
   private static final String TABLE_DBC = "DBC";
   private static final String TABLE_GRADE = "Grade";
   private static final String TABLE_HEE_USER = "HeeUser";
+  private static final String TABLE_LOCAL_OFFICE = "LocalOffice";
   private static final String TABLE_PERSON = "Person";
   private static final String TABLE_PLACEMENT = "Placement";
   private static final String TABLE_PLACEMENT_SPECIALTY = "PlacementSpecialty";
@@ -60,74 +61,106 @@ public class DataRequestService {
    */
   public List<Object> retrieveDtos(Map<String, String> message) {
     try {
-      String table = message.get("table");
-
-      if (table.equals(TABLE_PLACEMENT_SPECIALTY) && message.containsKey("placementId")) {
-        long placementId = Long.parseLong(message.get("placementId"));
-        return createNonNullList(retrievePlacementSpecialty(placementId));
-      }
-
-      if (table.equals(TABLE_PROGRAMME_MEMBERSHIP) && message.containsKey("uuid")) {
-        UUID uuid = UUID.fromString(message.get("uuid"));
-        return createNonNullList(tcsServiceImpl.getProgrammeMembershipByUuid(uuid));
-      }
-
-      if (table.equals(TABLE_CURRICULUM_MEMBERSHIP) && message.containsKey(
-          "programmeMembershipUuid")) {
-        UUID uuid = UUID.fromString(message.get("programmeMembershipUuid"));
-        ProgrammeMembershipDTO programmeMembership = tcsServiceImpl.getProgrammeMembershipByUuid(
-            uuid);
-
-        return programmeMembership.getCurriculumMemberships().stream()
-            .map(cm -> new CurriculumMembershipWrapperDto(uuid, cm))
-            .collect(Collectors.toList());
-      }
-
-      if (table.equals(TABLE_HEE_USER) && message.containsKey("name")) {
-        String name = message.get("name");
-        return createNonNullList(profileServiceImpl.getSingleAdminUser(name));
-      }
-
-      if (table.equals(TABLE_DBC) && message.containsKey("dbc")) {
-        String dbc = message.get("dbc");
-        ResponseEntity<DBCDTO> responseEntity = referenceServiceImpl.getDBCByCode(dbc);
-        return createNonNullList(responseEntity.getBody());
-      }
-
       if (message.containsKey("id")) {
-        long id = Long.parseLong(message.get("id"));
-
-        switch (table) {
-          case TABLE_PERSON:
-            return retrieveFullSyncData(id);
-          case TABLE_CURRICULUM:
-            return createNonNullList(tcsServiceImpl.getCurriculumById(id));
-          case TABLE_PLACEMENT:
-            return createNonNullList(tcsServiceImpl.getPlacementById(id));
-          case TABLE_POST:
-            return createNonNullList(tcsServiceImpl.getPostById(id));
-          case TABLE_PROGRAMME:
-            return createNonNullList(
-                tcsServiceImpl.findProgrammesIn(Collections.singletonList(String.valueOf(id)))
-                    .get(0));
-          case TABLE_SITE:
-            return createNonNullList(
-                referenceServiceImpl.findSitesIdIn(Collections.singleton(id)).get(0));
-          case TABLE_SPECIALTY:
-            return createNonNullList(tcsServiceImpl.getSpecialtyById(id));
-          case TABLE_TRUST:
-            return createNonNullList(referenceServiceImpl.findTrustById(id));
-          case TABLE_GRADE:
-            return createNonNullList(
-                referenceServiceImpl.findGradesIdIn(Collections.singleton(id)).get(0));
-          default:
-            break;
-        }
+        return retrieveDtosById(message);
+      } else {
+        return retrieveDtosByOtherKey(message);
       }
     } catch (Exception e) {
       log.error(e.getMessage(), e);
     }
+    return Collections.emptyList();
+  }
 
+  /**
+   * Return the list of DTOs for tables with an id primary key.
+   *
+   * @param message The message containing the request details.
+   * @return The non-null list of DTOs, or an empty list if the table and/or id was not found.
+   */
+  private List<Object> retrieveDtosById(Map<String, String> message) {
+    String table = message.get("table");
+    long id = Long.parseLong(message.get("id"));
+
+    switch (table) {
+      case TABLE_PERSON:
+        return retrieveFullSyncData(id);
+      case TABLE_CURRICULUM:
+        return createNonNullList(tcsServiceImpl.getCurriculumById(id));
+      case TABLE_PLACEMENT:
+        return createNonNullList(tcsServiceImpl.getPlacementById(id));
+      case TABLE_POST:
+        return createNonNullList(tcsServiceImpl.getPostById(id));
+      case TABLE_PROGRAMME:
+        return createNonNullList(
+            tcsServiceImpl.findProgrammesIn(Collections.singletonList(String.valueOf(id)))
+                .get(0));
+      case TABLE_SITE:
+        return createNonNullList(
+            referenceServiceImpl.findSitesIdIn(Collections.singleton(id)).get(0));
+      case TABLE_SPECIALTY:
+        return createNonNullList(tcsServiceImpl.getSpecialtyById(id));
+      case TABLE_TRUST:
+        return createNonNullList(referenceServiceImpl.findTrustById(id));
+      case TABLE_GRADE:
+        return createNonNullList(
+            referenceServiceImpl.findGradesIdIn(Collections.singleton(id)).get(0));
+      default:
+        return Collections.emptyList();
+    }
+  }
+
+  /**
+   * Return the list of DTOs for tables using another (non-id) key.
+   *
+   * @param message The message containing the request details.
+   * @return The non-null list of DTOs, or an empty list if the table and/or key was not found.
+   */
+  private List<Object> retrieveDtosByOtherKey(Map<String, String> message) {
+    String table = message.get("table");
+
+    if (table.equals(TABLE_PLACEMENT_SPECIALTY) && message.containsKey("placementId")) {
+      long placementId = Long.parseLong(message.get("placementId"));
+      return createNonNullList(retrievePlacementSpecialty(placementId));
+    }
+
+    if (table.equals(TABLE_PROGRAMME_MEMBERSHIP) && message.containsKey("uuid")) {
+      UUID uuid = UUID.fromString(message.get("uuid"));
+      return createNonNullList(tcsServiceImpl.getProgrammeMembershipByUuid(uuid));
+    }
+
+    if (table.equals(TABLE_CURRICULUM_MEMBERSHIP) && message.containsKey(
+        "programmeMembershipUuid")) {
+      UUID uuid = UUID.fromString(message.get("programmeMembershipUuid"));
+      ProgrammeMembershipDTO programmeMembership = tcsServiceImpl.getProgrammeMembershipByUuid(
+          uuid);
+
+      return programmeMembership.getCurriculumMemberships().stream()
+          .map(cm -> new CurriculumMembershipWrapperDto(uuid, cm))
+          .collect(Collectors.toList());
+    }
+
+    if (table.equals(TABLE_HEE_USER) && message.containsKey("name")) {
+      String name = message.get("name");
+      return createNonNullList(profileServiceImpl.getSingleAdminUser(name));
+    }
+
+    if (table.equals(TABLE_DBC) && message.containsKey("dbc")) {
+      String dbc = message.get("dbc");
+      ResponseEntity<DBCDTO> responseEntity = referenceServiceImpl.getDBCByCode(dbc);
+      return createNonNullList(responseEntity.getBody());
+    }
+    if (table.equals(TABLE_DBC) && message.containsKey("abbr")) {
+      String abbr = message.get("abbr");
+      ResponseEntity<DBCDTO> responseEntity = referenceServiceImpl.getDBCByAbbr(abbr);
+      return createNonNullList(responseEntity.getBody());
+    }
+
+    if (table.equals(TABLE_LOCAL_OFFICE) && message.containsKey("abbreviation")) {
+      String abbreviation = message.get("abbreviation");
+      return createNonNullList(
+          referenceServiceImpl.findLocalOfficesByAbbrev(abbreviation).get(0));
+    }
     return Collections.emptyList();
   }
 

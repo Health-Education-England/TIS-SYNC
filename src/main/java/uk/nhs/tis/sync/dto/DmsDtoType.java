@@ -3,6 +3,7 @@ package uk.nhs.tis.sync.dto;
 import com.transformuk.hee.tis.profile.service.dto.HeeUserDTO;
 import com.transformuk.hee.tis.reference.api.dto.DBCDTO;
 import com.transformuk.hee.tis.reference.api.dto.GradeDTO;
+import com.transformuk.hee.tis.reference.api.dto.LocalOfficeDTO;
 import com.transformuk.hee.tis.reference.api.dto.SiteDTO;
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.tcs.api.dto.ContactDetailsDTO;
@@ -25,6 +26,7 @@ import uk.nhs.tis.sync.mapper.CurriculumMembershipMapper;
 import uk.nhs.tis.sync.mapper.DmsMapper;
 import uk.nhs.tis.sync.mapper.GradeMapper;
 import uk.nhs.tis.sync.mapper.HeeUserMapper;
+import uk.nhs.tis.sync.mapper.LocalOfficeMapper;
 import uk.nhs.tis.sync.mapper.PersonMapper;
 import uk.nhs.tis.sync.mapper.PlacementSpecialtyMapper;
 import uk.nhs.tis.sync.mapper.PlacementSummaryMapper;
@@ -53,6 +55,7 @@ public enum DmsDtoType {
   GMC_DETAILS(GmcDetailsDTO.class, Schemas.TCS, "GmcDetails", null),
   GRADE(GradeDTO.class, Schemas.REFERENCE, "Grade", GradeMapper.class),
   HEE_USER(HeeUserDTO.class, Schemas.AUTH, "HeeUser", HeeUserMapper.class),
+  LOCAL_OFFICE(LocalOfficeDTO.class, Schemas.REFERENCE, "LocalOffice", LocalOfficeMapper.class),
   PERSON(PersonDTO.class, Schemas.TCS, "Person", PersonMapper.class),
   PERSONAL_DETAILS(PersonalDetailsDTO.class, Schemas.TCS, "PersonalDetails", null),
   PLACEMENT_DETAILS(PlacementSummaryDTO.class, Schemas.TCS, "Placement",
