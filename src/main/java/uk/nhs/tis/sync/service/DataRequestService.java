@@ -161,6 +161,12 @@ public class DataRequestService {
       return createNonNullList(
           referenceServiceImpl.findLocalOfficesByAbbrev(abbreviation).get(0));
     }
+    if (table.equals(TABLE_LOCAL_OFFICE) && message.containsKey("name")) {
+      String name = message.get("name");
+      return createNonNullList(
+          referenceServiceImpl.findLocalOfficesByName(name).get(0));
+    }
+    
     return Collections.emptyList();
   }
 
