@@ -60,6 +60,7 @@ class DataRequestServiceTest {
   private static final String DBC_VALUE = "theDBC";
   private static final String DBC_ABBR = "ABCDE";
   private static final String LOCAL_OFFICE_ABBR = "S-123";
+  private static final String LOCAL_OFFICE_NAME = "HEE South West";
 
   private static final String GDC_NUMBER = "gdc123";
   private static final String GMC_NUMBER = "gmc123";
@@ -941,6 +942,37 @@ class DataRequestServiceTest {
     Map<String, String> message = new HashMap<String, String>() {{
       put("table", "LocalOffice");
       put("abbreviation", LOCAL_OFFICE_ABBR);
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(0));
+  }
+
+  @Test
+  void shouldReturnLocalOfficeByNameWhenLocalOfficeFound() {
+    LocalOfficeDTO expectedDto = new LocalOfficeDTO();
+    expectedDto.setId(1L);
+    when(referenceService.findLocalOfficesByName(LOCAL_OFFICE_NAME))
+        .thenReturn(Collections.singletonList(expectedDto));
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "LocalOffice");
+      put("name", LOCAL_OFFICE_NAME);
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(1));
+    assertThat("Unexpected DTO.", retrievedDtos.get(0), sameInstance(expectedDto));
+  }
+
+  @Test
+  void shouldReturnEmptyWhenLocalOfficeByNameNotFound() {
+    when(referenceService.findLocalOfficesByName(LOCAL_OFFICE_NAME))
+        .thenReturn(Collections.emptyList());
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "LocalOffice");
+      put("name", LOCAL_OFFICE_NAME);
     }};
     List<Object> retrievedDtos = service.retrieveDtos(message);
 
