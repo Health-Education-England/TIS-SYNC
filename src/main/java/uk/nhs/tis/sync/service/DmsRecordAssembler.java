@@ -28,9 +28,10 @@ public class DmsRecordAssembler {
    * @param dtos The dto objects which will be mapped to DmsDtos.
    * @return The assembled DmsDtos
    */
-  public List<DmsDto> assembleDmsDtos(List<Object> dtos) {
+  public List<DmsDto> assembleDmsDtos(List<Object> dtos, String tisTrigger,
+      String tisTriggerDetail) {
     return dtos.stream()
-        .map(this::assembleDmsDto)
+        .map(dto -> assembleDmsDto(dto, tisTrigger, tisTriggerDetail))
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
   }
@@ -42,7 +43,7 @@ public class DmsRecordAssembler {
    *            a DmsDto (e.g. PostDmsDto).
    * @return The list of DmsDtos, complete with data and metadata.
    */
-  private List<DmsDto> assembleDmsDto(Object dto) {
+  private List<DmsDto> assembleDmsDto(Object dto, String tisTrigger, String tisTriggerDetail) {
     List<DmsDto> dmsDtoList = new ArrayList<>();
     List<Object> dmsDataList = new ArrayList<>();
     String schema = null;
@@ -66,7 +67,8 @@ public class DmsRecordAssembler {
     if (!dmsDataList.isEmpty()) {
       for (Object dmsData : dmsDataList) {
         MetadataDto metadata = new MetadataDto(Instant.now().toString(), DATA, LOAD,
-            PARTITION_KEY_TYPE, schema, table, UUID.randomUUID().toString());
+            PARTITION_KEY_TYPE, schema, table, UUID.randomUUID().toString(),
+            tisTrigger, tisTriggerDetail);
         dmsDtoList.add(new DmsDto(dmsData, metadata));
       }
     }

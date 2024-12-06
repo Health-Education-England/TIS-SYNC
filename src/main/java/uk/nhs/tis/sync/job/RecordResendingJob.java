@@ -120,7 +120,8 @@ public class RecordResendingJob {
       List<Object> retrievedDtos = dataRequestService.retrieveDtos(messageMap);
 
       if (!retrievedDtos.isEmpty()) {
-        return dmsRecordAssembler.assembleDmsDtos(retrievedDtos);
+        return dmsRecordAssembler.assembleDmsDtos(retrievedDtos,
+            messageMap.get("tisTrigger"), messageMap.get("tisTriggerDetail"));
       }
     } catch (JsonProcessingException e) {
       LOG.error(e.getMessage(), e);
