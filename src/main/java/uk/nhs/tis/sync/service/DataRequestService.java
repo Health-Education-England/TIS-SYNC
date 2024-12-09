@@ -28,6 +28,7 @@ public class DataRequestService {
   private static final String TABLE_CURRICULUM = "Curriculum";
   private static final String TABLE_CURRICULUM_MEMBERSHIP = "CurriculumMembership";
   private static final String TABLE_DBC = "DBC";
+  private static final String TABLE_GMC = "GmcDetails";
   private static final String TABLE_GRADE = "Grade";
   private static final String TABLE_HEE_USER = "HeeUser";
   private static final String TABLE_LOCAL_OFFICE = "LocalOffice";
@@ -105,6 +106,9 @@ public class DataRequestService {
       case TABLE_GRADE:
         return createNonNullList(
             referenceServiceImpl.findGradesIdIn(Collections.singleton(id)).get(0));
+      case TABLE_GMC:
+        return createNonNullList(tcsServiceImpl.findGmcDetailsIn(
+            Collections.singletonList(String.valueOf(id))));
       default:
         return Collections.emptyList();
     }
@@ -166,7 +170,7 @@ public class DataRequestService {
       return createNonNullList(
           referenceServiceImpl.findLocalOfficesByName(name).get(0));
     }
-    
+
     return Collections.emptyList();
   }
 
