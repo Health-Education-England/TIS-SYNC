@@ -108,7 +108,7 @@ public class DataRequestService {
             referenceServiceImpl.findGradesIdIn(Collections.singleton(id)).get(0));
       case TABLE_GMC:
         return createNonNullList(tcsServiceImpl.findGmcDetailsIn(
-            Collections.singletonList(String.valueOf(id))));
+            Collections.singletonList(String.valueOf(id))).get(0));
       default:
         return Collections.emptyList();
     }
@@ -170,7 +170,6 @@ public class DataRequestService {
       return createNonNullList(
           referenceServiceImpl.findLocalOfficesByName(name).get(0));
     }
-
     return Collections.emptyList();
   }
 
