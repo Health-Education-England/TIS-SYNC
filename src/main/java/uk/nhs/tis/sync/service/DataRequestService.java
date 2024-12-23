@@ -28,7 +28,7 @@ public class DataRequestService {
   private static final String TABLE_CURRICULUM = "Curriculum";
   private static final String TABLE_CURRICULUM_MEMBERSHIP = "CurriculumMembership";
   private static final String TABLE_DBC = "DBC";
-  private static final String TABLE_GMC = "GmcDetails";
+  public static final String TABLE_GMC = "GmcDetails";
   private static final String TABLE_GRADE = "Grade";
   private static final String TABLE_HEE_USER = "HeeUser";
   private static final String TABLE_LOCAL_OFFICE = "LocalOffice";
