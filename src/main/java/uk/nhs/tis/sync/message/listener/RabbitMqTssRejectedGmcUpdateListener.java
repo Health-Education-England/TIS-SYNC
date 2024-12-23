@@ -31,6 +31,13 @@ public class RabbitMqTssRejectedGmcUpdateListener {
   private String queueUrl;
   private ObjectMapper objectMapper;
 
+  /**
+   * Instantiate the Rabbit TSS rejected GMC update listener.
+   *
+   * @param sqs          The Amazon SQS object to use.
+   * @param queueUrl     The SQS queue to which to post data request messages.
+   * @param objectMapper The object mapper to use.
+   */
   public RabbitMqTssRejectedGmcUpdateListener(AmazonSQS sqs,
       @Value("${application.aws.sqs.queueUrl}") String queueUrl,
       ObjectMapper objectMapper) {
