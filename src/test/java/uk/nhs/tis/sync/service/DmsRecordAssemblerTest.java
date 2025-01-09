@@ -68,6 +68,8 @@ import uk.nhs.tis.sync.dto.SpecialtyDmsDto;
 import uk.nhs.tis.sync.dto.TrustDmsDto;
 
 class DmsRecordAssemblerTest {
+  private static final String TIS_TRIGGER = "trigger";
+  private static final String TIS_TRIGGER_DETAIL = "details";
 
   private DmsRecordAssembler dmsRecordAssembler;
 
@@ -85,7 +87,7 @@ class DmsRecordAssemblerTest {
     programme.setId(2L);
 
     List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
-        Arrays.asList(post, new Object(), programme));
+        Arrays.asList(post, new Object(), programme), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
 
     assertThat("Unexpected DMS DTO count.", dmsDtos.size(), is(2));
 
@@ -105,7 +107,8 @@ class DmsRecordAssemblerTest {
     ContactDetailsDTO contactDetails = new ContactDetailsDTO();
     contactDetails.setId(10L);
 
-    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(contactDetails));
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
+        singletonList(contactDetails), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
 
     assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
     DmsDto dmsDto = dmsDtos.get(0);
@@ -127,7 +130,8 @@ class DmsRecordAssemblerTest {
     GdcDetailsDTO gdcDetails = new GdcDetailsDTO();
     gdcDetails.setId(10L);
 
-    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(gdcDetails));
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
+        singletonList(gdcDetails), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
 
     assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
     DmsDto dmsDto = dmsDtos.get(0);
@@ -149,7 +153,8 @@ class DmsRecordAssemblerTest {
     GmcDetailsDTO gmcDetails = new GmcDetailsDTO();
     gmcDetails.setId(10L);
 
-    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(gmcDetails));
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
+        singletonList(gmcDetails), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
 
     assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
     DmsDto dmsDto = dmsDtos.get(0);
@@ -181,7 +186,8 @@ class DmsRecordAssemblerTest {
     person.setPublicHealthNumber("ph123");
     person.setRegulator("regulator");
 
-    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(person));
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
+        singletonList(person), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
 
     assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
     DmsDto dmsDto = dmsDtos.get(0);
@@ -218,7 +224,8 @@ class DmsRecordAssemblerTest {
     PersonalDetailsDTO personalDetails = new PersonalDetailsDTO();
     personalDetails.setId(10L);
 
-    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(personalDetails));
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
+        singletonList(personalDetails), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
 
     assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
     DmsDto dmsDto = dmsDtos.get(0);
@@ -251,7 +258,8 @@ class DmsRecordAssemblerTest {
     postDto.owner("Health Education England North West London");
     postDto.intrepidId("128374444");
 
-    List<DmsDto> actualDmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(postDto));
+    List<DmsDto> actualDmsDtos = dmsRecordAssembler.assembleDmsDtos(
+        singletonList(postDto), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
 
     assertThat("Unexpected DTO count.", actualDmsDtos.size(), is(1));
     DmsDto actualDmsDto = actualDmsDtos.get(0);
@@ -281,6 +289,8 @@ class DmsRecordAssemblerTest {
     expectedMetadataDto.setSchemaName("tcs");
     expectedMetadataDto.setTableName("Post");
     expectedMetadataDto.setTransactionId(transactionId);
+    expectedMetadataDto.setTisTrigger(TIS_TRIGGER);
+    expectedMetadataDto.setTisTriggerDetail(TIS_TRIGGER_DETAIL);
 
     DmsDto expectedDmsDto = new DmsDto(expectedPostDmsDto, expectedMetadataDto);
 
@@ -303,8 +313,8 @@ class DmsRecordAssemblerTest {
         UUID.fromString("123e4567-e89b-12d3-a456-426614174000"), curriculumMembershipDto);
 
     //when
-    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(
-        curriculumMembershipWrapperDto));
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
+        singletonList(curriculumMembershipWrapperDto), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
 
     //then
     assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
@@ -397,7 +407,7 @@ class DmsRecordAssemblerTest {
     programmeMembershipDto.setAmendedDate(amendedDate);
 
     List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
-        singletonList(programmeMembershipDto));
+        singletonList(programmeMembershipDto), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
 
     assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
     DmsDto dmsDto = dmsDtos.get(0);
@@ -457,7 +467,7 @@ class DmsRecordAssemblerTest {
     qualificationDto.setAmendedDate(LocalDateTime.of(2021, 1, 1, 1, 1, 1));
 
     List<DmsDto> actualDmsDtos = dmsRecordAssembler.assembleDmsDtos(
-        singletonList(qualificationDto));
+        singletonList(qualificationDto), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
 
     assertThat("Unexpected DTO count.", actualDmsDtos.size(), is(1));
     DmsDto actualDmsDto = actualDmsDtos.get(0);
@@ -508,7 +518,8 @@ class DmsRecordAssemblerTest {
     trustDto.setIntrepidId("222");
     trustDto.setId(333L);
 
-    List<DmsDto> actualDmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(trustDto));
+    List<DmsDto> actualDmsDtos = dmsRecordAssembler.assembleDmsDtos(
+        singletonList(trustDto), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
 
     assertThat("Unexpected DTO count.", actualDmsDtos.size(), is(1));
     DmsDto actualDmsDto = actualDmsDtos.get(0);
@@ -537,6 +548,8 @@ class DmsRecordAssemblerTest {
     expectedMetadataDto.setSchemaName("reference");
     expectedMetadataDto.setTableName("Trust");
     expectedMetadataDto.setTransactionId(transactionId);
+    expectedMetadataDto.setTisTrigger(TIS_TRIGGER);
+    expectedMetadataDto.setTisTriggerDetail(TIS_TRIGGER_DETAIL);
 
     DmsDto expectedDmsDto = new DmsDto(expectedTrustDmsDto, expectedMetadataDto);
 
@@ -562,7 +575,8 @@ class DmsRecordAssemblerTest {
     site.setPostCode("AB12 3CD");
     site.setStatus(CURRENT);
 
-    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(site));
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
+        singletonList(site), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
 
     assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
     DmsDto dmsDto = dmsDtos.get(0);
@@ -599,7 +613,8 @@ class DmsRecordAssemblerTest {
 
   @Test
   void shouldReturnEmptyWhenUnsupportedType() {
-    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(new Object()));
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
+        singletonList(new Object()), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
     assertThat("Unexpected dms dto count.", dmsDtos.size(), is(0));
   }
 
@@ -613,7 +628,8 @@ class DmsRecordAssemblerTest {
     programme.setProgrammeNumber("500");
     programme.setStatus(Status.CURRENT);
 
-    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(programme));
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
+        singletonList(programme), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
 
     assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
     DmsDto dmsDto = dmsDtos.get(0);
@@ -658,7 +674,8 @@ class DmsRecordAssemblerTest {
     curriculum.setStatus(Status.CURRENT);
     curriculum.setLength(12);
 
-    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(curriculum));
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
+        singletonList(curriculum), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
 
     assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
     DmsDto dmsDto = dmsDtos.get(0);
@@ -706,7 +723,8 @@ class DmsRecordAssemblerTest {
     specialtyGroupDto.setId(75L);
     specialty.setSpecialtyGroup(specialtyGroupDto);
 
-    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(specialty));
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
+        singletonList(specialty), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
 
     assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
     DmsDto dmsDto = dmsDtos.get(0);
@@ -742,7 +760,8 @@ class DmsRecordAssemblerTest {
     placementSpecialty.setPlacementSpecialtyType(PostSpecialtyType.PRIMARY);
     placementSpecialty.setSpecialtyName("specialtyName");
 
-    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(placementSpecialty));
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
+        singletonList(placementSpecialty), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
 
     assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
     DmsDto dmsDto = dmsDtos.get(0);
@@ -783,7 +802,8 @@ class DmsRecordAssemblerTest {
     placementSummaryDto.setGradeId(20L);
     placementSummaryDto.setSiteId(30L);
 
-    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(placementSummaryDto));
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
+        singletonList(placementSummaryDto), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
 
     assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
     DmsDto dmsDto = dmsDtos.get(0);
@@ -832,7 +852,8 @@ class DmsRecordAssemblerTest {
     grade.setPostGrade(false);
     grade.setTrainingGrade(true);
 
-    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(singletonList(grade));
+    List<DmsDto> dmsDtos = dmsRecordAssembler.assembleDmsDtos(
+        singletonList(grade), TIS_TRIGGER, TIS_TRIGGER_DETAIL);
 
     assertThat("Unexpected DTO count.", dmsDtos.size(), is(1));
     DmsDto dmsDto = dmsDtos.get(0);

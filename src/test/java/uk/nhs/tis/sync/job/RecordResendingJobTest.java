@@ -50,6 +50,9 @@ class RecordResendingJobTest {
 
   private static final String STREAM_NAME = "streamName";
 
+  private static final String TIS_TRIGGER = "trigger";
+  private static final String TIS_TRIGGER_DETAIL = "details";
+
   private RecordResendingJob job;
 
   private List<Object> postDtos;
@@ -122,7 +125,9 @@ class RecordResendingJobTest {
     message1.setReceiptHandle("message1");
     message1.setBody("{" +
         "\"table\": \"Post\"," +
-        "\"id\": \"44381\"" +
+        "\"id\": \"44381\"," +
+        "\"tisTrigger\": \"" + TIS_TRIGGER + "\"," +
+        "\"tisTriggerDetail\": \"" + TIS_TRIGGER_DETAIL + "\"" +
         "}"
     );
     message2 = new Message();
@@ -145,12 +150,19 @@ class RecordResendingJobTest {
   @Test
   void shouldSendDataToKinesisStream() {
     when(dataRequestServiceMock.retrieveDtos(any(Map.class))).thenReturn(postDtos);
-    when(dmsRecordAssemblerMock.assembleDmsDtos(postDtos)).thenReturn(dmsDtos);
+    when(dmsRecordAssemblerMock.assembleDmsDtos(postDtos, TIS_TRIGGER, TIS_TRIGGER_DETAIL))
+        .thenReturn(dmsDtos);
+    when(dmsRecordAssemblerMock.assembleDmsDtos(postDtos, null, null))
+        .thenReturn(dmsDtos);
 
     job.run();
 
-    verify(dataRequestServiceMock, times(2)).retrieveDtos(any(Map.class));
-    verify(dmsRecordAssemblerMock, times(2)).assembleDmsDtos(postDtos);
+    verify(dataRequestServiceMock, times(2))
+        .retrieveDtos(any(Map.class));
+    verify(dmsRecordAssemblerMock)
+        .assembleDmsDtos(postDtos, TIS_TRIGGER, TIS_TRIGGER_DETAIL);
+    verify(dmsRecordAssemblerMock)
+        .assembleDmsDtos(postDtos, null, null);
 
     ArgumentCaptor<List<DmsDto>> captor = ArgumentCaptor.forClass(List.class);
     verify(kinesisServiceMock).sendData(eq(STREAM_NAME), captor.capture());
@@ -164,7 +176,7 @@ class RecordResendingJobTest {
   @Test
   void shouldDeleteProcessedMessages() {
     when(dataRequestServiceMock.retrieveDtos(any(Map.class))).thenReturn(postDtos);
-    when(dmsRecordAssemblerMock.assembleDmsDtos(postDtos)).thenReturn(dmsDtos);
+    when(dmsRecordAssemblerMock.assembleDmsDtos(eq(postDtos), any(), any())).thenReturn(dmsDtos);
 
     job.run();
 
@@ -206,7 +218,7 @@ class RecordResendingJobTest {
         }});
 
     when(dataRequestServiceMock.retrieveDtos(any(Map.class))).thenReturn(postDtos);
-    when(dmsRecordAssemblerMock.assembleDmsDtos(postDtos)).thenReturn(dmsDtos);
+    when(dmsRecordAssemblerMock.assembleDmsDtos(eq(postDtos), any(), any())).thenReturn(dmsDtos);
 
     RecordResendingJob job = new RecordResendingJob(kinesisServiceMock,
         dataRequestServiceMock,
@@ -219,7 +231,7 @@ class RecordResendingJobTest {
     job.run();
 
     verify(dataRequestServiceMock).retrieveDtos(any(Map.class));
-    verify(dmsRecordAssemblerMock).assembleDmsDtos(postDtos);
+    verify(dmsRecordAssemblerMock).assembleDmsDtos(eq(postDtos), any(), any());
 
     ArgumentCaptor<List<DmsDto>> captor = ArgumentCaptor.forClass(List.class);
     verify(kinesisServiceMock).sendData(eq(STREAM_NAME), captor.capture());
@@ -236,7 +248,7 @@ class RecordResendingJobTest {
 
     job.run();
 
-    verify(dmsRecordAssemblerMock, never()).assembleDmsDtos(any());
+    verify(dmsRecordAssemblerMock, never()).assembleDmsDtos(any(), any(), any());
     verify(kinesisServiceMock, never()).sendData(any(), any());
   }
 
@@ -256,11 +268,11 @@ class RecordResendingJobTest {
 
     DmsDto dmsDto1 = new DmsDto(null, null);
     DmsDto dmsDto2 = new DmsDto(null, null);
-    when(dmsRecordAssemblerMock.assembleDmsDtos(postDtos)).thenReturn(
+    when(dmsRecordAssemblerMock.assembleDmsDtos(eq(postDtos), any(), any())).thenReturn(
         Arrays.asList(dmsDto1, dmsDto2));
 
     DmsDto dmsDto3 = new DmsDto(null, null);
-    when(dmsRecordAssemblerMock.assembleDmsDtos(programmeDtos)).thenReturn(
+    when(dmsRecordAssemblerMock.assembleDmsDtos(eq(programmeDtos), any(), any())).thenReturn(
         Collections.singletonList(dmsDto3));
 
     job.run();

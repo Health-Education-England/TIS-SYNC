@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"timestamp", "record-type", "operation", "partition-key-type", "schema-name",
-    "table-name", "transaction-id"})
+    "table-name", "transaction-id", "tis-trigger", "tis-trigger-detail"})
 public class MetadataDto {
   @JsonProperty("timestamp") String timestamp;
   @JsonProperty("record-type") String recordType;
@@ -21,4 +21,6 @@ public class MetadataDto {
   @JsonProperty("schema-name") String schemaName;
   @JsonProperty("table-name") String tableName;
   @JsonProperty("transaction-id") String transactionId;
+  @JsonProperty("tis-trigger") String tisTrigger;
+  @JsonProperty("tis-trigger-detail") String tisTriggerDetail;
 }

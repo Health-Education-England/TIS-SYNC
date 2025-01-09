@@ -990,4 +990,48 @@ class DataRequestServiceTest {
     assertThat("Unexpected DTO count.", dbcs.size(), is(0));
     verifyNoInteractions(referenceService);
   }
+
+  @Test
+  void shouldReturnGmcDetailsWhenGmcDetailsFound() {
+    GmcDetailsDTO expectedDto = new GmcDetailsDTO();
+    when(tcsService.findGmcDetailsIn(Collections.singletonList("40")))
+        .thenReturn(Collections.singletonList(expectedDto));
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "GmcDetails");
+      put("id", "40");
+    }};
+    List<Object> retrievedDtos = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", retrievedDtos.size(), is(1));
+    assertThat("Unexpected DTO.", retrievedDtos.get(0), sameInstance(expectedDto));
+  }
+
+  @Test
+  void shouldReturnEmptyWhenGmcDetailsNotFound() {
+    when(tcsService.findGmcDetailsIn(Collections.singletonList("40")))
+        .thenReturn(null);
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "GmcDetails");
+      put("id", "40");
+    }};
+    List<Object> gmcDetailsList = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", gmcDetailsList.size(), is(0));
+  }
+
+  @Test
+  void shouldReturnEmptyWhenGetGmcDetailsByIdThrowsException() {
+    when(tcsService.findGmcDetailsIn(Collections.singletonList("40")))
+        .thenThrow(new RuntimeException("Expected exception."));
+
+    Map<String, String> message = new HashMap<String, String>() {{
+      put("table", "GmcDetails");
+      put("id", "40");
+    }};
+    List<Object> gmcDetailsList = service.retrieveDtos(message);
+
+    assertThat("Unexpected DTO count.", gmcDetailsList.size(), is(0));
+  }
 }

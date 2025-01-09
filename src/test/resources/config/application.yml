@@ -113,6 +113,8 @@ application:
     reval:
       exchange: ${REVAL_RABBIT_EXCHANGE:reval.exchange}
       routingKey.trainee.update: ${REVAL_RABBIT_TRAINEEUPDATE_ROUTING_KEY:reval.trainee.update}
+    trainee:
+      gmc.rejected: ${TRAINEE_RABBIT_GMC_REJECTED_QUEUE:trainee.queue.gmcdetails.rejected.sync}
 
 slack:
   api:
