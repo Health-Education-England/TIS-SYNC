@@ -13,6 +13,7 @@ import static uk.nhs.tis.sync.message.listener.RabbitMqTssRejectedGmcUpdateListe
 import static uk.nhs.tis.sync.service.DataRequestService.TABLE_GMC;
 
 import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.transformuk.hee.tis.tcs.api.dto.GmcDetailsDTO;
@@ -59,16 +60,24 @@ class RabbitMqTssRejectedGmcUpdateListenerTest {
 
   @Test
   void shouldListenToRejectedGmcMessagesAndRepostToDataRequestSqs() throws JsonProcessingException {
-    ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
-    ArgumentCaptor<String> messageBodyCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<SendMessageRequest> msgRequestCaptor
+        = ArgumentCaptor.forClass(SendMessageRequest.class);
 
     listener.listenToRejectedGmcUpdates(event);
 
-    verify(sqs).sendMessage(urlCaptor.capture(), messageBodyCaptor.capture());
+    verify(sqs).sendMessage(msgRequestCaptor.capture());
     verifyNoMoreInteractions(sqs);
-    assertThat("Unexpected message URL.", urlCaptor.getValue(), is(DATA_REQUEST_QUEUE_URL));
 
-    String messageBody = messageBodyCaptor.getValue();
+    SendMessageRequest sendMessageRequest = msgRequestCaptor.getValue();
+    assertThat("Unexpected message URL.", sendMessageRequest.getQueueUrl(),
+        is(DATA_REQUEST_QUEUE_URL));
+    String expectedMsgGroupIdAndDedup = TABLE_GMC + "_" + event.getPersonId().toString();
+    assertThat("Unexpected message group Id.", sendMessageRequest.getMessageGroupId(),
+        is(expectedMsgGroupIdAndDedup));
+    assertThat("Unexpected deduplication Id.", sendMessageRequest.getMessageDeduplicationId(),
+        is(expectedMsgGroupIdAndDedup));
+
+    String messageBody = sendMessageRequest.getMessageBody();
     Map<String, String> sentMessageMap = objectMapper.readValue(messageBody, Map.class);
 
     assertThat("Unexpected message body id.", sentMessageMap.get("id"),
