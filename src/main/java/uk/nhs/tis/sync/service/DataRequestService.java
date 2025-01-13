@@ -107,8 +107,7 @@ public class DataRequestService {
         return createNonNullList(
             referenceServiceImpl.findGradesIdIn(Collections.singleton(id)).get(0));
       case TABLE_GMC:
-        return createNonNullList(tcsServiceImpl.findGmcDetailsIn(
-            Collections.singletonList(String.valueOf(id))).get(0));
+        return createNonNullList(tcsServiceImpl.getGmcDetailsById(id));
       default:
         return Collections.emptyList();
     }

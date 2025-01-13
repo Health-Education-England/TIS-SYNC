@@ -994,8 +994,7 @@ class DataRequestServiceTest {
   @Test
   void shouldReturnGmcDetailsWhenGmcDetailsFound() {
     GmcDetailsDTO expectedDto = new GmcDetailsDTO();
-    when(tcsService.findGmcDetailsIn(Collections.singletonList("40")))
-        .thenReturn(Collections.singletonList(expectedDto));
+    when(tcsService.getGmcDetailsById(40L)).thenReturn(expectedDto);
 
     Map<String, String> message = new HashMap<String, String>() {{
       put("table", "GmcDetails");
@@ -1009,8 +1008,7 @@ class DataRequestServiceTest {
 
   @Test
   void shouldReturnEmptyWhenGmcDetailsNotFound() {
-    when(tcsService.findGmcDetailsIn(Collections.singletonList("40")))
-        .thenReturn(null);
+    when(tcsService.getGmcDetailsById(40L)).thenReturn(null);
 
     Map<String, String> message = new HashMap<String, String>() {{
       put("table", "GmcDetails");
@@ -1023,7 +1021,7 @@ class DataRequestServiceTest {
 
   @Test
   void shouldReturnEmptyWhenGetGmcDetailsByIdThrowsException() {
-    when(tcsService.findGmcDetailsIn(Collections.singletonList("40")))
+    when(tcsService.getGmcDetailsById(40L))
         .thenThrow(new RuntimeException("Expected exception."));
 
     Map<String, String> message = new HashMap<String, String>() {{
