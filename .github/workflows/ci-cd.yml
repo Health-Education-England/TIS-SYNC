@@ -1,0 +1,30 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - unified-pipeline-test
+
+jobs:
+  get-context:
+    name: Check if debug enabled
+    runs-on: ubuntu-latest
+    outputs:
+      runner-debug: ${{ runner.debug }}
+    steps:
+      - run: echo "Loading context variables"
+  ci-cd:
+    name: Build and deploy
+    needs: get-context
+    uses: health-education-england/.github/.github/workflows/unified-cicd.yml@TIS21-7971-investigate-composite-action-approach-for-unified-workflows
+    with:
+      java-version: "11"
+      cluster-prefix: test
+      publish-build-scan: ${{ needs.get-context.outputs.runner-debug == '1' }}
+      use-codeartifact: true
+      build-tool: maven
+      ecr-repository: test
+    secrets:
+      sonar-token: ${{ secrets.SONAR_TOKEN }}S
+      reject-pat: ${{ secrets.PAT_REJECT_APPROVALS }}
+      checkout-token: ${{ secrets.GH_REPOS_ALL_READ }}
