@@ -18,7 +18,7 @@ jobs:
     needs: get-context
     uses: health-education-england/.github/.github/workflows/unified-cicd.yml@TIS21-7971-investigate-composite-action-approach-for-unified-workflows
     with:
-      java-version: "11"
+      java-version: "17"
       cluster-prefix: test
       publish-build-scan: ${{ needs.get-context.outputs.runner-debug == '1' }}
       use-codeartifact: true
