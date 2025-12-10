@@ -26,4 +26,3 @@ jobs:
     secrets:
       sonar-token: ${{ secrets.SONAR_TOKEN }}
       reject-pat: ${{ secrets.PAT_REJECT_APPROVALS }}
-      checkout-token: ${{ secrets.GH_REPOS_ALL_READ }}
