@@ -22,7 +22,7 @@ jobs:
       cluster-prefix: test2
       publish-build-scan: ${{ needs.get-context.outputs.runner-debug == '1' }}
       use-codeartifact: true
-      ecr-repository: test2
+      ecr-repository: sync
     secrets:
       sonar-token: ${{ secrets.SONAR_TOKEN }}
       reject-pat: ${{ secrets.PAT_REJECT_APPROVALS }}
