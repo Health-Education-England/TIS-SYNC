@@ -19,10 +19,10 @@ jobs:
     uses: health-education-england/.github/.github/workflows/unified-cicd.yml@TIS21-7971-investigate-composite-action-approach-for-unified-workflows
     with:
       java-version: '11'
-      cluster-prefix: test
+      cluster-prefix: test2
       publish-build-scan: ${{ needs.get-context.outputs.runner-debug == '1' }}
       use-codeartifact: true
-      ecr-repository: test
+      ecr-repository: test2
     secrets:
       sonar-token: ${{ secrets.SONAR_TOKEN }}
       reject-pat: ${{ secrets.PAT_REJECT_APPROVALS }}
