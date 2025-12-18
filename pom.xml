@@ -401,6 +401,18 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <image>
+            <builder>paketobuildpacks/builder:0.0.460-base-platform-api-0.3</builder>
+            <runImage>paketobuildpacks/run:base-cnb</runImage>
+          </image>
+          <executable>true</executable>
+          <fork>true</fork>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <profiles>
