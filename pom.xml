@@ -407,6 +407,9 @@
         <configuration>
           <image>
             <builder>paketobuildpacks/builder:0.0.460-base-platform-api-0.3</builder>
+            <env>
+              <BP_SPRING_CLOUD_BINDINGS_DISABLED>true</BP_SPRING_CLOUD_BINDINGS_DISABLED>
+            </env>
           </image>
           <executable>true</executable>
           <fork>true</fork>
