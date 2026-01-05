@@ -14,12 +14,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.model.DeleteMessageBatchRequest;
-import com.amazonaws.services.sqs.model.DeleteMessageBatchRequestEntry;
-import com.amazonaws.services.sqs.model.Message;
-import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
-import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
@@ -35,6 +29,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequest;
+import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequestEntry;
+import software.amazon.awssdk.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
+import software.amazon.awssdk.services.sqs.model.ReceiveMessageResponse;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PostDmsDto;
@@ -64,7 +64,7 @@ class RecordResendingJobTest {
   private DataRequestService dataRequestServiceMock;
 
   @Mock
-  private AmazonSQS amazonSqsMock;
+  private SqsClient amazonSqsMock;
 
   @Mock
   private DmsRecordAssembler dmsRecordAssemblerMock;
@@ -121,29 +121,31 @@ class RecordResendingJobTest {
 
     dmsDtos = Collections.singletonList(new DmsDto(postDmsDto, metadataDto));
 
-    message1 = new Message();
-    message1.setReceiptHandle("message1");
-    message1.setBody("{" +
+    message1 = Message.builder()
+        .build();
+    message1 = message1.toBuilder().receiptHandle("message1").build();
+    message1 = message1.toBuilder().body("{" +
         "\"table\": \"Post\"," +
         "\"id\": \"44381\"," +
         "\"tisTrigger\": \"" + TIS_TRIGGER + "\"," +
         "\"tisTriggerDetail\": \"" + TIS_TRIGGER_DETAIL + "\"" +
-        "}"
-    );
-    message2 = new Message();
-    message2.setReceiptHandle("message2");
-    message2.setBody("{" +
+        "}").build();
+    message2 = Message.builder()
+        .build();
+    message2 = message2.toBuilder().receiptHandle("message2").build();
+    message2 = message2.toBuilder().body("{" +
         "\"table\": \"Post\"," +
         "\"id\": \"44382\"" +
-        "}"
-    );
+        "}").build();
 
-    ReceiveMessageResult receiveMessageResult = new ReceiveMessageResult()
-        .withMessages(message1, message2);
+    ReceiveMessageResponse receiveMessageResult = ReceiveMessageResponse.builder()
+        .messages(message1, message2)
+        .build();
 
-    ReceiveMessageRequest request = new ReceiveMessageRequest()
-        .withQueueUrl(QUEUE_URL)
-        .withMaxNumberOfMessages(10);
+    ReceiveMessageRequest request = ReceiveMessageRequest.builder()
+        .queueUrl(QUEUE_URL)
+        .maxNumberOfMessages(10)
+        .build();
     when(amazonSqsMock.receiveMessage(request)).thenReturn(receiveMessageResult);
   }
 
@@ -185,18 +187,18 @@ class RecordResendingJobTest {
     verify(amazonSqsMock).deleteMessageBatch(captor.capture());
 
     DeleteMessageBatchRequest deleteRequest = captor.getValue();
-    assertThat("Unexpected queue.", deleteRequest.getQueueUrl(), is(QUEUE_URL));
+    assertThat("Unexpected queue.", deleteRequest.queueUrl(), is(QUEUE_URL));
 
-    List<DeleteMessageBatchRequestEntry> entries = deleteRequest.getEntries();
+    List<DeleteMessageBatchRequestEntry> entries = deleteRequest.entries();
     assertThat("Unexpected number of entries.", entries.size(), is(2));
 
     DeleteMessageBatchRequestEntry entry = entries.get(0);
-    assertThat("Unexpected id.", entry.getId(), is("0"));
-    assertThat("Unexpected receipt handle.", entry.getReceiptHandle(), is("message1"));
+    assertThat("Unexpected id.", entry.id(), is("0"));
+    assertThat("Unexpected receipt handle.", entry.receiptHandle(), is("message1"));
 
     entry = entries.get(1);
-    assertThat("Unexpected id.", entry.getId(), is("1"));
-    assertThat("Unexpected receipt handle.", entry.getReceiptHandle(), is("message2"));
+    assertThat("Unexpected id.", entry.id(), is("1"));
+    assertThat("Unexpected receipt handle.", entry.receiptHandle(), is("message2"));
   }
 
   @Test
@@ -210,9 +212,9 @@ class RecordResendingJobTest {
   @Test
   void shouldProcessRemainingMessagesWhenExceptionThrown() throws JsonProcessingException {
     ObjectMapper objectMapperMock = mock(ObjectMapper.class);
-    when(objectMapperMock.readValue(message1.getBody(), Map.class))
+    when(objectMapperMock.readValue(message1.body(), Map.class))
         .thenThrow(JsonProcessingException.class);
-    when(objectMapperMock.readValue(message2.getBody(), Map.class))
+    when(objectMapperMock.readValue(message2.body(), Map.class))
         .thenReturn(new HashMap<String, String>() {{
           put("Post", "44382");
         }});

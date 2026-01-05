@@ -2,8 +2,6 @@ package uk.nhs.tis.sync.message.listener;
 
 import static uk.nhs.tis.sync.service.DataRequestService.TABLE_GMC;
 
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
@@ -15,6 +13,8 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 import uk.nhs.tis.sync.model.GmcDetailsProvidedEvent;
 
 /**
@@ -25,9 +25,10 @@ import uk.nhs.tis.sync.model.GmcDetailsProvidedEvent;
 @Component
 @Slf4j
 public class RabbitMqTssRejectedGmcUpdateListener {
+
   protected static final String TIS_TRIGGER_MESSAGE = "Update rejected";
 
-  private AmazonSQS sqs;
+  private SqsClient sqs;
   private String queueUrl;
   private ObjectMapper objectMapper;
 
@@ -38,7 +39,7 @@ public class RabbitMqTssRejectedGmcUpdateListener {
    * @param queueUrl     The SQS queue to which to post data request messages.
    * @param objectMapper The object mapper to use.
    */
-  public RabbitMqTssRejectedGmcUpdateListener(AmazonSQS sqs,
+  public RabbitMqTssRejectedGmcUpdateListener(SqsClient sqs,
       @Value("${application.aws.sqs.queueUrl}") String queueUrl,
       ObjectMapper objectMapper) {
     this.sqs = sqs;
@@ -60,10 +61,11 @@ public class RabbitMqTssRejectedGmcUpdateListener {
       messageMap.put("tisTrigger", TIS_TRIGGER_MESSAGE);
       messageMap.put("tisTriggerDetail", "Received " + LocalDateTime.now());
       String messageBody = objectMapper.writeValueAsString(messageMap);
-      SendMessageRequest msgRequest = new SendMessageRequest(queueUrl, messageBody);
+      SendMessageRequest msgRequest = SendMessageRequest.builder().queueUrl(queueUrl)
+          .messageBody(messageBody).build();
       String messageGroupAndDedup = TABLE_GMC + "_" + event.getPersonId().toString();
-      msgRequest.setMessageGroupId(messageGroupAndDedup);
-      msgRequest.setMessageDeduplicationId(messageGroupAndDedup);
+      msgRequest = msgRequest.toBuilder().messageGroupId(messageGroupAndDedup).build();
+      msgRequest = msgRequest.toBuilder().messageDeduplicationId(messageGroupAndDedup).build();
       sqs.sendMessage(msgRequest);
       log.info("Rejected GMC update received and data request made to reset value in TSS: {}",
           messageBody);
