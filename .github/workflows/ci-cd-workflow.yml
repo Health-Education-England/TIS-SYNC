@@ -87,33 +87,33 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
 
-  backup-artifacts:
-    name: Backup build artifacts
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v6
-        with:
-          path: build-artifacts
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v5
-        with:
-          aws-region: eu-west-2
-          role-to-assume: arn:aws:iam::430723991443:role/github-actions-deployer-role
-
-      - name: Backup build artifacts
-        run: |
-          workflow=$(echo ${{ github.workflow }} | sed -e 's/\W/-/g' -e 's/\(.*\)/\L\1/')
-          aws s3 sync build-artifacts s3://tis-build-artifacts/${{ github.event.repository.name }}/$workflow/${{ github.run_number }}
+#  backup-artifacts:
+#    name: Backup build artifacts
+#    needs: build
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Download build artifacts
+#        uses: actions/download-artifact@v6
+#        with:
+#          path: build-artifacts
+#
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v5
+#        with:
+#          aws-region: eu-west-2
+#          role-to-assume: arn:aws:iam::430723991443:role/github-actions-deployer-role
+#
+#      - name: Backup build artifacts
+#        run: |
+#          workflow=$(echo ${{ github.workflow }} | sed -e 's/\W/-/g' -e 's/\(.*\)/\L\1/')
+#          aws s3 sync build-artifacts s3://tis-build-artifacts/${{ github.event.repository.name }}/$workflow/${{ github.run_number }}
 
   dockerize:
     name: Dockerize
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+#    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout
@@ -163,157 +163,157 @@ jobs:
         run: |
           mvn spring-boot:build-image -DskipTests -Dspring-boot.build-image.imageName=$ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}
           docker tag $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }} $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          docker push --all-tags $ECR_REGISTRY/$ECR_REPOSITORY
+#          docker push --all-tags $ECR_REGISTRY/$ECR_REPOSITORY
 
-  deploy-pre-prod:
-    name: Deploy pre-production definition
-    environment: pre-prod
-    needs: dockerize
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v5
-        with:
-          aws-region: eu-west-2
-          role-to-assume: arn:aws:iam::430723991443:role/github-actions-deployer-role
-
-      - name: Log in to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Create pre-prod task definition
-        run: sed 's/${environment}/preprod/g' .aws/task-definition-template.json > .aws/task-definition-preprod.json
-
-      - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: .aws/task-definition-preprod.json
-          container-name: tis-sync
-          image: ${{ steps.login-ecr.outputs.registry }}/sync:${{ github.sha }}
-
-      - name: Deploy Amazon ECS task definition
-        id: ecs-deploy
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: tis-sync
-          cluster: tis-preprod
-          wait-for-service-stability: true
-
-      - name: Verify ECS deployment
-        run: |
-          CURRENT_TASK_DEF_ARN=$(aws ecs describe-services --cluster tis-preprod --service tis-sync --query services[0].deployments[0].taskDefinition | jq -r ".")
-          NEW_TASK_DEF_ARN=${{ steps.ecs-deploy.outputs.task-definition-arn }}
-          echo "Current task arn: $CURRENT_TASK_DEF_ARN"
-          echo "New task arn: $NEW_TASK_DEF_ARN"
-          if [ "$CURRENT_TASK_DEF_ARN" != "$NEW_TASK_DEF_ARN" ]; then
-            echo "Deployment failed."
-            exit 1
-          fi
-
-  deploy-prod:
-    name: Deploy production definition
-    environment: prod
-    needs: deploy-pre-prod
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v5
-        with:
-          aws-region: eu-west-2
-          role-to-assume: arn:aws:iam::430723991443:role/github-actions-deployer-role
-
-      - name: Log in to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Create prod task definition
-        run: sed 's/${environment}/prod/g' .aws/task-definition-template.json > .aws/task-definition-prod.json
-
-      - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: .aws/task-definition-prod.json
-          container-name: tis-sync
-          image: ${{ steps.login-ecr.outputs.registry }}/sync:${{ github.sha }}
-
-      - name: Deploy Amazon ECS task definition
-        id: ecs-deploy
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: tis-sync
-          cluster: tis-prod
-          wait-for-service-stability: true
-
-      - name: Verify ECS deployment
-        run: |
-          CURRENT_TASK_DEF_ARN=$(aws ecs describe-services --cluster tis-prod --service tis-sync --query services[0].deployments[0].taskDefinition | jq -r ".")
-          NEW_TASK_DEF_ARN=${{ steps.ecs-deploy.outputs.task-definition-arn }}
-          echo "Current task arn: $CURRENT_TASK_DEF_ARN"
-          echo "New task arn: $NEW_TASK_DEF_ARN"
-          if [ "$CURRENT_TASK_DEF_ARN" != "$NEW_TASK_DEF_ARN" ]; then
-            echo "Deployment failed."
-            exit 1
-          fi
-
-  deploy-nimdta:
-    name: Deploy NIMDTA definition
-    environment: nimdta
-    needs: deploy-pre-prod
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v5
-        with:
-          aws-region: eu-west-2
-          role-to-assume: arn:aws:iam::430723991443:role/github-actions-deployer-role
-
-      - name: Log in to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Create NIMDTA task definition
-        run: sed 's/${environment}/nimdta/g' .aws/task-definition-template.json > .aws/task-definition-nimdta.json
-
-      - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: .aws/task-definition-nimdta.json
-          container-name: tis-sync
-          image: ${{ steps.login-ecr.outputs.registry }}/sync:${{ github.sha }}
-
-      - name: Deploy Amazon ECS task definition
-        id: ecs-deploy
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: tis-sync
-          cluster: tis-nimdta
-          wait-for-service-stability: true
-
-      - name: Verify ECS deployment
-        run: |
-          CURRENT_TASK_DEF_ARN=$(aws ecs describe-services --cluster tis-nimdta --service tis-sync --query services[0].deployments[0].taskDefinition | jq -r ".")
-          NEW_TASK_DEF_ARN=${{ steps.ecs-deploy.outputs.task-definition-arn }}
-          echo "Current task arn: $CURRENT_TASK_DEF_ARN"
-          echo "New task arn: $NEW_TASK_DEF_ARN"
-          if [ "$CURRENT_TASK_DEF_ARN" != "$NEW_TASK_DEF_ARN" ]; then
-            echo "Deployment failed."
-            exit 1
-          fi
+#  deploy-pre-prod:
+#    name: Deploy pre-production definition
+#    environment: pre-prod
+#    needs: dockerize
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v5
+#
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v5
+#        with:
+#          aws-region: eu-west-2
+#          role-to-assume: arn:aws:iam::430723991443:role/github-actions-deployer-role
+#
+#      - name: Log in to Amazon ECR
+#        id: login-ecr
+#        uses: aws-actions/amazon-ecr-login@v2
+#
+#      - name: Create pre-prod task definition
+#        run: sed 's/${environment}/preprod/g' .aws/task-definition-template.json > .aws/task-definition-preprod.json
+#
+#      - name: Fill in the new image ID in the Amazon ECS task definition
+#        id: task-def
+#        uses: aws-actions/amazon-ecs-render-task-definition@v1
+#        with:
+#          task-definition: .aws/task-definition-preprod.json
+#          container-name: tis-sync
+#          image: ${{ steps.login-ecr.outputs.registry }}/sync:${{ github.sha }}
+#
+#      - name: Deploy Amazon ECS task definition
+#        id: ecs-deploy
+#        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+#        with:
+#          task-definition: ${{ steps.task-def.outputs.task-definition }}
+#          service: tis-sync
+#          cluster: tis-preprod
+#          wait-for-service-stability: true
+#
+#      - name: Verify ECS deployment
+#        run: |
+#          CURRENT_TASK_DEF_ARN=$(aws ecs describe-services --cluster tis-preprod --service tis-sync --query services[0].deployments[0].taskDefinition | jq -r ".")
+#          NEW_TASK_DEF_ARN=${{ steps.ecs-deploy.outputs.task-definition-arn }}
+#          echo "Current task arn: $CURRENT_TASK_DEF_ARN"
+#          echo "New task arn: $NEW_TASK_DEF_ARN"
+#          if [ "$CURRENT_TASK_DEF_ARN" != "$NEW_TASK_DEF_ARN" ]; then
+#            echo "Deployment failed."
+#            exit 1
+#          fi
+#
+#  deploy-prod:
+#    name: Deploy production definition
+#    environment: prod
+#    needs: deploy-pre-prod
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v5
+#
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v5
+#        with:
+#          aws-region: eu-west-2
+#          role-to-assume: arn:aws:iam::430723991443:role/github-actions-deployer-role
+#
+#      - name: Log in to Amazon ECR
+#        id: login-ecr
+#        uses: aws-actions/amazon-ecr-login@v2
+#
+#      - name: Create prod task definition
+#        run: sed 's/${environment}/prod/g' .aws/task-definition-template.json > .aws/task-definition-prod.json
+#
+#      - name: Fill in the new image ID in the Amazon ECS task definition
+#        id: task-def
+#        uses: aws-actions/amazon-ecs-render-task-definition@v1
+#        with:
+#          task-definition: .aws/task-definition-prod.json
+#          container-name: tis-sync
+#          image: ${{ steps.login-ecr.outputs.registry }}/sync:${{ github.sha }}
+#
+#      - name: Deploy Amazon ECS task definition
+#        id: ecs-deploy
+#        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+#        with:
+#          task-definition: ${{ steps.task-def.outputs.task-definition }}
+#          service: tis-sync
+#          cluster: tis-prod
+#          wait-for-service-stability: true
+#
+#      - name: Verify ECS deployment
+#        run: |
+#          CURRENT_TASK_DEF_ARN=$(aws ecs describe-services --cluster tis-prod --service tis-sync --query services[0].deployments[0].taskDefinition | jq -r ".")
+#          NEW_TASK_DEF_ARN=${{ steps.ecs-deploy.outputs.task-definition-arn }}
+#          echo "Current task arn: $CURRENT_TASK_DEF_ARN"
+#          echo "New task arn: $NEW_TASK_DEF_ARN"
+#          if [ "$CURRENT_TASK_DEF_ARN" != "$NEW_TASK_DEF_ARN" ]; then
+#            echo "Deployment failed."
+#            exit 1
+#          fi
+#
+#  deploy-nimdta:
+#    name: Deploy NIMDTA definition
+#    environment: nimdta
+#    needs: deploy-pre-prod
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v5
+#
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v5
+#        with:
+#          aws-region: eu-west-2
+#          role-to-assume: arn:aws:iam::430723991443:role/github-actions-deployer-role
+#
+#      - name: Log in to Amazon ECR
+#        id: login-ecr
+#        uses: aws-actions/amazon-ecr-login@v2
+#
+#      - name: Create NIMDTA task definition
+#        run: sed 's/${environment}/nimdta/g' .aws/task-definition-template.json > .aws/task-definition-nimdta.json
+#
+#      - name: Fill in the new image ID in the Amazon ECS task definition
+#        id: task-def
+#        uses: aws-actions/amazon-ecs-render-task-definition@v1
+#        with:
+#          task-definition: .aws/task-definition-nimdta.json
+#          container-name: tis-sync
+#          image: ${{ steps.login-ecr.outputs.registry }}/sync:${{ github.sha }}
+#
+#      - name: Deploy Amazon ECS task definition
+#        id: ecs-deploy
+#        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+#        with:
+#          task-definition: ${{ steps.task-def.outputs.task-definition }}
+#          service: tis-sync
+#          cluster: tis-nimdta
+#          wait-for-service-stability: true
+#
+#      - name: Verify ECS deployment
+#        run: |
+#          CURRENT_TASK_DEF_ARN=$(aws ecs describe-services --cluster tis-nimdta --service tis-sync --query services[0].deployments[0].taskDefinition | jq -r ".")
+#          NEW_TASK_DEF_ARN=${{ steps.ecs-deploy.outputs.task-definition-arn }}
+#          echo "Current task arn: $CURRENT_TASK_DEF_ARN"
+#          echo "New task arn: $NEW_TASK_DEF_ARN"
+#          if [ "$CURRENT_TASK_DEF_ARN" != "$NEW_TASK_DEF_ARN" ]; then
+#            echo "Deployment failed."
+#            exit 1
+#          fi
