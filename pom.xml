@@ -11,7 +11,7 @@
   </parent>
   <groupId>uk.nhs.tis</groupId>
   <artifactId>sync</artifactId>
-  <version>1.25.2</version>
+  <version>1.25.3</version>
   <packaging>jar</packaging>
   <name>sync</name>
   <description>Separate Microservice for synchronisation</description>
@@ -224,6 +224,18 @@
   <build>
     <defaultGoal>spring-boot:run</defaultGoal>
     <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.3.1.RELEASE</version>
+        <configuration>
+          <image>
+            <buildpacks>
+              <buildpack>paketobuildpacks/builder:0.0.460-base-platform-api-0.3</buildpack>
+            </buildpacks>
+          </image>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
