@@ -16,7 +16,7 @@ spring:
       uris: ${ES_URLS}
 
 logging:
-  file: ${LOG_DIR:${HOME}}/sync.log
+  file.name: ${LOG_DIR:${HOME}}/sync.log
 
 slack:
   job:

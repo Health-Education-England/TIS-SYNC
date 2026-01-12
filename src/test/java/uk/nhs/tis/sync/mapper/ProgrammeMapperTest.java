@@ -1,10 +1,10 @@
 package uk.nhs.tis.sync.mapper;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.transformuk.hee.tis.tcs.api.dto.ProgrammeDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.nhs.tis.sync.dto.ProgrammeDmsDto;
 
 public class ProgrammeMapperTest {
@@ -29,14 +29,14 @@ public class ProgrammeMapperTest {
 
     ProgrammeDmsDto expected = testObj.toDmsDto(input);
 
-    assertEquals("Mapped id doesn't match expectation", ID.toString(), expected.getId());
-    assertEquals("Mapped intrepid id doesn't match expectation", LEGACY_ID,
-        input.getIntrepidId());
-    assertEquals("Mapped owner doesn't match expectation", OWNER, expected.getOwner());
-    assertEquals("Mapped programme name doesn't match expectation",
-        PROG_NAME, expected.getProgrammeName());
-    assertEquals("Mapped programme number doesn't match expectation",
-        PROG_NUM, expected.getProgrammeNumber());
-    assertEquals("Mapped status doesn't match expectation", STATUS.name(), expected.getStatus());
+    assertEquals(ID.toString(), expected.getId(), "Mapped id doesn't match expectation");
+    assertEquals(LEGACY_ID, input.getIntrepidId(),
+        "Mapped intrepid id doesn't match expectation");
+    assertEquals(OWNER, expected.getOwner(), "Mapped owner doesn't match expectation");
+    assertEquals(PROG_NAME,
+        expected.getProgrammeName(), "Mapped programme name doesn't match expectation");
+    assertEquals(PROG_NUM,
+        expected.getProgrammeNumber(), "Mapped programme number doesn't match expectation");
+    assertEquals(STATUS.name(), expected.getStatus(), "Mapped status doesn't match expectation");
   }
 }

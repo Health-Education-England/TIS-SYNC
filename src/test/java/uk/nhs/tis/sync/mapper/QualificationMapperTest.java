@@ -1,12 +1,12 @@
 package uk.nhs.tis.sync.mapper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.transformuk.hee.tis.tcs.api.dto.PersonDTO;
 import com.transformuk.hee.tis.tcs.api.dto.QualificationDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.QualificationType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.nhs.tis.sync.dto.QualificationDmsDto;
-
-import static org.junit.Assert.assertEquals;
 
 public class QualificationMapperTest {
   private static final Long QUALIFICATION_ID = 50L;
@@ -25,12 +25,12 @@ public class QualificationMapperTest {
 
     QualificationDmsDto expected = testObj.toDmsDto(input);
 
-    assertEquals("Mapped qualification id doesn't match expectation", QUALIFICATION_ID.toString(),
-        expected.getId());
-    assertEquals("Mapped qualification type doesn't match expectation",
-        QUALIFICATION_TYPE.name(), expected.getQualificationType());
-    assertEquals("Mapped person id doesn't match expectation", PERSON_ID.toString(),
-        expected.getPersonId());
+    assertEquals(QUALIFICATION_ID.toString(), expected.getId(),
+        "Mapped qualification id doesn't match expectation");
+    assertEquals(QUALIFICATION_TYPE.name(),
+        expected.getQualificationType(), "Mapped qualification type doesn't match expectation");
+    assertEquals(PERSON_ID.toString(), expected.getPersonId(),
+        "Mapped person id doesn't match expectation");
   }
 
   @Test
@@ -39,7 +39,7 @@ public class QualificationMapperTest {
 
     QualificationDmsDto expected = testObj.toDmsDto(input);
 
-    assertEquals("Mapped qualification type doesn't match expectation",
-        null, expected.getQualificationType());
+    assertEquals(null,
+        expected.getQualificationType(), "Mapped qualification type doesn't match expectation");
   }
 }

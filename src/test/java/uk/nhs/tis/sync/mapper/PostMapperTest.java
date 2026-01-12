@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.transformuk.hee.tis.tcs.api.dto.PostDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.nhs.tis.sync.dto.PostDmsDto;
 
 public class PostMapperTest {
@@ -14,7 +14,7 @@ public class PostMapperTest {
 
   private PostDTO postDto;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     mapper = new PostMapperImpl();
 

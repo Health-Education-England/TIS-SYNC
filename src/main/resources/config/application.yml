@@ -28,7 +28,7 @@ management:
       enabled: false # When using the MailService, configure an SMTP server and set this to true
   server:
     add-application-context-header: false
-    servlet.context-path: /management
+    base-path: /management
 
 spring:
   main.allow-bean-definition-overriding: true
@@ -99,9 +99,6 @@ spring:
   messages:
     basename: i18n/messages
     cache-duration: 1s
-  mvc:
-    favicon:
-      enabled: false
   jdbc:
     template:
       query-timeout: 120s
@@ -131,7 +128,6 @@ spring:
 
 server:
   port: 8101
-  connection-timeout: 120s
   compression:
     enabled: true
     mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
@@ -243,7 +239,7 @@ kc:
   timeout: ${KC_TIMEOUT}
 
 logging:
-  file: ${LOG_DIR:${HOME}}/sync.log
+  file.name: ${LOG_DIR:${HOME}}/sync.log
   level:
     ROOT: ${LOG_LEVEL:INFO}
     org.hibernate.engine.internal: WARN

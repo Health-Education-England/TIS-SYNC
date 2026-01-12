@@ -7,7 +7,6 @@ import com.transformuk.hee.tis.reference.client.ReferenceService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +24,6 @@ public class AsyncReferenceService {
 
   private ReferenceService referenceService;
 
-  @Autowired
   public AsyncReferenceService(ReferenceService referenceService) {
     this.referenceService = referenceService;
   }

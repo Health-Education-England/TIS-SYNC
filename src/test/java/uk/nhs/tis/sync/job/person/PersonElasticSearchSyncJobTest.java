@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -24,6 +25,7 @@ import uk.nhs.tis.sync.event.JobExecutionEvent;
 import uk.nhs.tis.sync.service.PersonElasticSearchService;
 
 @ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class PersonElasticSearchSyncJobTest {
 
   @MockBean

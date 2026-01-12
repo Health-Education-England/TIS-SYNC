@@ -3,7 +3,6 @@ package uk.nhs.tis.sync.service.api.decorator;
 import com.transformuk.hee.tis.tcs.service.model.PersonBasicDetails;
 import com.transformuk.hee.tis.tcs.service.repository.PersonBasicDetailsRepository;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -16,7 +15,6 @@ import java.util.stream.Collectors;
 public class PersonBasicDetailsRepositoryAccessor {
   private PersonBasicDetailsRepository personBasicDetailsRepository;
 
-  @Autowired
   public PersonBasicDetailsRepositoryAccessor(PersonBasicDetailsRepository personBasicDetailsRepository) {
     this.personBasicDetailsRepository = personBasicDetailsRepository;
   }

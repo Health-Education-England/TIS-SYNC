@@ -7,8 +7,8 @@ import com.transformuk.hee.tis.tcs.api.enumeration.PlacementStatus;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import org.apache.commons.lang3.time.DateUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import uk.nhs.tis.sync.dto.PlacementSummaryDmsDto;
 
@@ -18,7 +18,7 @@ public class PlacementMapperTest {
 
   PlacementSummaryDTO placementSummaryDto;
 
-  @Before
+  @BeforeEach
   public void setUp() throws ParseException {
     mapper = Mappers.getMapper(PlacementSummaryMapper.class);
 

@@ -22,7 +22,7 @@ spring:
     ssl.enabled: ${RABBITMQ_USE_SSL:false}
 
 logging:
-  file: ${LOG_DIR:${HOME}}/sync.log
+  file.name: ${LOG_DIR:${HOME}}/sync.log
 
 kc:
   realm: ${KC_REALM:lin}
