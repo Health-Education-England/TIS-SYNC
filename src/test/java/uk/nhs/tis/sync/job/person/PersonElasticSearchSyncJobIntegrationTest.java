@@ -8,20 +8,17 @@ import static org.hamcrest.Matchers.lessThan;
 
 import com.transformuk.hee.tis.tcs.service.repository.PersonElasticSearchRepository;
 import java.util.concurrent.TimeUnit;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.test.context.junit4.SpringRunner;
 import uk.nhs.tis.sync.Application;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class, webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@Ignore
+@Disabled
 public class PersonElasticSearchSyncJobIntegrationTest {
 
   @Autowired
@@ -35,14 +32,14 @@ public class PersonElasticSearchSyncJobIntegrationTest {
 
   private static final String ES_INDEX = "persons";
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     elasticSearchOperations.deleteIndex(ES_INDEX);
     assertThat("should have deleted the index", elasticSearchOperations.indexExists(ES_INDEX),
         is(false));
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
   }
 

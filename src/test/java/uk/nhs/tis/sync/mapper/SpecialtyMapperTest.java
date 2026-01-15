@@ -1,11 +1,11 @@
 package uk.nhs.tis.sync.mapper;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.transformuk.hee.tis.tcs.api.dto.SpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.dto.SpecialtyGroupDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.nhs.tis.sync.dto.SpecialtyDmsDto;
 
 public class SpecialtyMapperTest {
@@ -34,15 +34,15 @@ public class SpecialtyMapperTest {
 
     SpecialtyDmsDto expected = testObj.toDmsDto(input);
 
-    assertEquals("Mapped id doesn't match expectation", ID.toString(), expected.getId());
-    assertEquals("Mapped intrepid id doesn't match expectation", LEGACY_ID,
-        input.getIntrepidId());
-    assertEquals("Mapped status doesn't match expectation", STATUS.name(), expected.getStatus());
-    assertEquals("Mapped college doesn't match expectation", COLLEGE, expected.getCollege());
-    assertEquals("Mapped specialty code doesn't match expectation", SPECIALTY_CODE,
-        expected.getSpecialtyCode());
-    assertEquals("Mapped specialty group id doesn't match expectation",
-        input.getSpecialtyGroup().getId().toString(), expected.getSpecialtyGroupId());
-    assertEquals("Mapped name doesn't match expectation", NAME, expected.getName());
+    assertEquals(ID.toString(), expected.getId(), "Mapped id doesn't match expectation");
+    assertEquals(LEGACY_ID, input.getIntrepidId(),
+        "Mapped intrepid id doesn't match expectation");
+    assertEquals(STATUS.name(), expected.getStatus(), "Mapped status doesn't match expectation");
+    assertEquals(COLLEGE, expected.getCollege(), "Mapped college doesn't match expectation");
+    assertEquals(SPECIALTY_CODE, expected.getSpecialtyCode(),
+        "Mapped specialty code doesn't match expectation");
+    assertEquals(input.getSpecialtyGroup().getId().toString(),
+        expected.getSpecialtyGroupId(), "Mapped specialty group id doesn't match expectation");
+    assertEquals(NAME, expected.getName(), "Mapped name doesn't match expectation");
   }
 }

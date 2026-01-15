@@ -1,17 +1,15 @@
 package uk.nhs.tis.sync.job;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import com.transformuk.hee.tis.tcs.service.repository.PersonTrustRepository;
 import org.hamcrest.CoreMatchers;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
 //@Sql(scripts = {"/scripts/posts.sql","/scripts/personRows.sql","/scripts/placements.sql"})
 //@Sql(scripts = {"/scripts/deletePlacements.sql","/scripts/deletePersonRows.sql","/scripts/deletePosts.sql"}, executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
@@ -23,13 +21,13 @@ public class PersonPlacementTrainingBodyTrustJobIntegrationTest {
   @Autowired
   private PersonTrustRepository repo;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     repo.deleteAllInBatch();
-    Assert.assertThat("should have prepared the empty synchronized database table", repo.findAll().size(), CoreMatchers.is(0));
+    assertThat("should have prepared the empty synchronized database table", repo.findAll().size(), CoreMatchers.is(0));
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     repo.deleteAllInBatch();
   }
@@ -45,8 +43,8 @@ public class PersonPlacementTrainingBodyTrustJobIntegrationTest {
       Thread.sleep(5 * 1000L);
       loops++;
     }
-    Assert.assertThat("should the sync job is not currently running", job.isCurrentlyRunning(), CoreMatchers.not(true));
-    Assert.assertThat("The sync job should not have timed out", loops > maxLoops, CoreMatchers.not(true));
+    assertThat("should the sync job is not currently running", job.isCurrentlyRunning(), CoreMatchers.not(true));
+    assertThat("The sync job should not have timed out", loops > maxLoops, CoreMatchers.not(true));
     int size = repo.findAll().size();
 //    Assert.assertThat("should have data in the synchronized database table", size, CoreMatchers.not(0));
   }

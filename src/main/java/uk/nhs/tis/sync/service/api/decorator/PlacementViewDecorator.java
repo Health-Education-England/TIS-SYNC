@@ -4,7 +4,6 @@ import com.transformuk.hee.tis.tcs.api.dto.PlacementViewDTO;
 import com.transformuk.hee.tis.tcs.service.model.PersonBasicDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -22,7 +21,6 @@ public class PlacementViewDecorator {
   private AsyncReferenceService referenceService;
   private PersonBasicDetailsRepositoryAccessor personBasicDetailsRepository;
 
-  @Autowired
   public PlacementViewDecorator(AsyncReferenceService referenceService,
                                 PersonBasicDetailsRepositoryAccessor personBasicDetailsRepository) {
     this.referenceService = referenceService;

@@ -3,10 +3,8 @@ package uk.nhs.tis.sync.service.api.decorator;
 import com.transformuk.hee.tis.tcs.api.dto.PlacementDetailsDTO;
 import com.transformuk.hee.tis.tcs.service.repository.OwnerProjection;
 import com.transformuk.hee.tis.tcs.service.repository.PostRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
+import org.springframework.util.ObjectUtils;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
@@ -20,7 +18,6 @@ public class PlacementDetailsDecorator {
   private AsyncReferenceService referenceService;
   private PersonBasicDetailsRepositoryAccessor personDetailsRepo;
 
-  @Autowired
   public PlacementDetailsDecorator(AsyncReferenceService asyncReferenceService, PersonBasicDetailsRepositoryAccessor personBasicDetailsRepositoryAccessor,
                                    PostRepository postRepository) {
     this.personDetailsRepo = personBasicDetailsRepositoryAccessor;
@@ -72,7 +69,7 @@ public class PlacementDetailsDecorator {
 
   protected CompletableFuture<Void> decorateSiteName(PlacementDetailsDTO placementDetailsDTO) {
     return referenceService.doWithSitesAsync(
-        () -> !StringUtils.isEmpty(placementDetailsDTO.getSiteId()),
+        () -> !ObjectUtils.isEmpty(placementDetailsDTO.getSiteId()),
         Collections.singleton(placementDetailsDTO.getSiteId()),
         sites -> {
           placementDetailsDTO.setSiteName(sites.values().iterator().next().getSiteName());
@@ -82,7 +79,7 @@ public class PlacementDetailsDecorator {
 
   protected CompletableFuture<Void> decorateGradeName(PlacementDetailsDTO placementDetailsDTO) {
     return referenceService.doWithGradesAsync(
-        () -> !StringUtils.isEmpty(placementDetailsDTO.getGradeId()),
+        () -> !ObjectUtils.isEmpty(placementDetailsDTO.getGradeId()),
         Collections.singleton(placementDetailsDTO.getGradeId()), grades -> {
           placementDetailsDTO.setGradeAbbreviation(grades.values().iterator().next().getAbbreviation());
           placementDetailsDTO.setGradeName(grades.values().iterator().next().getName());

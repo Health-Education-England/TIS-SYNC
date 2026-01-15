@@ -7,17 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.concurrent.TimeUnit;
 import org.awaitility.core.ConditionTimeoutException;
 import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest//?Need this?(classes = Application.class, webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 //TODO Write scripts so we can see some records are being updated.@Sql(scripts = {"/scripts/programmes.sql","/scripts/personRows.sql","/scripts/programmeMemberships.sql"})
 //TODO @Sql(scripts = {"/scripts/deleteProgrammeMemberships.sql","/scripts/deletePersonRows.sql","/scripts/deleteProgrammes.sql"}, executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
@@ -39,7 +36,7 @@ class PersonRecordStatusJobIntegrationTest {
       assertThat("should not be currently running",
           job.isCurrentlyRunning(), CoreMatchers.is(false));
     } catch (ConditionTimeoutException e) {
-      Assert.fail("the sync job should not have timed out");
+      Assertions.fail("the sync job should not have timed out");
     }
   }
 
@@ -63,7 +60,7 @@ class PersonRecordStatusJobIntegrationTest {
       assertThat("should not be currently running",
           job.isCurrentlyRunning(), CoreMatchers.is(false));
     } catch (ConditionTimeoutException e) {
-      Assert.fail("the sync job should not have timed out");
+      Assertions.fail("the sync job should not have timed out");
     }
   }
 
