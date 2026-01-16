@@ -12,8 +12,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static uk.nhs.tis.sync.message.listener.RabbitMqTssRejectedGmcUpdateListener.TIS_TRIGGER_MESSAGE;
 import static uk.nhs.tis.sync.service.DataRequestService.TABLE_GMC;
 
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.transformuk.hee.tis.tcs.api.dto.GmcDetailsDTO;
@@ -27,6 +25,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 import uk.nhs.tis.sync.model.GmcDetailsProvidedEvent;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,7 +37,7 @@ class RabbitMqTssRejectedGmcUpdateListenerTest {
   private static final String GMC_NO = "1234567";
   private static final String GMC_STATUS = "status";
 
-  private AmazonSQS sqs;
+  private SqsClient sqs;
   private ObjectMapper objectMapper;
   private RabbitMqTssRejectedGmcUpdateListener listener;
 
@@ -45,7 +45,7 @@ class RabbitMqTssRejectedGmcUpdateListenerTest {
 
   @BeforeEach
   void setUp() {
-    sqs = mock(AmazonSQS.class);
+    sqs = mock(SqsClient.class);
     objectMapper = Mockito.spy(new ObjectMapper().findAndRegisterModules());
     listener = new RabbitMqTssRejectedGmcUpdateListener(sqs, DATA_REQUEST_QUEUE_URL, objectMapper);
     GmcDetailsDTO gmcDetailsDto = new GmcDetailsDTO();
@@ -69,15 +69,15 @@ class RabbitMqTssRejectedGmcUpdateListenerTest {
     verifyNoMoreInteractions(sqs);
 
     SendMessageRequest sendMessageRequest = msgRequestCaptor.getValue();
-    assertThat("Unexpected message URL.", sendMessageRequest.getQueueUrl(),
+    assertThat("Unexpected message URL.", sendMessageRequest.queueUrl(),
         is(DATA_REQUEST_QUEUE_URL));
     String expectedMsgGroupIdAndDedup = TABLE_GMC + "_" + event.getPersonId().toString();
-    assertThat("Unexpected message group Id.", sendMessageRequest.getMessageGroupId(),
+    assertThat("Unexpected message group Id.", sendMessageRequest.messageGroupId(),
         is(expectedMsgGroupIdAndDedup));
-    assertThat("Unexpected deduplication Id.", sendMessageRequest.getMessageDeduplicationId(),
+    assertThat("Unexpected deduplication Id.", sendMessageRequest.messageDeduplicationId(),
         is(expectedMsgGroupIdAndDedup));
 
-    String messageBody = sendMessageRequest.getMessageBody();
+    String messageBody = sendMessageRequest.messageBody();
     Map<String, String> sentMessageMap = objectMapper.readValue(messageBody, Map.class);
 
     assertThat("Unexpected message body id.", sentMessageMap.get("id"),
