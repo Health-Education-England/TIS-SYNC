@@ -35,13 +35,18 @@ public class TrustAdminSyncJobTemplateUnitTest {
 
   private TrustAdminSyncJobTemplateStub testObj;
 
-  @Mock private EntityManagerFactory entityManagerFactoryMock;
-  @Mock private EntityManager entityManagerMock;
-  @Mock private EntityTransaction entityTransactionMock;
+  @Mock
+  private EntityManagerFactory entityManagerFactoryMock;
+  @Mock
+  private EntityManager entityManagerMock;
+  @Mock
+  private EntityTransaction entityTransactionMock;
 
-  @Mock private List<EntityData> mockList;
+  @Mock
+  private List<EntityData> mockList;
 
-  @Mock private ApplicationEventPublisher applicationEventPublisherMock;
+  @Mock
+  private ApplicationEventPublisher applicationEventPublisherMock;
 
   public void instantiateJob(List<EntityData> data) {
     testObj = new TrustAdminSyncJobTemplateStub(entityManagerFactoryMock,

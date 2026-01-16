@@ -1,9 +1,8 @@
 package uk.nhs.tis.sync.config;
 
-import com.amazonaws.services.kinesis.AmazonKinesis;
-import com.amazonaws.services.kinesis.AmazonKinesisClientBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import software.amazon.awssdk.services.kinesis.KinesisClient;
 
 @Configuration
 public class AmazonKinesisConfiguration {
@@ -12,7 +11,7 @@ public class AmazonKinesisConfiguration {
    * @return an Amazon Kinesis object, necessary to send data into a Kinesis stream.
    */
   @Bean
-  public AmazonKinesis amazonKinesis() {
-    return AmazonKinesisClientBuilder.defaultClient();
+  public KinesisClient amazonKinesis() {
+    return KinesisClient.create();
   }
 }

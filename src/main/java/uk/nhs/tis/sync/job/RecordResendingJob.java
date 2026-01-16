@@ -1,10 +1,5 @@
 package uk.nhs.tis.sync.job;
 
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.model.DeleteMessageBatchRequest;
-import com.amazonaws.services.sqs.model.DeleteMessageBatchRequestEntry;
-import com.amazonaws.services.sqs.model.Message;
-import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
@@ -21,6 +16,11 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequest;
+import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequestEntry;
+import software.amazon.awssdk.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.service.DataRequestService;
 import uk.nhs.tis.sync.service.DmsRecordAssembler;
@@ -40,7 +40,7 @@ public class RecordResendingJob {
 
   private final ObjectMapper objectMapper;
 
-  private final AmazonSQS sqs;
+  private final SqsClient sqs;
 
   private final DataRequestService dataRequestService;
 
@@ -63,7 +63,7 @@ public class RecordResendingJob {
   public RecordResendingJob(KinesisService kinesisService,
       DataRequestService dataRequestService,
       ObjectMapper objectMapper,
-      AmazonSQS sqs,
+      SqsClient sqs,
       @Value("${application.aws.sqs.queueUrl}") String queueUrl,
       DmsRecordAssembler dmsRecordAssembler,
       @Value("${application.aws.kinesis.streamName}") String streamName) {
@@ -92,14 +92,15 @@ public class RecordResendingJob {
       List<DmsDto> dmsDtoList = new ArrayList<>();
       List<String> receiptHandles = new ArrayList<>();
 
-      ReceiveMessageRequest request = new ReceiveMessageRequest()
-          .withQueueUrl(queueUrl)
-          .withMaxNumberOfMessages(10);
-      List<Message> messages = sqs.receiveMessage(request).getMessages();
+      ReceiveMessageRequest request = ReceiveMessageRequest.builder()
+          .queueUrl(queueUrl)
+          .maxNumberOfMessages(10)
+          .build();
+      List<Message> messages = sqs.receiveMessage(request).messages();
 
       for (Message message : messages) {
         dmsDtoList.addAll(processMessage(message));
-        receiptHandles.add(message.getReceiptHandle());
+        receiptHandles.add(message.receiptHandle());
       }
 
       if (!dmsDtoList.isEmpty()) {
@@ -113,7 +114,7 @@ public class RecordResendingJob {
 
   private List<DmsDto> processMessage(Message message) {
     try {
-      String messageBody = message.getBody();
+      String messageBody = message.body();
       Map<String, String> messageMap = objectMapper.readValue(messageBody, Map.class);
       LOG.info(messageBody);
 
@@ -136,8 +137,10 @@ public class RecordResendingJob {
     for (ListIterator<String> iterator = receiptHandles.listIterator(); iterator.hasNext(); ) {
       String index = String.valueOf(iterator.nextIndex());
       String receiptHandle = iterator.next();
-      requestEntries.add(new DeleteMessageBatchRequestEntry(index, receiptHandle));
+      requestEntries.add(
+          DeleteMessageBatchRequestEntry.builder().id(index).receiptHandle(receiptHandle).build());
     }
-    sqs.deleteMessageBatch(new DeleteMessageBatchRequest(queueUrl, requestEntries));
+    sqs.deleteMessageBatch(
+        DeleteMessageBatchRequest.builder().queueUrl(queueUrl).entries(requestEntries).build());
   }
 }
