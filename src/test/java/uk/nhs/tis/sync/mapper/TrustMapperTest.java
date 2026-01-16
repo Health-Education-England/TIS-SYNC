@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.transformuk.hee.tis.reference.api.dto.TrustDTO;
 import com.transformuk.hee.tis.reference.api.enums.Status;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import uk.nhs.tis.sync.dto.TrustDmsDto;
 
@@ -15,7 +15,7 @@ public class TrustMapperTest {
 
   private TrustDTO trustDto;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     mapper = Mappers.getMapper(TrustMapper.class);
 

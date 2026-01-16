@@ -1,10 +1,9 @@
 package uk.nhs.tis.sync.service.api.decorator;
 
 import com.transformuk.hee.tis.tcs.api.dto.PersonViewDTO;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -21,7 +20,6 @@ public class PersonViewDecorator {
   private static final Logger log = LoggerFactory.getLogger(PersonViewDecorator.class);
   private AsyncReferenceService asyncReferenceService;
 
-  @Autowired
   public PersonViewDecorator(AsyncReferenceService referenceServiceAccessor) {
     this.asyncReferenceService = referenceServiceAccessor;
   }

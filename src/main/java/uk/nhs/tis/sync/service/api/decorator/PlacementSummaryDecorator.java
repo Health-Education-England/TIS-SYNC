@@ -1,7 +1,6 @@
 package uk.nhs.tis.sync.service.api.decorator;
 
 import com.transformuk.hee.tis.tcs.api.dto.PlacementSummaryDTO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -15,7 +14,6 @@ public class PlacementSummaryDecorator {
 
   private AsyncReferenceService referenceService;
 
-  @Autowired
   public PlacementSummaryDecorator(AsyncReferenceService referenceService) {
     this.referenceService = referenceService;
   }

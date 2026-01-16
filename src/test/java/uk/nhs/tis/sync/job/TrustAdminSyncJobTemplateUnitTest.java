@@ -4,9 +4,9 @@ import static org.awaitility.Awaitility.await;
 import static org.awaitility.Awaitility.with;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -20,14 +20,17 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import org.assertj.core.util.Lists;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.context.ApplicationEventPublisher;
 import uk.nhs.tis.sync.model.EntityData;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.WARN)
 public class TrustAdminSyncJobTemplateUnitTest {
 
   private TrustAdminSyncJobTemplateStub testObj;
@@ -98,7 +101,7 @@ public class TrustAdminSyncJobTemplateUnitTest {
     //rerun to check that we don't get a duplicate invocation
     testObj.run("");
     assertThat("should be running", running, is(true));
-    assertNotEquals("should not be zero", "0s", runningTime);
+    assertNotEquals("0s", runningTime, "should not be zero");
   }
 
   @Test

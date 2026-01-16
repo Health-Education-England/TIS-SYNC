@@ -50,9 +50,6 @@ spring:
       hibernate.hbm2ddl.auto: create-drop
   messages:
     basename: i18n/messages
-  mvc:
-    favicon:
-      enabled: false
   security:
     basic:
       enabled: false
@@ -62,10 +59,6 @@ spring:
   elasticsearch:
     rest:
       uris: http://localhost:9200
-  data:
-    elasticsearch:
-      cluster-nodes: localhost:9300
-      cluster-name: docker-cluster
 server:
   port: 10344
   address: localhost

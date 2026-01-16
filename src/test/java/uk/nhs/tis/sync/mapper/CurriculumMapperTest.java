@@ -1,13 +1,13 @@
 package uk.nhs.tis.sync.mapper;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.transformuk.hee.tis.tcs.api.dto.CurriculumDTO;
 import com.transformuk.hee.tis.tcs.api.dto.SpecialtyDTO;
 import com.transformuk.hee.tis.tcs.api.enumeration.AssessmentType;
 import com.transformuk.hee.tis.tcs.api.enumeration.CurriculumSubType;
 import com.transformuk.hee.tis.tcs.api.enumeration.Status;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.nhs.tis.sync.dto.CurriculumDmsDto;
 
 public class CurriculumMapperTest {
@@ -42,23 +42,23 @@ public class CurriculumMapperTest {
 
     CurriculumDmsDto expected = testObj.toDmsDto(input);
 
-    assertEquals("Mapped id doesn't match expectation", ID.toString(), expected.getId());
-    assertEquals("Mapped intrepid id doesn't match expectation", LEGACY_ID,
-        input.getIntrepidId());
-    assertEquals("Mapped name doesn't match expectation", NAME, expected.getName());
-    assertEquals("Mapped curriculum subtype name doesn't match expectation",
-        CURRICULUM_SUB_TYPE.name(), expected.getCurriculumSubType());
-    assertEquals("Mapped assessment type number doesn't match expectation",
-        ASSESSMENT_TYPE.name(), expected.getAssessmentType());
-    assertEquals("Mapped doesThisCurriculumLoadToCct doesn't match expectation",
-        String.valueOf(DOES_THIS_CURRICULUM_LOAD_TO_CCT),
-        expected.getDoesThisCurriculumLeadToCct());
-    assertEquals("Mapped period of grace doesn't match expectation",
-        String.valueOf(PERIOD_OF_GRACE), expected.getPeriodOfGrace());
-    assertEquals("Mapped status doesn't match expectation", STATUS.name(), expected.getStatus());
-    assertEquals("Mapped length doesn't match expectation", String.valueOf(LENGTH),
-        expected.getLength());
-    assertEquals("Mapped specialty id doesn't match expectation", specialty.getId().toString(),
-        expected.getSpecialtyId());
+    assertEquals(ID.toString(), expected.getId(), "Mapped id doesn't match expectation");
+    assertEquals(LEGACY_ID, input.getIntrepidId(),
+        "Mapped intrepid id doesn't match expectation");
+    assertEquals(NAME, expected.getName(), "Mapped name doesn't match expectation");
+    assertEquals(CURRICULUM_SUB_TYPE.name(),
+        expected.getCurriculumSubType(), "Mapped curriculum subtype name doesn't match expectation");
+    assertEquals(ASSESSMENT_TYPE.name(),
+        expected.getAssessmentType(), "Mapped assessment type number doesn't match expectation");
+    assertEquals(String.valueOf(DOES_THIS_CURRICULUM_LOAD_TO_CCT),
+        expected.getDoesThisCurriculumLeadToCct(),
+        "Mapped doesThisCurriculumLoadToCct doesn't match expectation");
+    assertEquals(String.valueOf(PERIOD_OF_GRACE),
+        expected.getPeriodOfGrace(), "Mapped period of grace doesn't match expectation");
+    assertEquals(STATUS.name(), expected.getStatus(), "Mapped status doesn't match expectation");
+    assertEquals(String.valueOf(LENGTH), expected.getLength(),
+        "Mapped length doesn't match expectation");
+    assertEquals(specialty.getId().toString(), expected.getSpecialtyId(),
+        "Mapped specialty id doesn't match expectation");
   }
 }

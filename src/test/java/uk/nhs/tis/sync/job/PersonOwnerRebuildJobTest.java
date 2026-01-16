@@ -4,9 +4,9 @@ import static org.awaitility.Awaitility.await;
 import static org.awaitility.Awaitility.with;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -14,14 +14,11 @@ import static org.mockito.Mockito.verify;
 import com.transformuk.hee.tis.tcs.service.repository.PersonRepository;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
 public class PersonOwnerRebuildJobTest {
 
@@ -62,7 +59,7 @@ public class PersonOwnerRebuildJobTest {
     String runningTime = job.elapsedTime();
     //rerun to check that we don't get a duplicate invocation
     assertThat("should be running", running, is(true));
-    assertNotEquals("should not be zero", "0s", runningTime);
+    assertNotEquals("0s", runningTime, "should not be zero");
   }
 
   @Test

@@ -3,7 +3,6 @@ package uk.nhs.tis.sync.service.api.decorator;
 import com.transformuk.hee.tis.tcs.api.dto.PostViewDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -20,7 +19,6 @@ public class PostViewDecorator {
   private static final Logger log = LoggerFactory.getLogger(PostViewDecorator.class);
   private AsyncReferenceService referenceService;
 
-  @Autowired
   public PostViewDecorator(AsyncReferenceService referenceService) {
     this.referenceService = referenceService;
   }

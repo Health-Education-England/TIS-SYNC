@@ -10,8 +10,6 @@ import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -38,8 +36,6 @@ class PersonElasticSearchSyncJobTest {
   private ApplicationEventPublisher applicationEventPublisher;
   @MockBean
   private IndexOperations mockIndexOps;
-  @Captor
-  private ArgumentCaptor<JobExecutionEvent> eventCaptor;
   int pageSize = 42;
 
   private PersonElasticSearchSyncJob job;
