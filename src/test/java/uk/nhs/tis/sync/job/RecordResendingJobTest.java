@@ -121,19 +121,13 @@ class RecordResendingJobTest {
 
     dmsDtos = Collections.singletonList(new DmsDto(postDmsDto, metadataDto));
 
-    message1 = Message.builder()
-        .build();
-    message1 = message1.toBuilder().receiptHandle("message1").build();
-    message1 = message1.toBuilder().body("{" +
+    message1 = Message.builder().receiptHandle("message1").body("{" +
         "\"table\": \"Post\"," +
         "\"id\": \"44381\"," +
         "\"tisTrigger\": \"" + TIS_TRIGGER + "\"," +
         "\"tisTriggerDetail\": \"" + TIS_TRIGGER_DETAIL + "\"" +
         "}").build();
-    message2 = Message.builder()
-        .build();
-    message2 = message2.toBuilder().receiptHandle("message2").build();
-    message2 = message2.toBuilder().body("{" +
+    message2 = Message.builder().receiptHandle("message2").body("{" +
         "\"table\": \"Post\"," +
         "\"id\": \"44382\"" +
         "}").build();

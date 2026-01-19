@@ -61,11 +61,10 @@ public class RabbitMqTssRejectedGmcUpdateListener {
       messageMap.put("tisTrigger", TIS_TRIGGER_MESSAGE);
       messageMap.put("tisTriggerDetail", "Received " + LocalDateTime.now());
       String messageBody = objectMapper.writeValueAsString(messageMap);
-      SendMessageRequest msgRequest = SendMessageRequest.builder().queueUrl(queueUrl)
-          .messageBody(messageBody).build();
       String messageGroupAndDedup = TABLE_GMC + "_" + event.getPersonId().toString();
-      msgRequest = msgRequest.toBuilder().messageGroupId(messageGroupAndDedup).build();
-      msgRequest = msgRequest.toBuilder().messageDeduplicationId(messageGroupAndDedup).build();
+      SendMessageRequest msgRequest = SendMessageRequest.builder().queueUrl(queueUrl)
+          .messageBody(messageBody).messageGroupId(messageGroupAndDedup)
+          .messageDeduplicationId(messageGroupAndDedup).build();
       sqs.sendMessage(msgRequest);
       log.info("Rejected GMC update received and data request made to reset value in TSS: {}",
           messageBody);

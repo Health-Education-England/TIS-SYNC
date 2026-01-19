@@ -57,11 +57,6 @@ public class KinesisService {
    * @param dmsDtoList        A list of DmsDtos ready to be transformed into json strings.
    */
   public void sendData(String kinesisStreamName, List<DmsDto> dmsDtoList) {
-    PutRecordsRequest putRecordsRequest = PutRecordsRequest.builder()
-        .build();
-
-    putRecordsRequest = putRecordsRequest.toBuilder().streamName(kinesisStreamName).build();
-
     List<PutRecordsRequestEntry> putRecordsRequestEntryList = new ArrayList<>();
 
     try {
@@ -76,8 +71,9 @@ public class KinesisService {
             .build();
         putRecordsRequestEntryList.add(putRecordsRequestEntry);
       }
-
-      putRecordsRequest = putRecordsRequest.toBuilder().records(putRecordsRequestEntryList).build();
+      PutRecordsRequest putRecordsRequest = PutRecordsRequest.builder()
+          .streamName(kinesisStreamName)
+          .records(putRecordsRequestEntryList).build();
       PutRecordsResponse putRecordsResult = amazonKinesis.putRecords(putRecordsRequest);
 
       log.info("Put Result {}", putRecordsResult);

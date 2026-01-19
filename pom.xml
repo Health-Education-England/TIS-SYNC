@@ -39,6 +39,7 @@
     <tis.shared.modules.version>2.3.0</tis.shared.modules.version>
     <undertow.version>2.0.15.Final</undertow.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
+    <aws.java.sdk.version>2.40.7</aws.java.sdk.version>
   </properties>
 
   <dependencies>
@@ -202,17 +203,17 @@
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
       <artifactId>aws-core</artifactId>
-      <version>2.40.7</version>
+      <version>${aws.java.sdk.version}</version>
     </dependency>
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
       <artifactId>sqs</artifactId>
-      <version>2.40.7</version>
+      <version>${aws.java.sdk.version}</version>
     </dependency>
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
       <artifactId>kinesis</artifactId>
-      <version>2.40.7</version>
+      <version>${aws.java.sdk.version}</version>
     </dependency>
     <dependency>
       <groupId>org.mapstruct</groupId>
