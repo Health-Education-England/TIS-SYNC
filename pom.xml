@@ -11,7 +11,7 @@
   </parent>
   <groupId>uk.nhs.tis</groupId>
   <artifactId>sync</artifactId>
-  <version>1.26.0</version>
+  <version>1.27.0</version>
   <packaging>jar</packaging>
   <name>sync</name>
   <description>Separate Microservice for synchronisation</description>
@@ -39,6 +39,7 @@
     <tis.shared.modules.version>2.3.0</tis.shared.modules.version>
     <undertow.version>2.0.15.Final</undertow.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
+    <aws.java.sdk.version>2.40.7</aws.java.sdk.version>
   </properties>
 
   <dependencies>
@@ -200,20 +201,19 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>amazon-sqs-java-messaging-lib</artifactId>
-      <version>1.0.8</version>
-      <type>jar</type>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>aws-core</artifactId>
+      <version>${aws.java.sdk.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>amazon-kinesis-client</artifactId>
-      <version>1.14.4</version>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>sqs</artifactId>
+      <version>${aws.java.sdk.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-core</artifactId>
-      <version>1.12.89</version>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>kinesis</artifactId>
+      <version>${aws.java.sdk.version}</version>
     </dependency>
     <dependency>
       <groupId>org.mapstruct</groupId>

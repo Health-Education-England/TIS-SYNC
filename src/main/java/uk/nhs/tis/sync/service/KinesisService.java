@@ -1,9 +1,5 @@
 package uk.nhs.tis.sync.service;
 
-import com.amazonaws.services.kinesis.AmazonKinesis;
-import com.amazonaws.services.kinesis.model.PutRecordsRequest;
-import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
-import com.amazonaws.services.kinesis.model.PutRecordsResult;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
@@ -16,6 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.core.SdkBytes;
+import software.amazon.awssdk.services.kinesis.KinesisClient;
+import software.amazon.awssdk.services.kinesis.model.PutRecordsRequest;
+import software.amazon.awssdk.services.kinesis.model.PutRecordsRequestEntry;
+import software.amazon.awssdk.services.kinesis.model.PutRecordsResponse;
 import uk.nhs.tis.sync.dto.DmsDto;
 
 /**
@@ -25,7 +26,7 @@ import uk.nhs.tis.sync.dto.DmsDto;
 @Service
 public class KinesisService {
 
-  private final AmazonKinesis amazonKinesis;
+  private final KinesisClient amazonKinesis;
   private final ObjectMapper objectMapper;
 
   /**
@@ -34,7 +35,7 @@ public class KinesisService {
    * @param amazonKinesis Object needed to a PutRecordsRequest object into the stream.
    */
   public KinesisService(
-      AmazonKinesis amazonKinesis) {
+      KinesisClient amazonKinesis) {
     this.amazonKinesis = amazonKinesis;
     this.objectMapper = JsonMapper.builder()
         // Values are read as strings from kinesis, convert all numbers to string values.
@@ -56,26 +57,24 @@ public class KinesisService {
    * @param dmsDtoList        A list of DmsDtos ready to be transformed into json strings.
    */
   public void sendData(String kinesisStreamName, List<DmsDto> dmsDtoList) {
-    PutRecordsRequest putRecordsRequest = new PutRecordsRequest();
-
-    putRecordsRequest.setStreamName(kinesisStreamName);
-
     List<PutRecordsRequestEntry> putRecordsRequestEntryList = new ArrayList<>();
 
     try {
       for (DmsDto dmsDto : dmsDtoList) {
         String jsonString = objectMapper.writeValueAsString(dmsDto);
         log.info("Trying to send{}", jsonString);
-        PutRecordsRequestEntry putRecordsRequestEntry = new PutRecordsRequestEntry();
-        putRecordsRequestEntry.setData(ByteBuffer.wrap(jsonString.getBytes()));
-        putRecordsRequestEntryList.add(putRecordsRequestEntry);
+
         String partitionKey = String.format("%s.%s",
             dmsDto.getMetadata().getSchemaName(), dmsDto.getMetadata().getTableName());
-        putRecordsRequestEntry.setPartitionKey(partitionKey);
+        PutRecordsRequestEntry putRecordsRequestEntry = PutRecordsRequestEntry.builder().data(
+                SdkBytes.fromByteArray(jsonString.getBytes())).partitionKey(partitionKey)
+            .build();
+        putRecordsRequestEntryList.add(putRecordsRequestEntry);
       }
-
-      putRecordsRequest.setRecords(putRecordsRequestEntryList);
-      PutRecordsResult putRecordsResult = amazonKinesis.putRecords(putRecordsRequest);
+      PutRecordsRequest putRecordsRequest = PutRecordsRequest.builder()
+          .streamName(kinesisStreamName)
+          .records(putRecordsRequestEntryList).build();
+      PutRecordsResponse putRecordsResult = amazonKinesis.putRecords(putRecordsRequest);
 
       log.info("Put Result {}", putRecordsResult);
     } catch (JsonProcessingException e) {

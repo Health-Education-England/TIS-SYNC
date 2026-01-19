@@ -6,9 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-import com.amazonaws.services.kinesis.AmazonKinesis;
-import com.amazonaws.services.kinesis.model.PutRecordsRequest;
-import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
@@ -31,6 +28,9 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
+import software.amazon.awssdk.services.kinesis.KinesisClient;
+import software.amazon.awssdk.services.kinesis.model.PutRecordsRequest;
+import software.amazon.awssdk.services.kinesis.model.PutRecordsRequestEntry;
 import uk.nhs.tis.sync.dto.DmsDto;
 import uk.nhs.tis.sync.dto.MetadataDto;
 import uk.nhs.tis.sync.dto.PostDmsDto;
@@ -45,7 +45,7 @@ class KinesisServiceTest {
   private String timestamp;
 
   @Mock
-  private AmazonKinesis mAmazonKinesis;
+  private KinesisClient mAmazonKinesis;
 
   @Spy
   @InjectMocks
@@ -110,16 +110,16 @@ class KinesisServiceTest {
     ArgumentCaptor<PutRecordsRequest> captor = ArgumentCaptor.forClass(PutRecordsRequest.class);
     verify(mAmazonKinesis).putRecords(captor.capture());
     PutRecordsRequest putRecordsRequest = captor.getValue();
-    List<PutRecordsRequestEntry> putRecordsRequestEntryList = putRecordsRequest.getRecords();
+    List<PutRecordsRequestEntry> putRecordsRequestEntryList = putRecordsRequest.records();
     PutRecordsRequestEntry putRecordsRequestEntry1 = putRecordsRequestEntryList.get(0);
-    byte[] entry1 = putRecordsRequestEntry1.getData().array();
+    byte[] entry1 = putRecordsRequestEntry1.data().asByteArray();
     String actualRecord1 = new String(entry1, StandardCharsets.ISO_8859_1);
-    String actualRecord1PartitionKey = putRecordsRequestEntry1.getPartitionKey();
+    String actualRecord1PartitionKey = putRecordsRequestEntry1.partitionKey();
 
     PutRecordsRequestEntry putRecordsRequestEntry2 = putRecordsRequestEntryList.get(1);
-    byte[] entry2 = putRecordsRequestEntry2.getData().array();
+    byte[] entry2 = putRecordsRequestEntry2.data().asByteArray();
     String actualRecord2 = new String(entry2, StandardCharsets.ISO_8859_1);
-    String actualRecord2PartitionKey = putRecordsRequestEntry2.getPartitionKey();
+    String actualRecord2PartitionKey = putRecordsRequestEntry2.partitionKey();
 
     String expectedRecord1 = "{\n" +
         "\"data\":\t{\n" +
@@ -201,7 +201,7 @@ class KinesisServiceTest {
     verify(mAmazonKinesis).putRecords(captor.capture());
 
     PutRecordsRequest request = captor.getValue();
-    byte[] data = request.getRecords().get(0).getData().array();
+    byte[] data = request.records().get(0).data().asByteArray();
     ObjectMapper objectMapper = new ObjectMapper();
     JsonNode jsonNode = objectMapper.readTree(data);
     JsonNode idNode = jsonNode.get("data").get("id");
@@ -224,7 +224,7 @@ class KinesisServiceTest {
     verify(mAmazonKinesis).putRecords(captor.capture());
 
     PutRecordsRequest request = captor.getValue();
-    byte[] data = request.getRecords().get(0).getData().array();
+    byte[] data = request.records().get(0).data().asByteArray();
     ObjectMapper objectMapper = new ObjectMapper();
     JsonNode jsonNode = objectMapper.readTree(data);
     JsonNode amendedDateNode = jsonNode.get("data").get("amendedDate");
