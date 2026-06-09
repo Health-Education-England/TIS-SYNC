@@ -85,6 +85,7 @@ application:
     postEmployingBodyTrustJob: ${APP_CRON_POST_EMPLOYING_BODY:0 09 1 * * *}
     postTrainingBodyTrustJob: ${APP_CRON_POST_TRAINING_BODY:0 19 1 * * *}
     personElasticSearchJob: ${APP_CRON_PERSON_ELASTIC_SEARCH:0 29 1 * * *}
+    postElasticSearchJob: ${APP_CRON_POST_ELASTIC_SEARCH:0 55 1 * * *}
     personRecordStatusJob: ${APPLICATION_CRON_PERSONRECORDSTATUSJOB:0 0 1 * * *}
     revalCurrentPmJob: ${APPLICATION_CRON_REVALCURRENTPMJOB:0 39 1 * * *}
     revalCurrentPlacementJob: ${APPLICATION_CRON_REVALCURRENTPLACEMENTJOB:0 49 1 * * *}

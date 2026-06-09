@@ -24,6 +24,7 @@ import uk.nhs.tis.sync.job.PostFundingStatusSyncJob;
 import uk.nhs.tis.sync.job.PostTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.RunnableJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
+import uk.nhs.tis.sync.job.post.PostElasticSearchSyncJob;
 import uk.nhs.tis.sync.job.reval.RevalCurrentPlacementSyncJob;
 import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
 
@@ -44,6 +45,7 @@ public class JobResource {
   private final PostEmployingBodyTrustJob postEmployingBodyTrustJob;
   private final PostTrainingBodyTrustJob postTrainingBodyTrustJob;
   private final PersonElasticSearchSyncJob personElasticSearchSyncJob;
+  private final PostElasticSearchSyncJob postElasticSearchSyncJob;
   private final PersonOwnerRebuildJob personOwnerRebuildJob;
   private final PersonRecordStatusJob personRecordStatusJob;
   private RevalCurrentPmSyncJob revalCurrentPmSyncJob;
@@ -61,7 +63,8 @@ public class JobResource {
       PostTrainingBodyTrustJob postTrainingBodyTrustJob,
       PersonElasticSearchSyncJob personElasticSearchSyncJob,
       PersonOwnerRebuildJob personOwnerRebuildJob,
-      PersonRecordStatusJob personRecordStatusJob) {
+      PersonRecordStatusJob personRecordStatusJob,
+      PostElasticSearchSyncJob postElasticSearchSyncJob) {
     this.personPlacementEmployingBodyTrustJob = personPlacementEmployingBodyTrustJob;
     this.personPlacementTrainingBodyTrustJob = personPlacementTrainingBodyTrustJob;
     this.postEmployingBodyTrustJob = postEmployingBodyTrustJob;
@@ -69,6 +72,7 @@ public class JobResource {
     this.personElasticSearchSyncJob = personElasticSearchSyncJob;
     this.personOwnerRebuildJob = personOwnerRebuildJob;
     this.personRecordStatusJob = personRecordStatusJob;
+    this.postElasticSearchSyncJob = postElasticSearchSyncJob;
   }
 
   @Autowired
@@ -104,6 +108,7 @@ public class JobResource {
     statusMap.put("postEmployingBodyTrustJob", postEmployingBodyTrustJob.isCurrentlyRunning());
     statusMap.put("postTrainingBodyTrustJob", postTrainingBodyTrustJob.isCurrentlyRunning());
     statusMap.put("personElasticSearchSyncJob", personElasticSearchSyncJob.isCurrentlyRunning());
+    statusMap.put("postElasticSearchSyncJob", postElasticSearchSyncJob.isCurrentlyRunning());
     statusMap.put("personOwnerRebuildJob", personOwnerRebuildJob.isCurrentlyRunning());
     statusMap.put("personRecordStatusJob", personRecordStatusJob.isCurrentlyRunning());
     if (revalCurrentPmSyncJob != null) {
@@ -162,6 +167,9 @@ public class JobResource {
         break;
       case "personElasticSearchSyncJob":
         status = ensureRunning(personElasticSearchSyncJob, params);
+        break;
+      case "postElasticSearchSyncJob":
+        status = ensureRunning(postElasticSearchSyncJob, params);
         break;
       case "personOwnerRebuildJob":
         status = ensureRunning(personOwnerRebuildJob, params);

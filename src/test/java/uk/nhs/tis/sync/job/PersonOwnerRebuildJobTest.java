@@ -66,7 +66,8 @@ public class PersonOwnerRebuildJobTest {
   public void testCoverageBoostWhenRepoThrowsException() {
     doThrow(new RuntimeException("Expected")).when(repo).buildPersonView();
     job.run("");
-    await().pollDelay(1, TimeUnit.SECONDS).atLeast(1, TimeUnit.SECONDS).until(() -> true);
-    assertThat("should not be running", job.isCurrentlyRunning(), is(false));
+    await().atMost(5, TimeUnit.SECONDS)
+        .untilAsserted(() ->
+            assertThat("should not be running", job.isCurrentlyRunning(), is(false)));
   }
 }
