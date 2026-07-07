@@ -31,6 +31,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.document.Document;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
+import org.springframework.jmx.export.annotation.ManagedOperation;
 import uk.nhs.tis.sync.event.JobExecutionEvent;
 
 /**
@@ -84,7 +85,7 @@ public abstract class AbstractElasticSearchSyncJob<T> implements RunnableJob {
         List<T> collectedData = collectData(page, pageSize);
 
         log.info("Time taken to read {} chunk page {}: {}",
-            getDocumentName(), page, stopwatch);
+            getIndexName(), page, stopwatch);
 
         page++;
         hasMoreResults = CollectionUtils.isNotEmpty(collectedData);
@@ -95,7 +96,7 @@ public abstract class AbstractElasticSearchSyncJob<T> implements RunnableJob {
           stopwatch.reset().start();
           saveDocuments(collectedData);
 
-          log.info("Time taken to save {} chunk: {}", getDocumentName(), stopwatch);
+          log.info("Time taken to save {} chunk: {}", getIndexName(), stopwatch);
         }
       }
 
@@ -120,10 +121,12 @@ public abstract class AbstractElasticSearchSyncJob<T> implements RunnableJob {
     runSyncJob();
   }
 
+  @ManagedOperation(description = "Is the Elasticsearch sync currently running")
   public boolean isCurrentlyRunning() {
     return mainStopWatch != null;
   }
 
+  @ManagedOperation(description = "The current elapsed time of the Elasticsearch sync job")
   public String elapsedTime() {
     return mainStopWatch != null ? mainStopWatch.toString() : "0s";
   }
@@ -157,8 +160,6 @@ public abstract class AbstractElasticSearchSyncJob<T> implements RunnableJob {
   }
 
   protected abstract String getJobName();
-
-  protected abstract String getDocumentName();
 
   protected abstract String getIndexName();
 

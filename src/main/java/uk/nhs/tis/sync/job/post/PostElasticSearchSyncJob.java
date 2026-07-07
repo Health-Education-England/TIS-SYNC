@@ -55,7 +55,6 @@ import uk.nhs.tis.sync.service.impl.PostViewRowMapper;
 public class PostElasticSearchSyncJob extends AbstractElasticSearchSyncJob<PostView> {
 
   private static final String JOB_NAME = "Post Elasticsearch sync job";
-  private static final String DOCUMENT_NAME = "posts";
   private static final String ES_INDEX = "posts";
   private static final int FIFTEEN_MIN = 15 * 60 * 1000;
 
@@ -98,25 +97,9 @@ public class PostElasticSearchSyncJob extends AbstractElasticSearchSyncJob<PostV
     super.run();
   }
 
-  @ManagedOperation(description = "Is the post Elasticsearch sync currently running")
-  public boolean isPostElasticSearchSyncCurrentlyRunning() {
-    return isCurrentlyRunning();
-  }
-
-  @ManagedOperation(description = "The current elapsed time of the current "
-      + "post Elasticsearch sync job")
-  public String postElasticSearchSyncElapsedTime() {
-    return elapsedTime();
-  }
-
   @Override
   protected String getJobName() {
     return JOB_NAME;
-  }
-
-  @Override
-  protected String getDocumentName() {
-    return DOCUMENT_NAME;
   }
 
   @Override

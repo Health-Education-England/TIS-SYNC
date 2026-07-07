@@ -45,7 +45,7 @@ public class JobResource {
   private final PostEmployingBodyTrustJob postEmployingBodyTrustJob;
   private final PostTrainingBodyTrustJob postTrainingBodyTrustJob;
   private final PersonElasticSearchSyncJob personElasticSearchSyncJob;
-  private final PostElasticSearchSyncJob postElasticSearchSyncJob;
+  private PostElasticSearchSyncJob postElasticSearchSyncJob;
   private final PersonOwnerRebuildJob personOwnerRebuildJob;
   private final PersonRecordStatusJob personRecordStatusJob;
   private RevalCurrentPmSyncJob revalCurrentPmSyncJob;
@@ -63,8 +63,7 @@ public class JobResource {
       PostTrainingBodyTrustJob postTrainingBodyTrustJob,
       PersonElasticSearchSyncJob personElasticSearchSyncJob,
       PersonOwnerRebuildJob personOwnerRebuildJob,
-      PersonRecordStatusJob personRecordStatusJob,
-      PostElasticSearchSyncJob postElasticSearchSyncJob) {
+      PersonRecordStatusJob personRecordStatusJob) {
     this.personPlacementEmployingBodyTrustJob = personPlacementEmployingBodyTrustJob;
     this.personPlacementTrainingBodyTrustJob = personPlacementTrainingBodyTrustJob;
     this.postEmployingBodyTrustJob = postEmployingBodyTrustJob;
@@ -72,6 +71,10 @@ public class JobResource {
     this.personElasticSearchSyncJob = personElasticSearchSyncJob;
     this.personOwnerRebuildJob = personOwnerRebuildJob;
     this.personRecordStatusJob = personRecordStatusJob;
+  }
+
+  @Autowired
+  public void setPostElasticSearchSyncJob(PostElasticSearchSyncJob postElasticSearchSyncJob) {
     this.postElasticSearchSyncJob = postElasticSearchSyncJob;
   }
 

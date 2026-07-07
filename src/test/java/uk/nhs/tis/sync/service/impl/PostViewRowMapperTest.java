@@ -174,4 +174,33 @@ class PostViewRowMapperTest {
     assertThat(result.getTrustIds()).isEmpty();
     assertThat(result.getProgrammeIds()).isEmpty();
   }
+
+  @Test
+  void shouldTrimValuesWhenMappingCommaSeparatedStringLists() throws SQLException {
+    when(resultSet.getLong(anyString())).thenReturn(223603L);
+    when(resultSet.wasNull()).thenReturn(false);
+
+    when(resultSet.getString(anyString())).thenReturn(null);
+    when(resultSet.getString("programmes")).thenReturn("Foundation Trent, General Surgery");
+    when(resultSet.getString("fundingType")).thenReturn("Funded - Non-tariff, Funded - Tariff");
+    when(resultSet.getString("surnames")).thenReturn("RRRRR, YYYYY");
+    when(resultSet.getString("forenames")).thenReturn("LLLLL, PPPPPP");
+
+    when(resultSet.getString("trustIds")).thenReturn("10,20");
+    when(resultSet.getString("programmeIds")).thenReturn("100,200");
+
+    PostView result = rowMapper.mapRow(resultSet, 0);
+
+    assertThat(result.getProgrammeNames())
+        .containsExactly("Foundation Trent", "General Surgery");
+
+    assertThat(result.getFundingTypes())
+        .containsExactly("Funded - Non-tariff", "Funded - Tariff");
+
+    assertThat(result.getCurrentTraineeSurnames()).isEqualTo("RRRRR, YYYYY");
+    assertThat(result.getCurrentTraineeForenames()).isEqualTo("LLLLL, PPPPPP");
+
+    assertThat(result.getTrustIds()).containsExactly(10L, 20L);
+    assertThat(result.getProgrammeIds()).containsExactly(100L, 200L);
+  }
 }
