@@ -33,6 +33,8 @@ import java.sql.SQLException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -124,24 +126,14 @@ class PostViewRowMapperTest {
     assertThat(result.getPrimarySpecialtyId()).isNull();
   }
 
-  @Test
-  void shouldNotSetStatusWhenFundingStatusIsNull() throws SQLException {
+  @ParameterizedTest
+  @NullAndEmptySource
+  void shouldNotSetStatusWhenFundingStatusIsNullOrEmpty(String fundingStatus)
+      throws SQLException {
     when(resultSet.getLong("id")).thenReturn(223603L);
     when(resultSet.wasNull()).thenReturn(false);
     when(resultSet.getString(anyString())).thenReturn(null);
-    when(resultSet.getString("fundingStatus")).thenReturn(null);
-
-    PostView result = rowMapper.mapRow(resultSet, 0);
-
-    assertThat(result.getStatus()).isNull();
-  }
-
-  @Test
-  void shouldNotSetStatusWhenFundingStatusIsEmpty() throws SQLException {
-    when(resultSet.getLong("id")).thenReturn(223603L);
-    when(resultSet.wasNull()).thenReturn(false);
-    when(resultSet.getString(anyString())).thenReturn(null);
-    when(resultSet.getString("fundingStatus")).thenReturn("");
+    when(resultSet.getString("fundingStatus")).thenReturn(fundingStatus);
 
     PostView result = rowMapper.mapRow(resultSet, 0);
 

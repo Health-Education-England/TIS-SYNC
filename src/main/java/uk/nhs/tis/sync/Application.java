@@ -32,7 +32,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
-import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import uk.nhs.tis.sync.config.ApplicationProperties;
@@ -41,9 +40,6 @@ import uk.nhs.tis.sync.config.ApplicationProperties;
 @ComponentScan(basePackages = {"com.transformuk.hee.tis.tcs",
     "uk.nhs.tis.sync", "com.transformuk.hee.tis.reference.client",
     "com.transformuk.hee.tis.profile.client"})
-@EnableElasticsearchRepositories(basePackages = {
-    "uk.nhs.tis.sync.repository"
-})
 @EnableWebMvc
 @EnableSpringDataWebSupport
 @PropertySource({"classpath:/config/application.properties",

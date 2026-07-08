@@ -54,17 +54,18 @@ public abstract class AbstractElasticSearchSyncJob<T> implements RunnableJob {
     this.pageSize = pageSize;
   }
 
-  protected void runSyncJob() {
+  protected synchronized void runSyncJob() {
     if (mainStopWatch != null) {
       log.info("{} is already running.", getJobName());
       return;
     }
-
+    // Mark as running immediately to avoid a race between trigger and async execution.
+    mainStopWatch = Stopwatch.createUnstarted();
     CompletableFuture.runAsync(this::run);
   }
 
   protected void run() {
-    publishEvent("Sync service [" + getJobName() + "] started.");
+    publishEvent("ES Sync [" + getJobName() + "] started.");
 
     try {
       log.info("{} started.", getJobName());
@@ -105,7 +106,7 @@ public abstract class AbstractElasticSearchSyncJob<T> implements RunnableJob {
       log.info("{} finished. Total time taken {} for processing {} records.",
           getJobName(), mainStopWatch.stop(), totalRecords);
 
-      publishEvent("Synch [" + getJobName() + "] finished.");
+      publishEvent("Sync [" + getJobName() + "] finished.");
     } catch (Exception e) {
       log.error("{} failed.", getJobName(), e);
 

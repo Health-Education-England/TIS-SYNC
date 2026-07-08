@@ -125,10 +125,13 @@ class PostElasticSearchSyncJobTest {
 
     verify(postViewIndexOperations).refresh();
 
-    verify(applicationEventPublisher, times(2)).publishEvent(any(JobExecutionEvent.class));
+    ArgumentCaptor<JobExecutionEvent> eventCaptor = ArgumentCaptor.forClass(
+        JobExecutionEvent.class);
+    verify(applicationEventPublisher, times(2)).publishEvent(eventCaptor.capture());
 
-    assertThat(job.isCurrentlyRunning()).isFalse();
-    assertThat(job.elapsedTime()).isEqualTo("0s");
+    List<JobExecutionEvent> events = eventCaptor.getAllValues();
+    assertThat(events.get(0).getMessage()).contains("started");
+    assertThat(events.get(1).getMessage()).contains("finished");
   }
 
   @Test
@@ -193,7 +196,12 @@ class PostElasticSearchSyncJobTest {
 
     job.runSynchronously();
 
-    verify(applicationEventPublisher, times(2)).publishEvent(any(JobExecutionEvent.class));
+    ArgumentCaptor<JobExecutionEvent> eventCaptor = ArgumentCaptor.forClass(JobExecutionEvent.class);
+
+    verify(applicationEventPublisher, times(2)).publishEvent(eventCaptor.capture());
+    List<JobExecutionEvent> events = eventCaptor.getAllValues();
+    assertThat(events.get(0).getMessage()).contains("started");
+    assertThat(events.get(1).getMessage()).contains("failed");
 
     verify(postElasticSearchService, never()).saveDocuments(anyList());
 
