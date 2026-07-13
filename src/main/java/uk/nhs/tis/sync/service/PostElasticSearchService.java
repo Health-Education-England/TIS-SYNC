@@ -22,10 +22,10 @@
 package uk.nhs.tis.sync.service;
 
 import com.transformuk.hee.tis.tcs.service.job.post.PostView;
+import com.transformuk.hee.tis.tcs.service.repository.PostElasticSearchRepository;
 import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
-import uk.nhs.tis.sync.repository.PostElasticSearchRepository;
 
 /**
  * Class for Post Elasticsearch service.

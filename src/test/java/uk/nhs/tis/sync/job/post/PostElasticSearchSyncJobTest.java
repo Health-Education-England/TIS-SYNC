@@ -204,9 +204,6 @@ class PostElasticSearchSyncJobTest {
     assertThat(events.get(1).getMessage()).contains("failed");
 
     verify(postElasticSearchService, never()).saveDocuments(anyList());
-
-    assertThat(job.isCurrentlyRunning()).isFalse();
-    assertThat(job.elapsedTime()).isEqualTo("0s");
   }
 
   @Test

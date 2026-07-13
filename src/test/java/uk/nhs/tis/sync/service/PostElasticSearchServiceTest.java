@@ -26,6 +26,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.transformuk.hee.tis.tcs.service.job.post.PostView;
+import com.transformuk.hee.tis.tcs.service.repository.PostElasticSearchRepository;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.tis.sync.repository.PostElasticSearchRepository;
 
 @ExtendWith(MockitoExtension.class)
 class PostElasticSearchServiceTest {

@@ -67,9 +67,9 @@ class PostViewRowMapperTest {
     when(resultSet.getString("primarySpecialtyCode")).thenReturn("888");
     when(resultSet.getString("primarySpecialtyName")).thenReturn("Public Health Medicine");
 
-    when(resultSet.getString("programmes")).thenReturn("Foundation Training,General Surgery");
+    when(resultSet.getString("programmes")).thenReturn("Foundation Training;General Surgery");
     when(resultSet.getString("fundingStatus")).thenReturn("CURRENT");
-    when(resultSet.getString("fundingType")).thenReturn("Funded - Non-tariff,Funded - Tariff");
+    when(resultSet.getString("fundingType")).thenReturn("Funded - Non-tariff;Funded - Tariff");
     when(resultSet.getString("owner")).thenReturn("East Midlands");
 
     when(resultSet.getString("trustIds")).thenReturn("10,20");
@@ -168,13 +168,13 @@ class PostViewRowMapperTest {
   }
 
   @Test
-  void shouldTrimValuesWhenMappingCommaSeparatedStringLists() throws SQLException {
+  void shouldTrimValuesWhenMappingSemiColonAndCommaSeparatedStringLists() throws SQLException {
     when(resultSet.getLong(anyString())).thenReturn(223603L);
     when(resultSet.wasNull()).thenReturn(false);
 
     when(resultSet.getString(anyString())).thenReturn(null);
-    when(resultSet.getString("programmes")).thenReturn("Foundation Trent, General Surgery");
-    when(resultSet.getString("fundingType")).thenReturn("Funded - Non-tariff, Funded - Tariff");
+    when(resultSet.getString("programmes")).thenReturn("Foundation Trent; General Surgery");
+    when(resultSet.getString("fundingType")).thenReturn("Funded - Non-tariff; Funded - Tariff");
     when(resultSet.getString("surnames")).thenReturn("RRRRR, YYYYY");
     when(resultSet.getString("forenames")).thenReturn("LLLLL, PPPPPP");
 

@@ -14,10 +14,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 @EntityScan(basePackages = {"com.transformuk.hee.tis.tcs.service.model"})
 @EnableJpaRepositories("com.transformuk.hee.tis.tcs.service.repository")
-@EnableElasticsearchRepositories(basePackages = {
-    "com.transformuk.hee.tis.tcs.service.repository",
-    "uk.nhs.tis.sync.repository"
-})
+@EnableElasticsearchRepositories("com.transformuk.hee.tis.tcs.service.repository")
 @EnableTransactionManagement
 public class DatabaseConfiguration {
 

@@ -40,6 +40,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class PostViewRowMapper implements RowMapper<PostView> {
 
+  private static final String STRING_LIST_SEPARATOR_REGEX = ";";
+
   @NonNull
   @Override
   public PostView mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -102,7 +104,7 @@ public class PostViewRowMapper implements RowMapper<PostView> {
       return Collections.emptyList();
     }
 
-    return Arrays.stream(value.split(","))
+    return Arrays.stream(value.split(STRING_LIST_SEPARATOR_REGEX))
         .map(String::trim)
         .filter(StringUtils::isNotBlank)
         .collect(Collectors.toList());
