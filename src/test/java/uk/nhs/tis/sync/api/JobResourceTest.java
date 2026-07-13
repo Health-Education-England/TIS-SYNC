@@ -34,6 +34,7 @@ import uk.nhs.tis.sync.job.PostEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PostFundingStatusSyncJob;
 import uk.nhs.tis.sync.job.PostTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
+import uk.nhs.tis.sync.job.post.PostElasticSearchSyncJob;
 import uk.nhs.tis.sync.job.reval.RevalCurrentPlacementSyncJob;
 import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
 
@@ -55,7 +56,8 @@ class JobResourceTest {
 
   @MockBean
   private PersonElasticSearchSyncJob personElasticSearchSyncJob;
-
+  @MockBean
+  private PostElasticSearchSyncJob postElasticSearchSyncJob;
   @MockBean
   private PersonOwnerRebuildJob personOwnerRebuildJob;
 
@@ -86,6 +88,7 @@ class JobResourceTest {
     jobResource.setPostFundingStatusSyncJob(postFundingStatusSyncJob);
     jobResource.setRevalCurrentPmSyncJob(revalCurrentPmSyncJob);
     jobResource.setRevalCurrentPlacementSyncJob((revalCurrentPlacementSyncJob));
+    jobResource.setPostElasticSearchSyncJob(postElasticSearchSyncJob);
     mockMvc = MockMvcBuilders.standaloneSetup(jobResource).build();
   }
 
@@ -101,6 +104,8 @@ class JobResourceTest {
     when(postTrainingBodyTrustJob.isCurrentlyRunning())
         .thenReturn(false);
     when(personElasticSearchSyncJob.isCurrentlyRunning())
+        .thenReturn(false);
+    when(postElasticSearchSyncJob.isCurrentlyRunning())
         .thenReturn(false);
     when(personOwnerRebuildJob.isCurrentlyRunning())
         .thenReturn(false);
@@ -118,6 +123,7 @@ class JobResourceTest {
         .andExpect(jsonPath("$.postEmployingBodyTrustJob").value(false))
         .andExpect(jsonPath("$.postTrainingBodyTrustJob").value(false))
         .andExpect(jsonPath("$.personElasticSearchSyncJob").value(false))
+        .andExpect(jsonPath("$.postElasticSearchSyncJob").value(false))
         .andExpect(jsonPath("$.personOwnerRebuildJob").value(false))
         .andExpect(jsonPath("$.personRecordStatusJob").value(false))
         .andExpect(jsonPath("$.revalCurrentPmJob").value(false))
@@ -139,6 +145,8 @@ class JobResourceTest {
         .thenReturn(false);
     when(personElasticSearchSyncJob.isCurrentlyRunning())
         .thenReturn(false);
+    when(postElasticSearchSyncJob.isCurrentlyRunning())
+        .thenReturn(false);
     when(personOwnerRebuildJob.isCurrentlyRunning())
         .thenReturn(false);
     when(personRecordStatusJob.isCurrentlyRunning())
@@ -151,6 +159,7 @@ class JobResourceTest {
         .andExpect(jsonPath("$", hasKey("postEmployingBodyTrustJob")))
         .andExpect(jsonPath("$", hasKey("postTrainingBodyTrustJob")))
         .andExpect(jsonPath("$", hasKey("personElasticSearchSyncJob")))
+        .andExpect(jsonPath("$", hasKey("postElasticSearchSyncJob")))
         .andExpect(jsonPath("$", hasKey("personOwnerRebuildJob")))
         .andExpect(jsonPath("$", hasKey("personRecordStatusJob")))
         .andExpect(jsonPath("$", not(hasKey("revalCurrentPmSyncJob"))))
@@ -165,6 +174,7 @@ class JobResourceTest {
       "postEmployingBodyTrustJob",
       "postTrainingBodyTrustJob",
       "personElasticSearchSyncJob",
+      "postElasticSearchSyncJob",
       "personOwnerRebuildJob",
       "personRecordStatusJob",
       "revalCurrentPmJob",
@@ -180,6 +190,8 @@ class JobResourceTest {
     when(postTrainingBodyTrustJob.isCurrentlyRunning())
         .thenReturn(false);
     when(personElasticSearchSyncJob.isCurrentlyRunning())
+        .thenReturn(false);
+    when(postElasticSearchSyncJob.isCurrentlyRunning())
         .thenReturn(false);
     when(personOwnerRebuildJob.isCurrentlyRunning())
         .thenReturn(false);
@@ -270,6 +282,7 @@ class JobResourceTest {
       "postEmployingBodyTrustJob",
       "postTrainingBodyTrustJob",
       "personElasticSearchSyncJob",
+      "postElasticSearchSyncJob",
       "personOwnerRebuildJob",
       "personRecordStatusJob",
       "revalCurrentPmJob",
@@ -286,6 +299,8 @@ class JobResourceTest {
     when(postTrainingBodyTrustJob.isCurrentlyRunning())
         .thenReturn(true);
     when(personElasticSearchSyncJob.isCurrentlyRunning())
+        .thenReturn(true);
+    when(postElasticSearchSyncJob.isCurrentlyRunning())
         .thenReturn(true);
     when(personOwnerRebuildJob.isCurrentlyRunning())
         .thenReturn(true);

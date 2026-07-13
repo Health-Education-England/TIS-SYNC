@@ -204,6 +204,7 @@ application:
     revalCurrentPlacementJob: ${APPLICATION_CRON_REVALCURRENTPLACEMENTJOB:0 49 1 * * *}
     recordResendingJob: ${APPLICATION_CRON_RECORDRESENDINGJOB}
     postFundingStatusSyncJob: ${APPLICATION_CRON_POSTFUNDING_STATUS_SYNCJOB:0 45 1 * * *}
+    postElasticSearchJob: ${APPLICATION_CRON_POSTELASTICSEARCHJOB:0 55 1 * * *}
   jobs:
     runOnStartup:
       earliest: ${APPLICATION_JOBS_RUNONSTARTUP_EARLIEST:00:00}
@@ -212,6 +213,8 @@ application:
       dateOfChangeOverride: ${APPLICATION_JOBS_PERSONRECORDSTATUSJOB_DATEOFCHANGEOVERRIDE:}
     personElasticSearchJob:
       pageSize: ${APPLICATION_JOBS_PERSONELASTICSEARCHJOB_PAGESIZE:10000}
+    postElasticSearchJob:
+      pageSize: ${APPLICATION_JOBS_POSTELASTICSEARCHJOB_PAGESIZE:10000}
   aws:
     kinesis:
       streamName: ${AWS_KINESIS_STREAM_NAME}
