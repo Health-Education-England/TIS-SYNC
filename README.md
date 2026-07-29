@@ -22,11 +22,14 @@ The following environmental variables must be provided
 | **PersonOwnerRebuildJob**                |        PersonOwnerRebuildJob        |                  personOwnerRebuildJob |                        **PersonElasticSearchSyncJob** (assuming only this failed) |
 | **PersonPlacementEmployingBodyTrustJob** |   PersonPlacementEmployingBodyJob   | doPersonPlacementEmployingBodyFullSync | Re-run **PersonPlacementTrainingBodyTrustJob** and **PersonElasticSearchSyncJob** |
 | **PersonPlacementTrainingBodyTrustJob**  | PersonPlacementTrainingBodyTrustJob |    PersonPlacementTrainingBodyFullSync |                        **PersonElasticSearchSyncJob** (assuming only this failed) |
+| **RevalCurrentPmSyncJob**                |        RevalCurrentPmSyncJob        |                  revalCurrentPmSyncJob |                                                  none (assuming only this failed) |
+| **RevalCurrentPlacementSyncJob**         |    RevalCurrentPlacementSyncJob     |           revalCurrentPlacementSyncJob |                                                  none (assuming only this failed) |
 | **PostEmployingBodyTrustJob**            |      PostEmployingBodyTrustJob      |         PostEmployingBodyTrustFullSync |                                               Re-run **PostTrainingBodyTrustJob** |
 | **PostTrainingBodyTrustJob**             |      PostTrainingBodyTrustJob       |          PostTrainingBodyTrustFullSync |                                                  none (assuming only this failed) |
 | **PersonRecordStatusJob**                |        PersonRecordStatusJob        |                  personRecordStatusJob |                        **PersonElasticSearchSyncJob** (assuming only this failed) |
 | **PersonElasticSearchSyncJob**           |       PersonElasticSearchJob        |                personElasticSearchSync |                                                                              none |
-| **PostFundingStatusSyncJob**             |      PostFundingStatusSyncJob       |         postFundingStatusSyncJob       |                                                  none (assuming only this failed) |
+| **PostFundingStatusSyncJob**             |      PostFundingStatusSyncJob       |               postFundingStatusSyncJob |                                                  none (assuming only this failed) |
+|**PostElasticSearchSyncJob**              |        PostElasticSearchJob         |                  postElasticSearchSync |                                                  none (assuming only this failed) |
 
 ### Run jobs on Buttons Page
 1. If you want to run jobs on server, go to page https://\<host IP here\>/sync/.
