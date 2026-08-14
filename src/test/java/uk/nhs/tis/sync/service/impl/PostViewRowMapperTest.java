@@ -160,6 +160,9 @@ class PostViewRowMapperTest {
     assertThat(result.getFundingTypes())
         .containsExactly(FUNDING_TYPE_1, FUNDING_TYPE_2);
 
+    assertThat(result.getFundingSubtypeIds())
+        .containsExactly(FUNDING_SUBTYPE_ID_1, FUNDING_SUBTYPE_ID_2);
+
     assertThat(result.getOwner()).isEqualTo(OWNER);
 
     assertThat(result.getTrustIds()).containsExactly(TRUST_ID_1, TRUST_ID_2);
@@ -226,6 +229,7 @@ class PostViewRowMapperTest {
     assertThat(result.getFundingTypes()).isEmpty();
     assertThat(result.getTrustIds()).isEmpty();
     assertThat(result.getProgrammeIds()).isEmpty();
+    assertThat(result.getFundingSubtypeIds()).isEmpty();
   }
 
   @Test
