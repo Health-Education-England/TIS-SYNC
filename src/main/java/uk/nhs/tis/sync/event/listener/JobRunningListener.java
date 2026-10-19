@@ -19,6 +19,7 @@ import uk.nhs.tis.sync.job.PostEmployingBodyTrustJob;
 import uk.nhs.tis.sync.job.PostFundingStatusSyncJob;
 import uk.nhs.tis.sync.job.PostTrainingBodyTrustJob;
 import uk.nhs.tis.sync.job.person.PersonElasticSearchSyncJob;
+import uk.nhs.tis.sync.job.post.PostElasticSearchSyncJob;
 import uk.nhs.tis.sync.job.reval.RevalCurrentPmSyncJob;
 
 @Component
@@ -53,6 +54,9 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
 
   @Autowired
   private PostFundingStatusSyncJob postFundingStatusSyncJob;
+
+  @Autowired
+  private PostElasticSearchSyncJob postElasticSearchSyncJob;
 
   private LocalTime earliest;
 
@@ -113,6 +117,10 @@ public class JobRunningListener implements ApplicationListener<ApplicationReadyE
       do {
         Thread.sleep(SLEEP_DURATION);
       } while (postFundingStatusSyncJob.isCurrentlyRunning());
+      postElasticSearchSyncJob.postElasticSearchSync();
+      do {
+        Thread.sleep(SLEEP_DURATION);
+      } while (postElasticSearchSyncJob.isCurrentlyRunning());
     } catch (InterruptedException e) {
       LOG.error(e.getMessage(), e);
     }
