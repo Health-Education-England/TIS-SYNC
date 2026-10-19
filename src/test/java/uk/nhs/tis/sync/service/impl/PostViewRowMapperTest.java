@@ -90,8 +90,6 @@ class PostViewRowMapperTest {
   private static final String CONCAT_PROGRAMMES = PROGRAMME_1 + ";" + PROGRAMME_2;
   private static final String CONCAT_PROGRAMMES_WITH_SPACES = PROGRAMME_3 + "; " + PROGRAMME_2;
   private static final String CONCAT_FUNDING_TYPE_IDS = FUNDING_TYPE_ID_1 + "," + FUNDING_TYPE_ID_2;
-  private static final String CONCAT_FUNDING_TYPES_WITH_SPACES =
-      FUNDING_TYPE_ID_1 + "; " + FUNDING_TYPE_ID_2;
   private static final String CONCAT_TRAINEE_SURNAMES =
       CURRENT_TRAINEE_SURNAMES_1 + ", " + CURRENT_TRAINEE_SURNAMES_2;
   private static final String CONCAT_TRAINEE_FORENAMES =
