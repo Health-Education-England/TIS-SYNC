@@ -22,6 +22,7 @@
 package uk.nhs.tis.sync.job.post;
 
 import com.transformuk.hee.tis.tcs.service.job.post.PostView;
+import com.transformuk.hee.tis.tcs.service.mapper.PostViewRowMapper;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +38,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.job.AbstractElasticSearchSyncJob;
 import uk.nhs.tis.sync.service.PostElasticSearchService;
-import uk.nhs.tis.sync.service.impl.PostViewRowMapper;
 
 /**
  * Job for rebuilding the posts Elasticsearch index from MySQL.

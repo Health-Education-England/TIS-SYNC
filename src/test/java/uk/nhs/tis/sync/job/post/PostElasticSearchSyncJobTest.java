@@ -33,6 +33,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
 import com.transformuk.hee.tis.tcs.service.job.post.PostView;
+import com.transformuk.hee.tis.tcs.service.mapper.PostViewRowMapper;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
 import java.util.Collections;
 import java.util.List;
@@ -51,7 +52,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import uk.nhs.tis.sync.event.JobExecutionEvent;
 import uk.nhs.tis.sync.service.PostElasticSearchService;
-import uk.nhs.tis.sync.service.impl.PostViewRowMapper;
 
 @ExtendWith(MockitoExtension.class)
 class PostElasticSearchSyncJobTest {
