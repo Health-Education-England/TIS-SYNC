@@ -9,6 +9,7 @@ import com.transformuk.hee.tis.tcs.api.enumeration.ProgrammeMembershipStatus;
 import com.transformuk.hee.tis.tcs.service.job.person.PersonTrustDto;
 import com.transformuk.hee.tis.tcs.service.job.person.PersonView;
 import com.transformuk.hee.tis.tcs.service.job.person.ProgrammeMembershipDto;
+import com.transformuk.hee.tis.tcs.service.mapper.PersonViewRowMapper;
 import com.transformuk.hee.tis.tcs.service.repository.PersonElasticSearchRepository;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
 import java.util.HashMap;
@@ -39,7 +40,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.service.api.decorator.PersonViewDecorator;
 import uk.nhs.tis.sync.service.impl.PersonTrustRowMapper;
-import uk.nhs.tis.sync.service.impl.PersonViewRowMapper;
 import uk.nhs.tis.sync.service.impl.ProgrammeMembershipRowMapper;
 import uk.nhs.tis.sync.service.strategy.RoleBasedFilterStrategy;
 

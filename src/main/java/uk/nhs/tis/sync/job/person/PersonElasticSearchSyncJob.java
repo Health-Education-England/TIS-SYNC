@@ -2,6 +2,7 @@ package uk.nhs.tis.sync.job.person;
 
 import com.google.common.base.Stopwatch;
 import com.transformuk.hee.tis.tcs.service.job.person.PersonView;
+import com.transformuk.hee.tis.tcs.service.mapper.PersonViewRowMapper;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -25,7 +26,6 @@ import org.springframework.stereotype.Component;
 import uk.nhs.tis.sync.event.JobExecutionEvent;
 import uk.nhs.tis.sync.job.RunnableJob;
 import uk.nhs.tis.sync.service.PersonElasticSearchService;
-import uk.nhs.tis.sync.service.impl.PersonViewRowMapper;
 
 /**
  * This job runs on a daily basis and provides support for faster data search
