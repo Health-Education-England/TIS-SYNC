@@ -60,10 +60,10 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
    * Constructs a new PersonElasticSearchSyncJob with the specified dependencies.
    *
    * @param namedParameterJdbcTemplate the JDBC template for Named parameter
-   * @param elasticSearchOperations the elasticSearchOperations
-   * @param sqlQuerySupplier the supplier for SQL queries
+   * @param elasticSearchOperations    the elasticSearchOperations
+   * @param sqlQuerySupplier           the supplier for SQL queries
    * @param personElasticSearchService the personElasticSearchService
-   * @param pageSize the page size value
+   * @param pageSize                   the page size value
    */
   public PersonElasticSearchSyncJob(NamedParameterJdbcTemplate namedParameterJdbcTemplate,
       SqlQuerySupplier sqlQuerySupplier, ElasticsearchOperations elasticSearchOperations,
@@ -115,14 +115,17 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
     }
   }
 
-  private List<PersonView> collectData(int page, int pageSize) {
+  private List<PersonView> collectData(long lastSeenId, int pageSize) {
     String query = sqlQuerySupplier.getQuery(SqlQuerySupplier.PERSON_ES_VIEW);
-    String limitClause = "limit " + pageSize + " offset " + page * pageSize;
     query = query.replace("TRUST_JOIN", "").replace("PROGRAMME_MEMBERSHIP_JOIN", "")
-        .replace("WHERECLAUSE", "").replace("ORDERBYCLAUSE", "ORDER BY id DESC")
-        .replace("LIMITCLAUSE", limitClause);
+        .replace("WHERECLAUSE", "WHERE id < :lastSeenId")
+        .replace("ORDERBYCLAUSE", "ORDER BY id DESC")
+        .replace("LIMITCLAUSE", "LIMIT :pageSize");
 
     MapSqlParameterSource paramSource = new MapSqlParameterSource();
+    paramSource.addValue("lastSeenId", lastSeenId);
+    paramSource.addValue("pageSize", pageSize);
+
     List<PersonView> queryResult =
         namedParameterJdbcTemplate.query(query, paramSource, new PersonViewRowMapper());
     personElasticSearchService.updateDocumentWithTrustData(queryResult);
@@ -147,7 +150,6 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
       Stopwatch stopwatch = Stopwatch.createStarted();
 
       int totalRecords = 0;
-      int page = 0;
 
       deleteIndex();
       createIndex();
@@ -155,16 +157,18 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
 
       boolean hasMoreResults = true;
 
+      long lastSeenId = Long.MAX_VALUE;
+
       while (hasMoreResults) {
 
-        List<PersonView> collectedData = collectData(page, getPageSize());
-        page++;
+        List<PersonView> collectedData = collectData(lastSeenId, getPageSize());
 
         hasMoreResults = !collectedData.isEmpty();
 
         log.info("Time taken to read chunk : [{}]", stopwatch);
         if (CollectionUtils.isNotEmpty(collectedData)) {
           totalRecords += collectedData.size();
+          lastSeenId = collectedData.get(collectedData.size() - 1).getId();
         }
         stopwatch.reset().start();
 
