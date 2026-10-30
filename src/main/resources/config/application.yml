@@ -101,7 +101,7 @@ spring:
     cache-duration: 1s
   jdbc:
     template:
-      query-timeout: 120s
+      query-timeout: 240s
   mail:
     host: ${DBHOST:localhost}
     port: 25
