@@ -114,13 +114,12 @@ public class PostElasticSearchSyncJob extends AbstractElasticSearchSyncJob<PostV
 
   @Override
   protected List<PostView> collectData(long lastSeenId, int pageSize) {
-    log.info("Collecting post elastic search data. lastSeenId={}, pageSize={}", lastSeenId,
-        pageSize);
+    log.info("Collecting post elastic search data. lastSeenId={}, pageSize={}", lastSeenId, pageSize);
     String query = sqlQuerySupplier.getQuery(SqlQuerySupplier.POST_VIEW);
 
     query = query
-        .replace("WHERECLAUSE", "WHERE id < :lastSeenId")
-        .replace("ORDERBYCLAUSE", "ORDER BY id DESC")
+        .replace("WHERECLAUSE", "WHERE postId < :lastSeenId")
+        .replace("ORDERBYCLAUSE", "ORDER BY postId DESC")
         .replace("LIMITCLAUSE", "LIMIT :pageSize");
 
     log.info("Running post ES SQL for lastSeenId={}", lastSeenId);
@@ -132,6 +131,11 @@ public class PostElasticSearchSyncJob extends AbstractElasticSearchSyncJob<PostV
     log.info("Collected {} Post ES records for lastSeenId={}", result.size(), lastSeenId);
 
     return result;
+  }
+
+  @Override
+  protected long getLastSeenId(List<PostView> documents) {
+    return documents.isEmpty() ? 0L : documents.get(documents.size() - 1).getPostId();
   }
 
   @Override

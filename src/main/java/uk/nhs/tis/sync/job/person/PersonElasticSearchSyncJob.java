@@ -118,8 +118,8 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
   private List<PersonView> collectData(long lastSeenId, int pageSize) {
     String query = sqlQuerySupplier.getQuery(SqlQuerySupplier.PERSON_ES_VIEW);
     query = query.replace("TRUST_JOIN", "").replace("PROGRAMME_MEMBERSHIP_JOIN", "")
-        .replace("WHERECLAUSE", "WHERE id < :lastSeenId")
-        .replace("ORDERBYCLAUSE", "ORDER BY id DESC")
+        .replace("WHERECLAUSE", "WHERE personId < :lastSeenId")
+        .replace("ORDERBYCLAUSE", "ORDER BY personId DESC")
         .replace("LIMITCLAUSE", "LIMIT :pageSize");
 
     MapSqlParameterSource paramSource = new MapSqlParameterSource();
@@ -132,6 +132,10 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
     // this is to query from programmeMembership, Programme and TrainingNumber
     personElasticSearchService.updateDocumentWithProgrammeMembershipData(queryResult);
     return queryResult;
+  }
+
+  private long getLastSeenId(List<PersonView> documents) {
+    return documents.isEmpty() ? 0L : documents.get(documents.size() - 1).getPersonId();
   }
 
   @Override
@@ -168,7 +172,7 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
         log.info("Time taken to read chunk : [{}]", stopwatch);
         if (CollectionUtils.isNotEmpty(collectedData)) {
           totalRecords += collectedData.size();
-          lastSeenId = collectedData.get(collectedData.size() - 1).getId();
+          lastSeenId = getLastSeenId(collectedData);
         }
         stopwatch.reset().start();
 
