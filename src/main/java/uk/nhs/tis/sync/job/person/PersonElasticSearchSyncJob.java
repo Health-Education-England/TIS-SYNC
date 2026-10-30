@@ -118,8 +118,8 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
   private List<PersonView> collectData(long lastSeenId, int pageSize) {
     String query = sqlQuerySupplier.getQuery(SqlQuerySupplier.PERSON_ES_VIEW);
     query = query.replace("TRUST_JOIN", "").replace("PROGRAMME_MEMBERSHIP_JOIN", "")
-        .replace("WHERECLAUSE", "WHERE personId < :lastSeenId")
-        .replace("ORDERBYCLAUSE", "ORDER BY personId DESC")
+        .replace("WHERECLAUSE", "WHERE id < :lastSeenId")
+        .replace("ORDERBYCLAUSE", "ORDER BY id DESC")
         .replace("LIMITCLAUSE", "LIMIT :pageSize");
 
     MapSqlParameterSource paramSource = new MapSqlParameterSource();
@@ -135,7 +135,7 @@ public class PersonElasticSearchSyncJob implements RunnableJob {
   }
 
   private long getLastSeenId(List<PersonView> documents) {
-    return documents.isEmpty() ? 0L : documents.get(documents.size() - 1).getPersonId();
+    return documents.isEmpty() ? 0L : documents.get(documents.size() - 1).getId();
   }
 
   @Override
