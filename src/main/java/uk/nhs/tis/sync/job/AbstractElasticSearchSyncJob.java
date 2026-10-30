@@ -73,7 +73,7 @@ public abstract class AbstractElasticSearchSyncJob<T> implements RunnableJob {
       mainStopWatch = Stopwatch.createStarted();
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      int page = 0;
+      long lastSeenId = Long.MAX_VALUE;
       int totalRecords = 0;
       boolean hasMoreResults = true;
 
@@ -83,16 +83,16 @@ public abstract class AbstractElasticSearchSyncJob<T> implements RunnableJob {
       while (hasMoreResults) {
         stopwatch.reset().start();
 
-        List<T> collectedData = collectData(page, pageSize);
+        List<T> collectedData = collectData(lastSeenId, pageSize);
 
-        log.info("Time taken to read {} chunk page {}: {}",
-            getIndexName(), page, stopwatch);
+        log.info("Time taken to read {} chunk for lastSeenId {}: {}",
+            getIndexName(), lastSeenId, stopwatch);
 
-        page++;
         hasMoreResults = CollectionUtils.isNotEmpty(collectedData);
 
         if (CollectionUtils.isNotEmpty(collectedData)) {
           totalRecords += collectedData.size();
+          lastSeenId = getLastSeenId(collectedData);
 
           stopwatch.reset().start();
           saveDocuments(collectedData);
@@ -166,7 +166,9 @@ public abstract class AbstractElasticSearchSyncJob<T> implements RunnableJob {
 
   protected abstract Class<T> getDocumentClass();
 
-  protected abstract List<T> collectData(int page, int pageSize);
+  protected abstract long getLastSeenId(List<T> documents);
+
+  protected abstract List<T> collectData(long lastSeenId, int pageSize);
 
   protected abstract void saveDocuments(List<T> documents);
 }
