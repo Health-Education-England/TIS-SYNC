@@ -113,24 +113,29 @@ public class PostElasticSearchSyncJob extends AbstractElasticSearchSyncJob<PostV
   }
 
   @Override
-  protected List<PostView> collectData(int page, int pageSize) {
-    log.info("Collecting post elastic search data. page={}, pageSize={}", page, pageSize);
+  protected List<PostView> collectData(long lastSeenId, int pageSize) {
+    log.info("Collecting post elastic search data. lastSeenId={}, pageSize={}", lastSeenId, pageSize);
     String query = sqlQuerySupplier.getQuery(SqlQuerySupplier.POST_VIEW);
 
-    String limitClause = "limit " + pageSize + " offset " + page * pageSize;
-
     query = query
-        .replace("WHERECLAUSE", "")
+        .replace("WHERECLAUSE", "WHERE id < :lastSeenId")
         .replace("ORDERBYCLAUSE", "ORDER BY id DESC")
-        .replace("LIMITCLAUSE", limitClause);
+        .replace("LIMITCLAUSE", "LIMIT :pageSize");
 
-    log.info("Running post ES SQL for page={}", page);
+    log.info("Running post ES SQL for lastSeenId={}", lastSeenId);
     log.debug("Post ES SQL: {}", query);
     MapSqlParameterSource paramSource = new MapSqlParameterSource();
+    paramSource.addValue("lastSeenId", lastSeenId);
+    paramSource.addValue("pageSize", pageSize);
     List<PostView> result = namedParameterJdbcTemplate.query(query, paramSource, postViewRowMapper);
-    log.info("Collected {} Post ES records for page={}", result.size(), page);
+    log.info("Collected {} Post ES records for lastSeenId={}", result.size(), lastSeenId);
 
     return result;
+  }
+
+  @Override
+  protected long getLastSeenId(List<PostView> documents) {
+    return documents.isEmpty() ? 0L : documents.get(documents.size() - 1).getId();
   }
 
   @Override
