@@ -165,11 +165,13 @@ class PostElasticSearchSyncJobTest {
 
     List<String> executedSql = sqlCaptor.getAllValues();
 
-    assertThat(executedSql.get(0)).contains("ORDER BY id DESC");
-    assertThat(executedSql.get(0)).contains("limit 2 offset 0");
+    assertThat(executedSql.get(0)).contains("WHERE postId < :lastSeenId");
+    assertThat(executedSql.get(0)).contains("ORDER BY postId DESC");
+    assertThat(executedSql.get(0)).contains("LIMIT :pageSize");
 
-    assertThat(executedSql.get(1)).contains("ORDER BY id DESC");
-    assertThat(executedSql.get(1)).contains("limit 2 offset 2");
+    assertThat(executedSql.get(1)).contains("WHERE postId < :lastSeenId");
+    assertThat(executedSql.get(1)).contains("ORDER BY postId DESC");
+    assertThat(executedSql.get(1)).contains("LIMIT :pageSize");
 
     assertThat(executedSql.get(0)).doesNotContain("WHERECLAUSE");
     assertThat(executedSql.get(0)).doesNotContain("ORDERBYCLAUSE");
