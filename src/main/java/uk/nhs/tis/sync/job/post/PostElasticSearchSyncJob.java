@@ -114,7 +114,8 @@ public class PostElasticSearchSyncJob extends AbstractElasticSearchSyncJob<PostV
 
   @Override
   protected List<PostView> collectData(long lastSeenId, int pageSize) {
-    log.info("Collecting post elastic search data. lastSeenId={}, pageSize={}", lastSeenId, pageSize);
+    log.info("Collecting post elastic search data. lastSeenId={}, pageSize={}", lastSeenId,
+        pageSize);
     String query = sqlQuerySupplier.getQuery(SqlQuerySupplier.POST_VIEW);
 
     query = query
