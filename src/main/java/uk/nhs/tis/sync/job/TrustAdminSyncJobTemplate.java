@@ -19,7 +19,7 @@ import uk.nhs.tis.sync.model.EntityData;
 public abstract class TrustAdminSyncJobTemplate<T> extends CommonSyncJobTemplate<T> {
 
   protected static final String LAST_ENTITY_ID = "lastEntityId";
-  protected static final String LAST_SITE_ID = "lastSiteId";
+  protected static final String LAST_TRUST_ID = "lastTrustId";
 
   protected TrustAdminSyncJobTemplate(EntityManagerFactory entityManagerFactory,
       @Autowired(required = false) ApplicationEventPublisher applicationEventPublisher) {
@@ -45,12 +45,12 @@ public abstract class TrustAdminSyncJobTemplate<T> extends CommonSyncJobTemplate
   protected Map<String, Long> initIds() {
     Map<String, Long> idMap = new HashMap<>();
     idMap.put(LAST_ENTITY_ID, 0L);
-    idMap.put(LAST_SITE_ID, 0L);
+    idMap.put(LAST_TRUST_ID, 0L);
     return idMap;
   }
 
   protected void updateIds(Map<String, Long> ids, List<EntityData> collectedData) {
     ids.put(LAST_ENTITY_ID, collectedData.get(collectedData.size() - 1).getEntityId());
-    ids.put(LAST_SITE_ID, collectedData.get(collectedData.size() - 1).getOtherId());
+    ids.put(LAST_TRUST_ID, collectedData.get(collectedData.size() - 1).getOtherId());
   }
 }

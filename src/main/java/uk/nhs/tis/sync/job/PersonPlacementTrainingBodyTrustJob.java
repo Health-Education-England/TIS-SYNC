@@ -1,5 +1,6 @@
 package uk.nhs.tis.sync.job;
 
+import com.transformuk.hee.tis.tcs.api.enumeration.PersonTrustStatus;
 import com.transformuk.hee.tis.tcs.service.model.Person;
 import com.transformuk.hee.tis.tcs.service.model.PersonTrust;
 import com.transformuk.hee.tis.tcs.service.repository.PersonRepository;
@@ -74,7 +75,7 @@ public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTempla
   protected List<EntityData> collectData(Map<String, Long> ids, String queryString,
                                          EntityManager entityManager) {
     long lastId = ids.get(LAST_ENTITY_ID);
-    long lastTrainingBodyId = ids.get(LAST_SITE_ID);
+    long lastTrainingBodyId = ids.get(LAST_TRUST_ID);
     log.info("Querying with lastPersonId: [{}] and lastTrainingBodyId: [{}]", lastId,
         lastTrainingBodyId);
     String personPlacementQuery =
@@ -87,7 +88,8 @@ public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTempla
     List<Object[]> resultList = query.getResultList();
     List<EntityData> result = resultList.stream().filter(Objects::nonNull)
         .map(objArr -> new EntityData().entityId(((BigInteger) objArr[0]).longValue())
-            .otherId(((BigInteger) objArr[1]).longValue()))
+            .otherId(((BigInteger) objArr[1]).longValue())
+            .status(objArr.length > 2 && objArr[2] != null ? objArr[2].toString() : null))
         .collect(Collectors.toList());
 
     return result;
@@ -113,6 +115,9 @@ public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTempla
             PersonTrust personTrust = new PersonTrust();
             personTrust.setPerson(personIdToPerson.get(ed.getEntityId()));
             personTrust.setTrustId(ed.getOtherId());
+            if (ed.getStatus() != null) {
+              personTrust.setStatus(PersonTrustStatus.valueOf(ed.getStatus()));
+            }
 
             entitiesToSave.add(personTrust);
           } else {
@@ -124,5 +129,3 @@ public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTempla
     return skipped;
   }
 }
-
-
