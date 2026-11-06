@@ -1,5 +1,6 @@
 package uk.nhs.tis.sync.job;
 
+import com.transformuk.hee.tis.tcs.api.enumeration.PersonTrustStatus;
 import com.transformuk.hee.tis.tcs.service.model.Person;
 import com.transformuk.hee.tis.tcs.service.model.PersonTrust;
 import com.transformuk.hee.tis.tcs.service.repository.PersonRepository;
@@ -84,7 +85,7 @@ public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTempl
   protected List<EntityData> collectData(Map<String, Long> ids, String queryString,
                                          EntityManager entityManager) {
     long lastId = ids.get(LAST_ENTITY_ID);
-    long lastEmployingBodyId = ids.get(LAST_SITE_ID);
+    long lastEmployingBodyId = ids.get(LAST_TRUST_ID);
     log.info("Querying with lastPersonId: [{}] and lastEmployingBodyId: [{}]", lastId,
         lastEmployingBodyId);
     String personPlacementQuery =
@@ -97,7 +98,8 @@ public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTempl
 
     return resultList.stream().filter(Objects::nonNull)
         .map(objArr -> new EntityData().entityId(((BigInteger) objArr[0]).longValue())
-            .otherId(((BigInteger) objArr[1]).longValue()))
+            .otherId(((BigInteger) objArr[1]).longValue())
+            .status(objArr.length > 2 && objArr[2] != null ? objArr[2].toString() : null))
         .collect(Collectors.toList());
   }
 
@@ -120,6 +122,9 @@ public class PersonPlacementEmployingBodyTrustJob extends TrustAdminSyncJobTempl
             PersonTrust personTrust = new PersonTrust();
             personTrust.setPerson(personIdToPerson.get(ed.getEntityId()));
             personTrust.setTrustId(ed.getOtherId());
+            if (ed.getStatus() != null) {
+              personTrust.setStatus(PersonTrustStatus.valueOf(ed.getStatus()));
+            }
 
             entitiesToSave.add(personTrust);
           } else {
