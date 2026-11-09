@@ -1,6 +1,7 @@
 package uk.nhs.tis.sync.job;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 
 import com.transformuk.hee.tis.tcs.api.enumeration.PersonTrustStatus;
@@ -10,6 +11,7 @@ import com.transformuk.hee.tis.tcs.service.repository.PersonRepository;
 import com.transformuk.hee.tis.tcs.service.repository.PersonTrustRepository;
 import com.transformuk.hee.tis.tcs.service.service.helper.SqlQuerySupplier;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -20,13 +22,14 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import uk.nhs.tis.sync.model.EntityData;
 
 @ExtendWith(MockitoExtension.class)
-class PersonPlacementTrustJobTest {
+class PersonPlacementTrainingBodyTrustJobTest {
 
   private static final int PAGE_SIZE = 5000;
   private static final String MOCKED_QUERY_STRING = "SELECT * FROM placement";
@@ -48,22 +51,21 @@ class PersonPlacementTrustJobTest {
   @Mock
   private Query query;
 
+  @InjectMocks
+  private PersonPlacementTrainingBodyTrustJob job;
+
   @Test
-  void employingBodyCollectDataShouldMapStatusFromThirdColumn() {
-    when(sqlQuerySupplier.getQuery(SqlQuerySupplier.PERSON_PLACEMENT_EMPLOYINGBODY))
+  void collectDataShouldMapStatusFromThirdColumn() {
+    when(sqlQuerySupplier.getQuery(SqlQuerySupplier.PERSON_PLACEMENT_TRAININGBODY))
         .thenReturn(MOCKED_QUERY_STRING);
     when(entityManager.createNativeQuery(MOCKED_QUERY_STRING)).thenReturn(query);
     when(query.setParameter("lastId", LAST_ID)).thenReturn(query);
-    when(query.setParameter("lastEmployingBodyId", LAST_TRUST_ID)).thenReturn(query);
+    when(query.setParameter("lastTrainingBodyId", LAST_TRUST_ID)).thenReturn(query);
     when(query.setParameter("pageSize", PAGE_SIZE)).thenReturn(query);
     when(query.getResultList()).thenReturn(List.of(
-        new Object[] {BigInteger.valueOf(11L), BigInteger.valueOf(22L), "CURRENT"},
-        new Object[] {BigInteger.valueOf(33L), BigInteger.valueOf(44L), "INACTIVE"}
+        new Object[]{BigInteger.valueOf(11L), BigInteger.valueOf(22L), "ACTIVE"},
+        new Object[]{BigInteger.valueOf(33L), BigInteger.valueOf(44L), "INACTIVE"}
     ));
-
-    PersonPlacementEmployingBodyTrustJob job = new PersonPlacementEmployingBodyTrustJob(
-        entityManagerFactory, applicationEventPublisher, sqlQuerySupplier,
-        personTrustRepository, personRepository);
 
     Map<String, Long> ids = new HashMap<>();
     ids.put("lastEntityId", LAST_ID);
@@ -74,22 +76,18 @@ class PersonPlacementTrustJobTest {
     assertEquals(2, result.size());
     assertEquals(11L, result.get(0).getEntityId());
     assertEquals(22L, result.get(0).getOtherId());
-    assertEquals("CURRENT", result.get(0).getStatus());
+    assertEquals("ACTIVE", result.get(0).getStatus());
     assertEquals(33L, result.get(1).getEntityId());
     assertEquals(44L, result.get(1).getOtherId());
     assertEquals("INACTIVE", result.get(1).getStatus());
   }
 
   @Test
-  void employingBodyConvertDataShouldSetStatus() {
+  void convertDataShouldSetStatus() {
     Person person = new Person();
     person.setId(11L);
 
     when(personRepository.findAllById(Set.of(11L))).thenReturn(List.of(person));
-
-    PersonPlacementEmployingBodyTrustJob job = new PersonPlacementEmployingBodyTrustJob(
-        entityManagerFactory, applicationEventPublisher, sqlQuerySupplier,
-        personTrustRepository, personRepository);
 
     Set<PersonTrust> entitiesToSave = new HashSet<>();
     List<EntityData> data = List.of(new EntityData().entityId(11L).otherId(22L).status("INACTIVE"));
@@ -105,56 +103,58 @@ class PersonPlacementTrustJobTest {
   }
 
   @Test
-  void trainingBodyCollectDataShouldMapStatusFromThirdColumn() {
+  void convertDataShouldReturnZeroForEmptyData() {
+
+    Set<PersonTrust> entitiesToSave = new HashSet<>();
+    int skipped = job.convertData(entitiesToSave, List.of(), entityManager);
+
+    assertEquals(0, skipped);
+    assertEquals(0, entitiesToSave.size());
+  }
+
+  @Test
+  void convertDataShouldSkipInvalidEntity() {
+
+    Set<PersonTrust> entitiesToSave = new HashSet<>();
+    List<EntityData> data = List.of(new EntityData().entityId(null).otherId(22L).status("ACTIVE"));
+
+    int skipped = job.convertData(entitiesToSave, data, entityManager);
+
+    assertEquals(1, skipped);
+    assertEquals(0, entitiesToSave.size());
+  }
+
+  @Test
+  void convertDataShouldSkipMissingPerson() {
+
+    when(personRepository.findAllById(Set.of(11L))).thenReturn(List.of());
+
+    Set<PersonTrust> entitiesToSave = new HashSet<>();
+    List<EntityData> data = List.of(new EntityData().entityId(11L).otherId(22L).status("ACTIVE"));
+
+    int skipped = job.convertData(entitiesToSave, data, entityManager);
+
+    assertEquals(1, skipped);
+    assertEquals(0, entitiesToSave.size());
+  }
+
+  @Test
+  void collectDataShouldHandleNullStatusValue() {
     when(sqlQuerySupplier.getQuery(SqlQuerySupplier.PERSON_PLACEMENT_TRAININGBODY))
         .thenReturn(MOCKED_QUERY_STRING);
     when(entityManager.createNativeQuery(MOCKED_QUERY_STRING)).thenReturn(query);
     when(query.setParameter("lastId", LAST_ID)).thenReturn(query);
+    when(query.setParameter("lastId", LAST_ID)).thenReturn(query);
     when(query.setParameter("lastTrainingBodyId", LAST_TRUST_ID)).thenReturn(query);
     when(query.setParameter("pageSize", PAGE_SIZE)).thenReturn(query);
-    when(query.getResultList()).thenReturn(List.of(
-        new Object[] {BigInteger.valueOf(55L), BigInteger.valueOf(66L), "CURRENT"},
-        new Object[] {BigInteger.valueOf(77L), BigInteger.valueOf(88L), "INACTIVE"}
-    ));
+    List<Object[]> rows = new ArrayList<>();
+    rows.add(new Object[]{BigInteger.valueOf(11L), BigInteger.valueOf(22L), null});
+    when(query.getResultList()).thenReturn(rows);
 
-    PersonPlacementTrainingBodyTrustJob job = new PersonPlacementTrainingBodyTrustJob(
-        entityManagerFactory, applicationEventPublisher, personRepository, sqlQuerySupplier);
+    List<EntityData> result = job.collectData(Map.of("lastEntityId", LAST_ID, "lastTrustId",
+        LAST_TRUST_ID), null, entityManager);
 
-    Map<String, Long> ids = new HashMap<>();
-    ids.put("lastEntityId", LAST_ID);
-    ids.put("lastTrustId", LAST_TRUST_ID);
-
-    List<EntityData> result = job.collectData(ids, null, entityManager);
-
-    assertEquals(2, result.size());
-    assertEquals(55L, result.get(0).getEntityId());
-    assertEquals(66L, result.get(0).getOtherId());
-    assertEquals("CURRENT", result.get(0).getStatus());
-    assertEquals(77L, result.get(1).getEntityId());
-    assertEquals(88L, result.get(1).getOtherId());
-    assertEquals("INACTIVE", result.get(1).getStatus());
-  }
-
-  @Test
-  void trainingBodyConvertDataShouldSetStatus() {
-    Person person = new Person();
-    person.setId(55L);
-
-    when(personRepository.findAllById(Set.of(55L))).thenReturn(List.of(person));
-
-    PersonPlacementTrainingBodyTrustJob job = new PersonPlacementTrainingBodyTrustJob(
-        entityManagerFactory, applicationEventPublisher, personRepository, sqlQuerySupplier);
-
-    Set<PersonTrust> entitiesToSave = new HashSet<>();
-    List<EntityData> data = List.of(new EntityData().entityId(55L).otherId(66L).status("ACTIVE"));
-
-    int skipped = job.convertData(entitiesToSave, data, entityManager);
-
-    assertEquals(0, skipped);
-    assertEquals(1, entitiesToSave.size());
-    PersonTrust savedPersonTrust = entitiesToSave.iterator().next();
-    assertEquals(55L, savedPersonTrust.getPerson().getId());
-    assertEquals(66L, savedPersonTrust.getTrustId());
-    assertEquals(PersonTrustStatus.ACTIVE, savedPersonTrust.getStatus());
+    assertEquals(1, result.size());
+    assertNull(result.get(0).getStatus());
   }
 }

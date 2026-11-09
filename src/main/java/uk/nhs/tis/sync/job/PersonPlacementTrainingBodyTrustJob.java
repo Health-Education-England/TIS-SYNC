@@ -98,34 +98,47 @@ public class PersonPlacementTrainingBodyTrustJob extends TrustAdminSyncJobTempla
   @Override
   protected int convertData(Set<PersonTrust> entitiesToSave,
                             List<EntityData> entityData, EntityManager entityManager) {
+    if (CollectionUtils.isEmpty(entityData)) {
+      return 0;
+    }
+
+    Set<Long> personIds =
+        entityData.stream().map(EntityData::getEntityId).collect(Collectors.toSet());
+    List<Person> allPersons = personRepository.findAllById(personIds);
+    Map<Long, Person> personIdToPerson =
+        allPersons.stream().collect(Collectors.toMap(Person::getId, person -> person));
 
     int skipped = 0;
-    if (CollectionUtils.isNotEmpty(entityData)) {
+    for (EntityData ed : entityData) {
+      if (ed != null) {
 
-      Set<Long> personIds =
-          entityData.stream().map(EntityData::getEntityId).collect(Collectors.toSet());
-      List<Person> allPersons = personRepository.findAllById(personIds);
-      Map<Long, Person> personIdToPerson =
-          allPersons.stream().collect(Collectors.toMap(Person::getId, person -> person));
-
-      for (EntityData ed : entityData) {
-        if (ed != null) {
-
-          if (ed.getEntityId() != null || ed.getOtherId() != null) {
-            PersonTrust personTrust = new PersonTrust();
-            personTrust.setPerson(personIdToPerson.get(ed.getEntityId()));
-            personTrust.setTrustId(ed.getOtherId());
-            if (ed.getStatus() != null) {
-              personTrust.setStatus(PersonTrustStatus.valueOf(ed.getStatus()));
-            }
-
-            entitiesToSave.add(personTrust);
-          } else {
+        if (ed.getEntityId() != null || ed.getOtherId() != null) {
+          PersonTrust personTrust = buildPersonTrust(ed, personIdToPerson);
+          if (personTrust == null) {
             skipped++;
+            continue;
           }
+          entitiesToSave.add(personTrust);
+        } else {
+          skipped++;
         }
       }
     }
     return skipped;
+  }
+
+  private PersonTrust buildPersonTrust(EntityData entityData, Map<Long, Person> personIdToPerson) {
+    Person person = personIdToPerson.get(entityData.getEntityId());
+    if (person == null) {
+      return null;
+    }
+
+    PersonTrust personTrust = new PersonTrust();
+    personTrust.setPerson(person);
+    personTrust.setTrustId(entityData.getOtherId());
+    if (entityData.getStatus() != null && !entityData.getStatus().isBlank()) {
+      personTrust.setStatus(PersonTrustStatus.valueOf(entityData.getStatus()));
+    }
+    return personTrust;
   }
 }

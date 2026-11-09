@@ -2,6 +2,9 @@ package uk.nhs.tis.sync.model;
 
 import lombok.Getter;
 
+/**
+ * A model to hold the entity data.
+ */
 @Getter
 public class EntityData {
   private Long entityId;
