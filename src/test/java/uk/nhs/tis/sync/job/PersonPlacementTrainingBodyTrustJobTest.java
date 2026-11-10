@@ -144,7 +144,6 @@ class PersonPlacementTrainingBodyTrustJobTest {
         .thenReturn(MOCKED_QUERY_STRING);
     when(entityManager.createNativeQuery(MOCKED_QUERY_STRING)).thenReturn(query);
     when(query.setParameter("lastId", LAST_ID)).thenReturn(query);
-    when(query.setParameter("lastId", LAST_ID)).thenReturn(query);
     when(query.setParameter("lastTrainingBodyId", LAST_TRUST_ID)).thenReturn(query);
     when(query.setParameter("pageSize", PAGE_SIZE)).thenReturn(query);
     List<Object[]> rows = new ArrayList<>();
