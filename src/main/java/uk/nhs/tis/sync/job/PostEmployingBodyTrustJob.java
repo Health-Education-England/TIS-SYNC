@@ -78,7 +78,7 @@ public class PostEmployingBodyTrustJob extends TrustAdminSyncJobTemplate<PostTru
   protected List<EntityData> collectData(Map<String, Long> ids, String queryString,
                                          EntityManager entityManager) {
     long lastId = ids.get(LAST_ENTITY_ID);
-    long lastEmployingBodyId = ids.get(LAST_SITE_ID);
+    long lastEmployingBodyId = ids.get(LAST_TRUST_ID);
     log.info("Querying with lastPostId: [{}] and lastEmployingBodyId: [{}]", lastId,
         lastEmployingBodyId);
     String postEmployingBodyQuery = sqlQuerySupplier.getQuery(SqlQuerySupplier.POST_EMPLOYINGBODY);
